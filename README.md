@@ -1,6 +1,8 @@
 # slackbot-workout
 A fun hack that gets Slackbot to force your teammates to work out!
 
+<img src = "https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_10_at_5_57_55_PM-1433984292189.png" width = 300>
+
 
 # Instructions
 

@@ -45,11 +45,14 @@ def selectExerciseAndStartTime():
 
 def selectPerson(exercise):
 
-    selection = random.randrange(0, 5)
+    # Select number of reps
     exerciseReps = random.randrange(25, 50)
 
-    # Pull all users from API and remove Shahan
+    # Pull all users from API
     slackUsers = extractSlackUsers(USERTOKENSTRING)
+
+    # Select index of team member from array of team members
+    selection = random.randrange(0, len(slackUsers))
 
     lotteryWinnerString = str(exerciseReps) + str(exercise) + "RIGHT NOW " + slackUsers[selection]
     print lotteryWinnerString

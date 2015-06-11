@@ -17,11 +17,18 @@ def extractSlackUsers(token):
     users = json.loads(response.text, encoding='utf-8')["members"]
 
     def findUserNames(x):
+        if getStats(x) == False:
+            return None
         name = "@" + x["name"].encode('utf-8')
         return name.encode('utf-8')
+    def getStats(x):
+        params = {"token": tokenString, "user": x["id"]}
+        response = requests.get("https://slack.com/api/users.getPresence",
+                params=params)
+        status = json.loads(response.text, encoding='utf-8')["presence"]
+        return status == "active"
 
-    return list(map(findUserNames, users))
-
+    return filter(None, list(map(findUserNames, users)))
 
 def selectExerciseAndStartTime():
 

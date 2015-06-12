@@ -10,7 +10,7 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
     `$ git clone git@github.com:brandonshin/slackbot-workout.git`
 
-2. Go to your slack home page https://{yourgroup}.slack.com/home & click on **Integrations** on the left sidebar.
+2. Go to your slack home page [https://{yourgroup}.slack.com/home](http://my.slack.com/home) & click on **Integrations** on the left sidebar.
 
     <img src = "https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_05_at_7_21_33_PM-1433557303531.png" width = 300>
 

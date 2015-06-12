@@ -14,13 +14,13 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
     <img src = "https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_05_at_7_21_33_PM-1433557303531.png" width = 300>
 
-3. Scroll All the Way Down until you see **Slack API** and **Slackbot**. You'll need two access these two integrations.
+3. Scroll All the Way Down until you see **Slack API** and **Slackbot**. You'll need to access these two integrations.
 
     <img src="https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_05_at_7_19_44_PM-1433557206307.png" width = 500>
 
-4. In the **Slack API Page**, select **WebAPI** in the left side bar, scroll all the way down, and register yourself an auth token. You should see this. Take note of that token, e.g. `xoxp-2751727432-4028172038-5281317294-3c46b1`. That's your **User Auth Token**
-
+4. In the **Slack API Page**, select **WebAPI** in the left side bar, scroll all the way down, and register yourself an auth token. You should see this:
     <img src="https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_05_at_7_00_24_PM-1433557433415.png" width = 500>
+    *Take note of that token, e.g. `xoxp-2751727432-4028172038-5281317294-3c46b1`. That's your __User Auth Token__*
 
 5. In the **Slackbot** (Remote control page). Register an integration & you should see this. __Make sure you grab just the token out of the url__, e.g. `AizJbQ24l38ai4DlQD9yFELb`
 

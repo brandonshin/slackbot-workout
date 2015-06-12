@@ -3,9 +3,20 @@ import time
 import requests
 import json
 import csv
+import os
 
-USERTOKENSTRING =  # YOUR (SLACKBOT API) USER AUTH TOKEN
-URLTOKENSTRING =  # SLACKBOT REMOTE CONTROL URL TOKEN
+USERTOKENSTRING =  os.environ['SLACK_USER_TOKEN_STRING']
+URLTOKENSTRING =  os.environ['URL_TOKEN_STRING']
+
+
+MIN_COUNTDOWN = 5       # in minutes
+MAX_COUNTDOWN = 30      # in minutes
+
+TEAM_DOMAIN = "YOUR_TEAM_HERE"
+HASH = "%23"
+CHANNEL_NAME = "YOUR_CHANNEL_HERE"
+FULL_URL = "https://" + TEAM_DOMAIN + ".slack.com/services/hooks/slackbot?token=" + URLTOKENSTRING + "&channel=" + HASH + CHANNEL_NAME
+
 
 def extractSlackUsers(token):
     # Set token parameter of Slack API call
@@ -13,8 +24,8 @@ def extractSlackUsers(token):
     params = {"token": tokenString}
 
     # Capture Response as JSON
-    response = requests.get("https://slack.com/api/users.list", params=params)
-    users = json.loads(response.text, encoding='utf-8')["members"]
+    response = requests.get("https://slack.com/api/channels.info", params=params)
+    users = json.loads(response.text, encoding='utf-8')["channel"]["members"]
 
     def findUserNames(x):
         if getStats(x) == False:
@@ -37,13 +48,13 @@ def selectExerciseAndStartTime():
     exerciseAnnouncements = ["PUSHUPS", "PUSHUPS", "PLANK", "SITUPS", "WALLSIT"]
 
     # Random Number generator for Reps/Seconds and Exercise
-    nextTimeInterval = random.randrange(300, 1800)
+    nextTimeInterval = random.randrange(MIN_COUNTDOWN * 60, MAX_COUNTDOWN * 60)
     exerciseIndex = random.randrange(0, 5)
 
     # Announcement String of next lottery time
     lotteryTimeString = "NEXT LOTTERY FOR " + str(exerciseAnnouncements[exerciseIndex]) + " IS IN " + str(nextTimeInterval/60) + " MINUTES"
 
-    requests.post("https://ctrlla.slack.com/services/hooks/slackbot?token="+URLTOKENSTRING+"&channel=%23general", data=lotteryTimeString)
+    requests.post(FULL_URL, data=lotteryTimeString)
 
     time.sleep(nextTimeInterval)
 
@@ -63,7 +74,7 @@ def selectPerson(exercise):
 
     lotteryWinnerString = str(exerciseReps) + str(exercise) + "RIGHT NOW " + slackUsers[selection]
     print lotteryWinnerString
-    requests.post("https://ctrlla.slack.com/services/hooks/slackbot?token="+URLTOKENSTRING+"&channel=%23general", data=lotteryWinnerString)
+    requests.post(FULL_URL, data=lotteryWinnerString)
 
     with open("results.csv", 'a') as f:
         writer = csv.writer(f)

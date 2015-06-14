@@ -26,17 +26,18 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
     <img src="https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_03_at_8_44_00_AM-1433557565175.png" width = 500>
 
-6. Open the `slackbotExercise.py` in a text editor and set the **URLTOKENSTRING** and **USERAUTHTOKEN** with the tokens that you got from the **Slackbot Remote Control** and **Slack Web API**, respectively.
+6. In a terminal export the variables you collected earlier
 
-7. If you haven't set up pip for python, go in your terminal and run.
-`$ sudo easy_install pip`
+    `$ export SLACK_USER_TOKEN=xxxx-yyyy-12345`
+
+    `$ export SLACK_URL_TOKEN=tokenonly`
+
+    `$ export SLACK_TEAM_NAME='slackteam'`
+
+    `$ export SLACK_CHANNEL='testing'`
 
 8. While in the project directory, run
 
-	`$ virtualenv env`
+	`$ make run`
 
-    `$ env/bin/pip install -r requirements.txt`
-
-    `$ env/bin/python slackbotExercise.py`
-
-Run the script to start the workouts and hit ctrl+c to stop the script. Hope you have fun with it!
+Hit ctrl+c to stop the script. Hope you have fun with it!

@@ -33,8 +33,10 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
 8. While in the project directory, run
 
-    `$ sudo pip install -r requirements.txt`
+	`$ virtualenv env`
 
-    `$ python slackbotExercise.py`
+    `$ env/bin/pip install -r requirements.txt`
+
+    `$ env/bin/python slackbotExercise.py`
 
 Run the script to start the workouts and hit ctrl+c to stop the script. Hope you have fun with it!

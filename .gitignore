@@ -1,0 +1,2 @@
+# Slackbot Workout - Ignore config.json so contributors do not expose sensitive information
+*.json

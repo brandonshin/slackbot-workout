@@ -14,7 +14,7 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
     <img src = "https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_05_at_7_21_33_PM-1433557303531.png" width = 300>
 
-3. Scroll All the Way Down until you see **Slack API** and **Slackbot**. You'll need two access these two integrations.
+3. Scroll All the Way Down until you see **Slack API** and **Slackbot**. You'll need to access these two integrations.
 
     <img src="https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_05_at_7_19_44_PM-1433557206307.png" width = 500>
 
@@ -26,7 +26,7 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
     <img src="https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_03_at_8_44_00_AM-1433557565175.png" width = 500>
 
-6. Open the `slackbotExercise.py` in a text editor and set the **URLTOKENSTRING** and **USERAUTHTOKEN** with the tokens that you got from the **Slackbot Remote Control** and **Slack Web API**, respectively.
+6. Open `config.json` in a text editor and set the **URLTOKENSTRING** and **USERAUTHTOKEN** with the tokens that you got from the **Slackbot Remote Control** and **Slack Web API**, respectively. Set the **TEAMNAMESTRING** to your slack team name (no spaces).
 
 7. If you haven't set up pip for python, go in your terminal and run.
 `$ sudo easy_install pip`

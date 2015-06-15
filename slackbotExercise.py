@@ -4,6 +4,10 @@ import requests
 import json
 import csv
 import os
+from random import shuffle
+import pickle
+import os.path
+
 from User import User
 
 # Environment variables must be set with your tokens
@@ -12,7 +16,7 @@ URL_TOKEN_STRING =  os.environ['SLACK_URL_TOKEN_STRING']
 
 HASH = "%23"
 
-DEBUG = True
+DEBUG = False
 
 
 # local cache of usernames
@@ -20,7 +24,7 @@ DEBUG = True
 user_cache = {}
 
 # round robin store
-priority_users = []
+user_queue = []
 
 # Configuration values to be set in setConfiguration
 class Bot:
@@ -44,7 +48,7 @@ class Bot:
             self.channel_id = settings["channelId"]
             self.exercises = settings["exercises"]
 
-        self.post_URL = "https://" + self.team_domain + ".slack.com/services/hooks/slackbot?token=%23" + URL_TOKEN_STRING + "&channel=" + HASH + self.channel_name
+        self.post_URL = "https://" + self.team_domain + ".slack.com/services/hooks/slackbot?token=" + URL_TOKEN_STRING + "&channel=" + HASH + self.channel_name
 
 
 ################################################################################
@@ -52,17 +56,30 @@ class Bot:
 Selects an active user from a list of users
 '''
 def selectUser(bot):
-    active_users = fetchactive_users(bot)
+    active_users = fetchActiveUsers(bot)
 
-    if len(priority_users) == 0:
+    # Add all active users not already in the user queue
+    # Shuffles to randomly add new active users
+    shuffle(active_users)
+    bothArrays = set(active_users).intersection(user_queue)
+    for user in active_users:
+        if user not in bothArrays:
+            user_queue.append(user)
 
+    # find a user to draw, priority going to first in
+    for user in user_queue:
+        if user in active_users:
+            user_queue.remove(user)
+            return user
+
+    # If we weren't able to select one, just pick a random
     return active_users[random.randrange(0, len(active_users))]
 
 
 '''
 Fetches a list of all active users in the channel
 '''
-def fetchactive_users(bot):
+def fetchActiveUsers(bot):
     # Check for new members
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
     response = requests.get("https://slack.com/api/channels.info", params=params)
@@ -100,8 +117,8 @@ def selectExerciseAndStartTime(bot):
     if not DEBUG:
         time.sleep(next_time_interval)
     else:
-        # If debugging, once every 10 seconds
-        time.sleep(10)
+        # If debugging, once every 5 seconds
+        time.sleep(5)
 
     return exercise
 
@@ -127,12 +144,14 @@ Selects a person to do the already-selected exercise
 def assignExercise(bot, exercise):
     # Select number of reps
     exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
-    winner = selectUser(bot)
+    winner1 = selectUser(bot)
+    winner2 = selectUser(bot)
 
-    winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW " + str(winner.getUserHandle())
+    winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW " + str(winner1.getUserHandle()) + " and " + str(winner2.getUserHandle()) + "!"
 
     # Save the exercise to the user
-    winner.addExercise(exercise, exercise_reps)
+    winner1.addExercise(exercise, exercise_reps)
+    winner2.addExercise(exercise, exercise_reps)
 
     # Announce the user
     if not DEBUG:
@@ -140,7 +159,8 @@ def assignExercise(bot, exercise):
     print winner_announcement
 
     # log the exercise
-    logExercise(winner.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
+    logExercise(winner1.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
+    logExercise(winner2.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
 
 
 def logExercise(username,exercise,reps,units):
@@ -148,12 +168,49 @@ def logExercise(username,exercise,reps,units):
         writer = csv.writer(f)
         writer.writerow([username,exercise,reps,units])
 
-def saveUsers():
+def saveUsers(bot):
+    # Write to the command console today's breakdown
+    s = "```\n"
+    #s += "Username\tAssigned\tComplete\tPercent
+    s += "Username".ljust(15)
+    for exercise in bot.exercises:
+        s += exercise["name"] + "  "
+    s += "\n--------------------------------------------------------\n"
+
     for user_id in user_cache:
-        print user_cache[user_id].exercise_history
+        user = user_cache[user_id]
+        s += user.username.ljust(15)
+        for exercise in bot.exercises:
+            if exercise["id"] in user.exercises:
+                s += str(user.exercises[exercise["id"]]).ljust(len(exercise["name"]) + 2)
+            else:
+                s += str(0).ljust(len(exercise["name"]) + 2)
+        s += "\n"
+
+    s += "```"
+
+    if not DEBUG:
+        requests.post(bot.post_URL, data=s)
+    print s
+
+
+    # write to file
+    with open('user_cache.save','wb') as f:
+        # print "============"
+        # print pickle.dumps(user_cache)
+        # print "================================================="
+        # for user_id in user_cache:
+        #     print pickle.dumps(user_cache[user_id])
+        pickle.dump(user_cache,f)
 
 
 def main():
+    if os.path.isfile('user_cache.save'):
+        with open('user_cache.save','rb') as f:
+            user_cache = pickle.load(f)
+            print len(user_cache)
+            print user_cache
+
     bot = Bot()
 
     try:
@@ -167,7 +224,7 @@ def main():
             # Assign the exercise to someone
             assignExercise(bot, exercise)
     except KeyboardInterrupt:
-        saveUsers()
+        saveUsers(bot)
 
 
 main()

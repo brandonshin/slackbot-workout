@@ -56,7 +56,7 @@ def selectExerciseAndStartTime():
 def selectPerson(exercise):
 
     # Select number of reps
-    exerciseReps = random.randrange(25, 50)
+    exerciseReps = random.randrange(10, 30)
 
     # Pull all users from API
     slackUsers = extractSlackUsers(USERTOKENSTRING)

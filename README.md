@@ -3,6 +3,9 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
 <img src = "https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_10_at_5_57_55_PM-1433984292189.png" width = 500>
 
+# Run it on Heroku
+
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
 # Instructions
 
@@ -26,15 +29,19 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
     <img src="https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_03_at_8_44_00_AM-1433557565175.png" width = 500>
 
-6. Open `config.json` in a text editor and set the **URLTOKENSTRING** and **USERAUTHTOKEN** with the tokens that you got from the **Slackbot Remote Control** and **Slack Web API**, respectively. Set the **TEAMNAMESTRING** to your slack team name (no spaces).
 
-7. If you haven't set up pip for python, go in your terminal and run.
-`$ sudo easy_install pip`
+6. In a terminal export the variables you collected earlier
+
+    `$ export SLACK_USER_TOKEN=xxxx-yyyy-12345`
+
+    `$ export SLACK_URL_TOKEN=tokenonly`
+
+    `$ export SLACK_TEAM_NAME='slackteam'`
+
+    `$ export SLACK_CHANNEL='testing'`
 
 8. While in the project directory, run
 
-    `$ sudo pip install -r requirements.txt`
+    `$ make run`
 
-    `$ python slackbotExercise.py`
-
-Run the script to start the workouts and hit ctrl+c to stop the script. Hope you have fun with it!
+Hit ctrl+c to stop the script. Hope you have fun with it!

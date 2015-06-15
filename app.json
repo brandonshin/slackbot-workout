@@ -1,0 +1,12 @@
+{
+  "name": "Slackbot Workout",
+  "description": "A fun hack that gets Slackbot to force your teammates to work out!",
+  "repository": "https://github.com/hutchic/slackbot-workout",
+  "keywords": ["slack", "slackbot", "workout"],
+  "env": {
+    "SLACK_USER_TOKEN": "Your slack API Token",
+    "SLACK_URL_TOKEN": "Your slack url token",
+    "SLACK_TEAM_NAME": "Your slack organization name",
+    "SLACK_CHANNEL": "The channel you want the bot to run in"
+  }
+}

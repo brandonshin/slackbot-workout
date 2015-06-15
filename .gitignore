@@ -1,1 +1,4 @@
-*.json
+env
+.project
+.pydevproject
+results.csv

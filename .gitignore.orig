@@ -1,0 +1,8 @@
+<<<<<<< HEAD
+*.json
+=======
+
+config.json
+
+log.csv
+>>>>>>> Ignoring config and log files

@@ -4,6 +4,7 @@ import requests
 import json
 import csv
 import os
+from User import User
 
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
@@ -17,6 +18,9 @@ DEBUG = True
 # local cache of usernames
 # maps userIds to usernames
 user_cache = {}
+
+# round robin store
+priority_users = []
 
 # Configuration values to be set in setConfiguration
 class Bot:
@@ -44,81 +48,37 @@ class Bot:
 
 
 ################################################################################
+'''
+Selects an active user from a list of users
+'''
+def selectUser(bot):
+    active_users = fetchactive_users(bot)
+
+    if len(priority_users) == 0:
+
+    return active_users[random.randrange(0, len(active_users))]
 
 
 '''
-Fetches a list of all slack users in the channel
+Fetches a list of all active users in the channel
 '''
-def fetchSlackUsers(bot):
+def fetchactive_users(bot):
+    # Check for new members
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
-
-    # Capture Response as JSON
     response = requests.get("https://slack.com/api/channels.info", params=params)
-    users = json.loads(response.text, encoding='utf-8')["channel"]["members"]
+    user_ids = json.loads(response.text, encoding='utf-8')["channel"]["members"]
 
-    return filter(None, list(map(fetchActiveUsers, users)))
+    active_users = []
 
+    for user_id in user_ids:
+        # Add user to the cache if not already
+        if user_id not in user_cache:
+            user_cache[user_id] = User(user_id)
 
-'''
-Fetches all of the active users
-'''
-def fetchActiveUsers(userId):
-    if not isActive(userId):
-        return None
+        if user_cache[user_id].isActive():
+            active_users.append(user_cache[user_id])
 
-    return getName(userId).encode('utf-8')
-
-
-'''
-Fetches the username for a given id
-'''
-def getName(userId):
-    if userId in user_cache:
-        username = user_cache[userId]
-    else:
-        params = {"token": USER_TOKEN_STRING, "user": userId}
-        response = requests.get("https://slack.com/api/users.info",
-                params=params)
-        username = json.loads(response.text, encoding='utf-8')["user"]["name"]
-        user_cache[userId] = username
-        print "New user: " + username
-
-    return ("@" + username).encode('utf-8')
-
-
-'''
-Returns true if a user is currently "active", else false
-'''
-def isActive(userId):
-    params = {"token": USER_TOKEN_STRING, "user": userId}
-    response = requests.get("https://slack.com/api/users.getPresence",
-            params=params)
-    status = json.loads(response.text, encoding='utf-8')["presence"]
-
-    return status == "active"
-
-
-'''
-Selects a slack user from a list of slack users
-'''
-def selectSlackUser(bot):
-    slackUsers = fetchSlackUsers(bot)
-
-    return slackUsers[random.randrange(0, len(slackUsers))]
-
-
-'''
-Selects the next exercise
-'''
-def selectExercise(bot):
-    idx = random.randrange(0, len(bot.exercises))
-    return bot.exercises[idx]
-
-'''
-Selects the next time interval
-'''
-def selectNextTimeInterval(bot):
-    return random.randrange(bot.min_countdown * 60, bot.max_countdown * 60)
+    return active_users
 
 '''
 Selects an exercise and start time, and sleeps until the time
@@ -129,7 +89,7 @@ def selectExerciseAndStartTime(bot):
     exercise = selectExercise(bot)
 
     # Announcement String of next lottery time
-    lottery_announcement = "NEXT LOTTERY FOR " + exercise["name"] + " IS IN " + str(next_time_interval/60) + " MINUTES"
+    lottery_announcement = "NEXT LOTTERY FOR " + exercise["name"].upper() + " IS IN " + str(next_time_interval/60) + " MINUTES"
 
     # Announce the exercise to the thread
     if not DEBUG:
@@ -139,8 +99,26 @@ def selectExerciseAndStartTime(bot):
     # Sleep the script until time is up
     if not DEBUG:
         time.sleep(next_time_interval)
+    else:
+        # If debugging, once every 10 seconds
+        time.sleep(10)
 
     return exercise
+
+
+'''
+Selects the next exercise
+'''
+def selectExercise(bot):
+    idx = random.randrange(0, len(bot.exercises))
+    return bot.exercises[idx]
+
+
+'''
+Selects the next time interval
+'''
+def selectNextTimeInterval(bot):
+    return random.randrange(bot.min_countdown * 60, bot.max_countdown * 60)
 
 
 '''
@@ -149,35 +127,47 @@ Selects a person to do the already-selected exercise
 def assignExercise(bot, exercise):
     # Select number of reps
     exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
-    winner = selectSlackUser(bot)
+    winner = selectUser(bot)
 
-    winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW " + str(winner)
+    winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW " + str(winner.getUserHandle())
 
+    # Save the exercise to the user
+    winner.addExercise(exercise, exercise_reps)
+
+    # Announce the user
     if not DEBUG:
         requests.post(bot.post_URL, data=winner_announcement)
     print winner_announcement
 
-    logExercise(winner,exercise["name"],exercise_reps,exercise["units"])
+    # log the exercise
+    logExercise(winner.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
 
 
-def logExercise(user,exercise,reps,units):
+def logExercise(username,exercise,reps,units):
     with open("log.csv", 'a') as f:
         writer = csv.writer(f)
-        writer.writerow([user,exercise,reps,units])
+        writer.writerow([username,exercise,reps,units])
+
+def saveUsers():
+    for user_id in user_cache:
+        print user_cache[user_id].exercise_history
 
 
 def main():
     bot = Bot()
 
-    while True:
-        # Re-fetch config file if settings have changed
-        bot.setConfiguration()
+    try:
+        while True:
+            # Re-fetch config file if settings have changed
+            bot.setConfiguration()
 
-        # Get an exercise to do
-        exercise = selectExerciseAndStartTime(bot)
+            # Get an exercise to do
+            exercise = selectExerciseAndStartTime(bot)
 
-        # Assign the exercise to someone
-        assignExercise(bot, exercise)
+            # Assign the exercise to someone
+            assignExercise(bot, exercise)
+    except KeyboardInterrupt:
+        saveUsers()
 
 
 main()

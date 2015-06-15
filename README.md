@@ -14,7 +14,7 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
     <img src = "https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_05_at_7_21_33_PM-1433557303531.png" width = 300>
 
-3. Scroll All the Way Down until you see **Slack API** and **Slackbot**. You'll need two access these two integrations.
+3. Scroll All the Way Down until you see **Slack API** and **Slackbot**. You'll need to access these two integrations.
 
     <img src="https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_05_at_7_19_44_PM-1433557206307.png" width = 500>
 
@@ -25,6 +25,7 @@ A fun hack that gets Slackbot to force your teammates to work out!
 5. In the **Slackbot** (Remote control page). Register an integration & you should see this. __Make sure you grab just the token out of the url__, e.g. `AizJbQ24l38ai4DlQD9yFELb`
 
     <img src="https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_03_at_8_44_00_AM-1433557565175.png" width = 500>
+
 
 6. In a terminal export the variables you collected earlier
 
@@ -38,6 +39,6 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
 8. While in the project directory, run
 
-	`$ make run`
+    `$ make run`
 
 Hit ctrl+c to stop the script. Hope you have fun with it!

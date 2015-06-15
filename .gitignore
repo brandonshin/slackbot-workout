@@ -4,3 +4,5 @@ config.json
 log.csv
 
 *.pyc
+
+user_cache.save

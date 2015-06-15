@@ -16,8 +16,14 @@ def extractSlackUsers(token):
     tokenString = token
     params = {
         "token": tokenString,
-        "channel": CHANNEL
     }
+
+    response = requests.get("https://slack.com/api/channels.list", params=params)
+    channels = json.loads(response.text, encoding='utf-8')['channels']
+    for channel in channels:
+        if channel['name'] == CHANNEL:
+            params['channel'] = channel['id']
+            break
 
     # Capture Response as JSON
     response = requests.get("https://slack.com/api/channels.info", params=params)

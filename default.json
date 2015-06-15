@@ -1,0 +1,36 @@
+{
+  "teamDomain": "yourDomainHere",
+  "channelName": "general",
+  "channelId": "channelIdHere",
+  "timeBetweenCallouts": {
+    "minTime": 5,
+    "maxTime": 15,
+    "units": "minutes"
+  },
+  "exercises": [
+    {
+      "name": "pushups",
+      "minReps": 15,
+      "maxReps": 20,
+      "units": "reps"
+    },
+    {
+      "name": "planks",
+      "minReps": 40,
+      "maxReps": 60,
+      "units": "seconds"
+    },
+    {
+      "name": "wall sit",
+      "minReps": 30,
+      "maxReps": 50,
+      "units": "seconds"
+    },
+    {
+      "name": "chair dips",
+      "minReps": 15,
+      "maxReps": 30,
+      "units": "reps"
+    }
+  ]
+}

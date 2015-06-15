@@ -1,0 +1,6 @@
+{
+  "name": "Slackbot Workout",
+  "description": "A fun hack that gets Slackbot to force your teammates to work out!",
+  "repository": "https://github.com/hutchic/slackbot-workout",
+  "keywords": ["slack", "slackbot", "workout"]
+}

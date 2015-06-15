@@ -14,11 +14,24 @@ CHANNEL = os.environ.get('SLACK_CHANNEL')
 def extractSlackUsers(token):
     # Set token parameter of Slack API call
     tokenString = token
-    params = {"token": tokenString}
+    params = {
+        "token": tokenString,
+        "channel": CHANNEL
+    }
 
     # Capture Response as JSON
-    response = requests.get("https://slack.com/api/users.list", params=params)
-    users = json.loads(response.text, encoding='utf-8')["members"]
+    response = requests.get("https://slack.com/api/channels.info", params=params)
+    channel = json.loads(response.text, encoding='utf-8')["channel"]
+    user_ids = channel["members"]
+    users = []
+    for user in user_ids:
+        params = {
+            "token": tokenString,
+            "user": user
+        }
+
+        response = requests.get("https://slack.com/api/users.info", params=params)
+        users.append(json.loads(response.text, encoding='utf-8')["user"])
 
     def findUserNames(x):
         if getStats(x) is False:

@@ -17,6 +17,7 @@ URL_TOKEN_STRING =  os.environ['SLACK_URL_TOKEN_STRING']
 HASH = "%23"
 
 DEBUG = False
+FIRST_RUN = True
 
 
 # local cache of usernames
@@ -91,9 +92,15 @@ def fetchActiveUsers(bot):
         # Add user to the cache if not already
         if user_id not in user_cache:
             user_cache[user_id] = User(user_id)
+            if not FIRST_RUN:
+                # Push our new users near the front of the queue! 
+                user_queue.insert(2,user_cache[user_id])
 
         if user_cache[user_id].isActive():
             active_users.append(user_cache[user_id])
+            
+    if FIRST_RUN:
+        FIRST_RUN = False
 
     return active_users
 

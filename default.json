@@ -9,27 +9,38 @@
   },
   "exercises": [
     {
+      "id": 0,
       "name": "pushups",
       "minReps": 15,
       "maxReps": 20,
       "units": "reps"
     },
     {
+      "id": 1,
       "name": "planks",
       "minReps": 40,
       "maxReps": 60,
       "units": "seconds"
     },
     {
+      "id": 2,
       "name": "wall sit",
       "minReps": 30,
       "maxReps": 50,
       "units": "seconds"
     },
     {
+      "id": 3,
       "name": "chair dips",
       "minReps": 15,
       "maxReps": 30,
+      "units": "reps"
+    },
+    {
+      "id": 4,
+      "name": "calf raises",
+      "minReps": 15,
+      "maxReps": 25,
       "units": "reps"
     }
   ]

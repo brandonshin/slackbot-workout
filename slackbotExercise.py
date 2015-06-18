@@ -7,6 +7,8 @@ import os
 from random import shuffle
 import pickle
 import os.path
+import time
+from datetime import datetime
 
 from User import User
 
@@ -31,6 +33,8 @@ user_queue = []
 class Bot:
     def __init__(self):
         self.setConfiguration()
+
+        self.csv_filename = "log" + time.strftime("%Y%m%d-%H%M") + ".csv"
 
     '''
     Sets the configuration file.
@@ -166,14 +170,15 @@ def assignExercise(bot, exercise):
     print winner_announcement
 
     # log the exercise
-    logExercise(winner1.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
-    logExercise(winner2.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
+    logExercise(bot,winner1.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
+    logExercise(bot,winner2.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
 
 
-def logExercise(username,exercise,reps,units):
-    with open("log.csv", 'a') as f:
+def logExercise(bot,username,exercise,reps,units):
+    with open(bot.csv_filename, 'a') as f:
         writer = csv.writer(f)
-        writer.writerow([username,exercise,reps,units])
+
+        writer.writerow([str(datetime.now()),username,exercise,reps,units])
 
 def saveUsers(bot):
     # Write to the command console today's breakdown

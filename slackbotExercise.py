@@ -18,7 +18,7 @@ URL_TOKEN_STRING =  os.environ['SLACK_URL_TOKEN_STRING']
 
 HASH = "%23"
 
-DEBUG = False
+DEBUG = True
 FIRST_RUN = True
 
 
@@ -60,7 +60,7 @@ class Bot:
 '''
 Selects an active user from a list of users
 '''
-def selectUser(bot):
+def selectUser(bot, exercise):
     active_users = fetchActiveUsers(bot)
 
     # Add all active users not already in the user queue
@@ -71,13 +71,33 @@ def selectUser(bot):
         if user not in bothArrays:
             user_queue.append(user)
 
+    # The max number of users we are willing to look forward
+    # to try and find a good match
+    sliding_window = 4
+
     # find a user to draw, priority going to first in
+    for i in range(len(user_queue)):
+        user = user_queue[i]
+
+        # User should be active and not have done exercise yet
+        if user in active_users and not user.hasDoneExercise(exercise):
+            user_queue.remove(user)
+            return user
+        elif user in active_users:
+            # Decrease sliding window by one. Basically, we don't want to jump
+            # too far ahead in our queue
+            sliding_window -= 1
+            if sliding_window <= 0:
+                break
+
+    # If everybody has done exercises or we didn't find a person within our sliding window,
     for user in user_queue:
         if user in active_users:
             user_queue.remove(user)
             return user
 
     # If we weren't able to select one, just pick a random
+    print "Selecting user at random (queue length was " + str(len(user_queue)) + ")"
     return active_users[random.randrange(0, len(active_users))]
 
 
@@ -158,8 +178,8 @@ Selects a person to do the already-selected exercise
 def assignExercise(bot, exercise):
     # Select number of reps
     exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
-    winner1 = selectUser(bot)
-    winner2 = selectUser(bot)
+    winner1 = selectUser(bot, exercise)
+    winner2 = selectUser(bot, exercise)
 
     winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW " + str(winner1.getUserHandle()) + " and " + str(winner2.getUserHandle()) + "!"
 

@@ -18,8 +18,11 @@ class User:
         # A list of all exercises done by user
         self.exercise_history = []
 
-        # A record of all exercise totals
+        # A record of all exercise totals (quantity)
         self.exercises = {}
+
+        # A record of exercise counts (# of times)
+        self.exercise_counts = {}
 
         print "New user: " + self.real_name + " (" + self.username + ")"
 
@@ -52,8 +55,13 @@ class User:
         return status == "active"
 
     def addExercise(self, exercise, reps):
-        # Add to total count
+        # Add to total counts
         self.exercises[exercise["id"]] = self.exercises.get(exercise["id"], 0) + reps
+        self.exercise_counts[exercise["id"]] = self.exercise_counts.get(exercise["id"], 0) + 1
 
         # Add to exercise history record
         self.exercise_history.append([datetime.datetime.now().isoformat(),exercise["id"],exercise["name"],reps,exercise["units"]])
+
+    def hasDoneExercise(self, exercise):
+        return exercise["id"] in self.exercise_counts
+

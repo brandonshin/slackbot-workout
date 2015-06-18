@@ -85,6 +85,9 @@ def selectUser(bot):
 Fetches a list of all active users in the channel
 '''
 def fetchActiveUsers(bot):
+    global DEBUG
+    global FIRST_RUN
+
     # Check for new members
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
     response = requests.get("https://slack.com/api/channels.info", params=params)
@@ -102,7 +105,7 @@ def fetchActiveUsers(bot):
 
         if user_cache[user_id].isActive():
             active_users.append(user_cache[user_id])
-            
+
     if FIRST_RUN:
         FIRST_RUN = False
 

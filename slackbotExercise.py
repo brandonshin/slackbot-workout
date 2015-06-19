@@ -18,16 +18,6 @@ URL_TOKEN_STRING =  os.environ['SLACK_URL_TOKEN_STRING']
 
 HASH = "%23"
 
-DEBUG = True
-FIRST_RUN = True
-
-
-# local cache of usernames
-# maps userIds to usernames
-user_cache = {}
-
-# round robin store
-user_queue = []
 
 # Configuration values to be set in setConfiguration
 class Bot:
@@ -35,6 +25,24 @@ class Bot:
         self.setConfiguration()
 
         self.csv_filename = "log" + time.strftime("%Y%m%d-%H%M") + ".csv"
+        self.first_run = True
+
+        # local cache of usernames
+        # maps userIds to usernames
+        self.user_cache = loadUserCache()
+
+        # round robin store
+        self.user_queue = []
+
+
+    def loadUserCache(self):
+        if os.path.isfile('user_cache.save'):
+            with open('user_cache.save','rb') as f:
+                user_cache = pickle.load(f)
+                print "Loading " + str(len(user_cache)) + " users from cache."
+                return user_cache
+
+        return {}
 
     '''
     Sets the configuration file.
@@ -48,10 +56,14 @@ class Bot:
 
             self.team_domain = settings["teamDomain"]
             self.channel_name = settings["channelName"]
-            self.min_countdown = settings["timeBetweenCallouts"]["minTime"]
-            self.max_countdown = settings["timeBetweenCallouts"]["maxTime"]
+            self.min_countdown = settings["callouts"]["timeBetween"]["minTime"]
+            self.max_countdown = settings["callouts"]["timeBetween"]["maxTime"]
+            self.num_people_per_callout = settings["callouts"]["numPeople"]
+            self.sliding_window_size = settings["callouts"]["slidingWindowSize"]
             self.channel_id = settings["channelId"]
             self.exercises = settings["exercises"]
+
+            self.debug = settings["debug"]
 
         self.post_URL = "https://" + self.team_domain + ".slack.com/services/hooks/slackbot?token=" + URL_TOKEN_STRING + "&channel=" + HASH + self.channel_name
 
@@ -66,22 +78,22 @@ def selectUser(bot, exercise):
     # Add all active users not already in the user queue
     # Shuffles to randomly add new active users
     shuffle(active_users)
-    bothArrays = set(active_users).intersection(user_queue)
+    bothArrays = set(active_users).intersection(bot.user_queue)
     for user in active_users:
         if user not in bothArrays:
-            user_queue.append(user)
+            bot.user_queue.append(user)
 
     # The max number of users we are willing to look forward
     # to try and find a good match
-    sliding_window = 4
+    sliding_window = bot.sliding_window_size
 
     # find a user to draw, priority going to first in
-    for i in range(len(user_queue)):
-        user = user_queue[i]
+    for i in range(len(bot.user_queue)):
+        user = bot.user_queue[i]
 
         # User should be active and not have done exercise yet
         if user in active_users and not user.hasDoneExercise(exercise):
-            user_queue.remove(user)
+            bot.user_queue.remove(user)
             return user
         elif user in active_users:
             # Decrease sliding window by one. Basically, we don't want to jump
@@ -91,13 +103,13 @@ def selectUser(bot, exercise):
                 break
 
     # If everybody has done exercises or we didn't find a person within our sliding window,
-    for user in user_queue:
+    for user in bot.user_queue:
         if user in active_users:
-            user_queue.remove(user)
+            bot.user_queue.remove(user)
             return user
 
     # If we weren't able to select one, just pick a random
-    print "Selecting user at random (queue length was " + str(len(user_queue)) + ")"
+    print "Selecting user at random (queue length was " + str(len(bot.user_queue)) + ")"
     return active_users[random.randrange(0, len(active_users))]
 
 
@@ -105,9 +117,6 @@ def selectUser(bot, exercise):
 Fetches a list of all active users in the channel
 '''
 def fetchActiveUsers(bot):
-    global DEBUG
-    global FIRST_RUN
-
     # Check for new members
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
     response = requests.get("https://slack.com/api/channels.info", params=params)
@@ -119,15 +128,15 @@ def fetchActiveUsers(bot):
         # Add user to the cache if not already
         if user_id not in user_cache:
             user_cache[user_id] = User(user_id)
-            if not FIRST_RUN:
-                # Push our new users near the front of the queue! 
-                user_queue.insert(2,user_cache[user_id])
+            if not bot.first_run:
+                # Push our new users near the front of the queue!
+                bot.user_queue.insert(2,user_cache[user_id])
 
         if user_cache[user_id].isActive():
             active_users.append(user_cache[user_id])
 
-    if FIRST_RUN:
-        FIRST_RUN = False
+    if bot.first_run:
+        bot.first_run = False
 
     return active_users
 
@@ -143,12 +152,12 @@ def selectExerciseAndStartTime(bot):
     lottery_announcement = "NEXT LOTTERY FOR " + exercise["name"].upper() + " IS IN " + str(next_time_interval/60) + " MINUTES"
 
     # Announce the exercise to the thread
-    if not DEBUG:
+    if not bot.debug:
         requests.post(bot.post_URL, data=lottery_announcement)
     print lottery_announcement
 
     # Sleep the script until time is up
-    if not DEBUG:
+    if not bot.debug:
         time.sleep(next_time_interval)
     else:
         # If debugging, once every 5 seconds
@@ -188,7 +197,7 @@ def assignExercise(bot, exercise):
     winner2.addExercise(exercise, exercise_reps)
 
     # Announce the user
-    if not DEBUG:
+    if not bot.debug:
         requests.post(bot.post_URL, data=winner_announcement)
     print winner_announcement
 
@@ -224,7 +233,7 @@ def saveUsers(bot):
 
     s += "```"
 
-    if not DEBUG:
+    if not bot.debug:
         requests.post(bot.post_URL, data=s)
     print s
 
@@ -240,12 +249,6 @@ def saveUsers(bot):
 
 
 def main():
-    if os.path.isfile('user_cache.save'):
-        with open('user_cache.save','rb') as f:
-            user_cache = pickle.load(f)
-            print len(user_cache)
-            print user_cache
-
     bot = Bot()
 
     try:

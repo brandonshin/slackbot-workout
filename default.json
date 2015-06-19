@@ -2,11 +2,19 @@
   "teamDomain": "yourDomainHere",
   "channelName": "general",
   "channelId": "channelIdHere",
-  "timeBetweenCallouts": {
-    "minTime": 5,
-    "maxTime": 15,
-    "units": "minutes"
+
+  "debug": false,
+
+  "callouts": {
+    "timeBetween": {
+      "minTime": 5,
+      "maxTime": 15,
+      "units": "minutes"
+    },
+    "numPeople": 4,
+    "slidingWindowSize": 8
   },
+
   "exercises": [
     {
       "id": 0,

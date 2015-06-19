@@ -60,6 +60,7 @@ class Bot:
             self.max_countdown = settings["callouts"]["timeBetween"]["maxTime"]
             self.num_people_per_callout = settings["callouts"]["numPeople"]
             self.sliding_window_size = settings["callouts"]["slidingWindowSize"]
+            self.group_callout_chance = settings["callouts"]["groupCalloutChance"]
             self.channel_id = settings["channelId"]
             self.exercises = settings["exercises"]
 
@@ -187,23 +188,38 @@ Selects a person to do the already-selected exercise
 def assignExercise(bot, exercise):
     # Select number of reps
     exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
-    winner1 = selectUser(bot, exercise)
-    winner2 = selectUser(bot, exercise)
 
-    winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW " + str(winner1.getUserHandle()) + " and " + str(winner2.getUserHandle()) + "!"
+    winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW "
+    
+    # EVERYBODY
+    if random.random() < bot.group_callout_chance:
+        winner_announcement += "@channel!"
 
-    # Save the exercise to the user
-    winner1.addExercise(exercise, exercise_reps)
-    winner2.addExercise(exercise, exercise_reps)
+        for user_id in bot.user_cache:
+            user = bot.user_cache[user_id]
+            user.addExercise(exercise, exercise_reps)
+        
+        logExercise(bot,"@channel",exercise["name"],exercise_reps,exercise["units"])
+
+    else:
+        winners = [selectUser(bot, exercise) for i in range(bot.num_people_per_callout)]
+
+        for i in range(bot.num_people_per_callout):
+            winner_announcement += str(winners[i].getUserHandle())
+            if i == bot.num_people_per_callout - 2:
+                winner_announcement += ", and "
+            elif i == bot.num_people_per_callout - 1:
+                winner_announcement += "!"
+            else:
+                winner_announcement += ", "
+
+            winners[i].addExercise(exercise, exercise_reps)
+            logExercise(bot,winners[i].getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
 
     # Announce the user
     if not bot.debug:
         requests.post(bot.post_URL, data=winner_announcement)
     print winner_announcement
-
-    # log the exercise
-    logExercise(bot,winner1.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
-    logExercise(bot,winner2.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
 
 
 def logExercise(bot,username,exercise,reps,units):

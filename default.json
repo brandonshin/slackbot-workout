@@ -7,12 +7,13 @@
 
   "callouts": {
     "timeBetween": {
-      "minTime": 5,
-      "maxTime": 15,
+      "minTime": 17,
+      "maxTime": 23,
       "units": "minutes"
     },
     "numPeople": 4,
-    "slidingWindowSize": 8
+    "slidingWindowSize": 8,
+    "groupCalloutChance": 0.05
   },
 
   "exercises": [
@@ -33,7 +34,7 @@
     {
       "id": 2,
       "name": "wall sit",
-      "minReps": 30,
+      "minReps": 40,
       "maxReps": 50,
       "units": "seconds"
     },
@@ -47,8 +48,8 @@
     {
       "id": 4,
       "name": "calf raises",
-      "minReps": 15,
-      "maxReps": 25,
+      "minReps": 20,
+      "maxReps": 30,
       "units": "reps"
     }
   ]

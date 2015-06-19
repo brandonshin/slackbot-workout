@@ -13,7 +13,7 @@ class User:
         self.id = user_id
 
         # The username (@username) and real name
-        self.username, self.real_name =self.fetchNames()
+        self.username, self.real_name = self.fetchNames()
 
         # A list of all exercises done by user
         self.exercise_history = []
@@ -24,7 +24,21 @@ class User:
         # A record of exercise counts (# of times)
         self.exercise_counts = {}
 
+        # A record of past runs
+        self.past_workouts = {}
+
         print "New user: " + self.real_name + " (" + self.username + ")"
+
+
+    def storeSession(self, run_name):
+        try:
+            self.past_workouts[run_name] = self.exercises
+        except:
+            self.past_workouts = {}
+
+        self.past_workouts[run_name] = self.exercises
+        self.exercises = {}
+        self.exercise_counts = {}
 
 
     def fetchNames(self):

@@ -29,7 +29,7 @@ class Bot:
 
         # local cache of usernames
         # maps userIds to usernames
-        self.user_cache = loadUserCache()
+        self.user_cache = self.loadUserCache()
 
         # round robin store
         self.user_queue = []
@@ -38,9 +38,9 @@ class Bot:
     def loadUserCache(self):
         if os.path.isfile('user_cache.save'):
             with open('user_cache.save','rb') as f:
-                user_cache = pickle.load(f)
-                print "Loading " + str(len(user_cache)) + " users from cache."
-                return user_cache
+                self.user_cache = pickle.load(f)
+                print "Loading " + str(len(self.user_cache)) + " users from cache."
+                return self.user_cache
 
         return {}
 
@@ -126,14 +126,14 @@ def fetchActiveUsers(bot):
 
     for user_id in user_ids:
         # Add user to the cache if not already
-        if user_id not in user_cache:
-            user_cache[user_id] = User(user_id)
+        if user_id not in bot.user_cache:
+            bot.user_cache[user_id] = User(user_id)
             if not bot.first_run:
                 # Push our new users near the front of the queue!
-                bot.user_queue.insert(2,user_cache[user_id])
+                bot.user_queue.insert(2,bot.user_cache[user_id])
 
-        if user_cache[user_id].isActive():
-            active_users.append(user_cache[user_id])
+        if bot.user_cache[user_id].isActive():
+            active_users.append(bot.user_cache[user_id])
 
     if bot.first_run:
         bot.first_run = False
@@ -207,10 +207,11 @@ def assignExercise(bot, exercise):
 
 
 def logExercise(bot,username,exercise,reps,units):
-    with open(bot.csv_filename, 'a') as f:
+    filename = bot.csv_filename + "_DEBUG" if bot.debug else bot.csv_filename
+    with open(filename, 'a') as f:
         writer = csv.writer(f)
 
-        writer.writerow([str(datetime.now()),username,exercise,reps,units])
+        writer.writerow([str(datetime.now()),username,exercise,reps,units,bot.debug])
 
 def saveUsers(bot):
     # Write to the command console today's breakdown
@@ -219,10 +220,10 @@ def saveUsers(bot):
     s += "Username".ljust(15)
     for exercise in bot.exercises:
         s += exercise["name"] + "  "
-    s += "\n--------------------------------------------------------\n"
+    s += "\n---------------------------------------------------------------\n"
 
-    for user_id in user_cache:
-        user = user_cache[user_id]
+    for user_id in bot.user_cache:
+        user = bot.user_cache[user_id]
         s += user.username.ljust(15)
         for exercise in bot.exercises:
             if exercise["id"] in user.exercises:
@@ -230,6 +231,8 @@ def saveUsers(bot):
             else:
                 s += str(0).ljust(len(exercise["name"]) + 2)
         s += "\n"
+
+        user.storeSession(str(datetime.now()))
 
     s += "```"
 
@@ -240,12 +243,7 @@ def saveUsers(bot):
 
     # write to file
     with open('user_cache.save','wb') as f:
-        # print "============"
-        # print pickle.dumps(user_cache)
-        # print "================================================="
-        # for user_id in user_cache:
-        #     print pickle.dumps(user_cache[user_id])
-        pickle.dump(user_cache,f)
+        pickle.dump(bot.user_cache,f)
 
 
 def main():

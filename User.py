@@ -61,12 +61,16 @@ class User:
     Returns true if a user is currently "active", else false
     '''
     def isActive(self):
-        params = {"token": USER_TOKEN_STRING, "user": self.id}
-        response = requests.get("https://slack.com/api/users.getPresence",
-                params=params)
-        status = json.loads(response.text, encoding='utf-8')["presence"]
+        try:
+            params = {"token": USER_TOKEN_STRING, "user": self.id}
+            response = requests.get("https://slack.com/api/users.getPresence",
+                    params=params)
+            status = json.loads(response.text, encoding='utf-8')["presence"]
 
-        return status == "active"
+            return status == "active"
+        except requests.exceptions.ConnectionError:
+            print "Error fetching online status for " + self.getUserHandle()
+            return False
 
     def addExercise(self, exercise, reps):
         # Add to total counts

@@ -1,1 +1,5 @@
-*.json
+config.json
+*.pyc
+
+log*.csv
+user_cache.save

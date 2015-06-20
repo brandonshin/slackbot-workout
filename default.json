@@ -11,7 +11,7 @@
       "maxTime": 23,
       "units": "minutes"
     },
-    "numPeople": 4,
+    "numPeople": 3,
     "slidingWindowSize": 8,
     "groupCalloutChance": 0.05
   },
@@ -22,35 +22,35 @@
       "name": "pushups",
       "minReps": 15,
       "maxReps": 20,
-      "units": "reps"
+      "units": "rep"
     },
     {
       "id": 1,
       "name": "planks",
       "minReps": 40,
       "maxReps": 60,
-      "units": "seconds"
+      "units": "second"
     },
     {
       "id": 2,
       "name": "wall sit",
       "minReps": 40,
       "maxReps": 50,
-      "units": "seconds"
+      "units": "second"
     },
     {
       "id": 3,
       "name": "chair dips",
       "minReps": 15,
       "maxReps": 30,
-      "units": "reps"
+      "units": "rep"
     },
     {
       "id": 4,
       "name": "calf raises",
       "minReps": 20,
       "maxReps": 30,
-      "units": "reps"
+      "units": "rep"
     }
   ]
 }

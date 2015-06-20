@@ -26,7 +26,14 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
     <img src="https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_03_at_8_44_00_AM-1433557565175.png" width = 500>
 
-6. Open `config.json` in a text editor and set the **URLTOKENSTRING** and **USERAUTHTOKEN** with the tokens that you got from the **Slackbot Remote Control** and **Slack Web API**, respectively. Set the **TEAMNAMESTRING** to your slack team name (no spaces).
+6. Save your SLACK_USER_TOKEN_STRING and SLACK_URL_TOKEN_STRING as environmental variables in your terminal.
+    `export SLACK_USER_TOKEN_STRING=YOURUSERTOKEN`
+    `export SLACK_URL_TOKEN_STRING=YOURURLTOKEN`
+
+    Open `default.json` and set `teamDomain` (ex: ctrlla) `channelName` (ex: general) and `channelId` (ex: B22D35YMS). Save the file as `config.json` in the same directory. Set any other configurations as you like.
+
+    If you don't know the channel Id, fetch it using
+    `$ python fetchChannelId.py channelname`
 
 7. If you haven't set up pip for python, go in your terminal and run.
 `$ sudo easy_install pip`

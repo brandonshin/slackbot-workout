@@ -1,9 +1,9 @@
 {
-  "teamDomain": "ctrlla",
+  "teamDomain": "yourDomainHere",
   "channelName": "general",
-  "channelId": "C02D95JMS",
+  "channelId": "channelIdHere",
 
-  "debug": true,
+  "debug": false,
 
   "callouts": {
     "timeBetween": {
@@ -11,7 +11,7 @@
       "maxTime": 23,
       "units": "minutes"
     },
-    "numPeople": 3,
+    "numPeople": 4,
     "slidingWindowSize": 8,
     "groupCalloutChance": 0.05
   },
@@ -22,7 +22,7 @@
       "name": "pushups",
       "minReps": 15,
       "maxReps": 20,
-      "units": "rep"
+      "units": "reps"
     },
     {
       "id": 1,
@@ -43,14 +43,14 @@
       "name": "chair dips",
       "minReps": 15,
       "maxReps": 30,
-      "units": "rep"
+      "units": "reps"
     },
     {
       "id": 4,
       "name": "calf raises",
       "minReps": 20,
       "maxReps": 30,
-      "units": "rep"
+      "units": "reps"
     }
   ]
 }

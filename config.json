@@ -1,5 +1,56 @@
 {
-    "USERTOKENSTRING" :  "YOUR USER TOKEN STRING",
-    "URLTOKENSTRING" :  "YOUR URL TOKEN STRING",
-    "TEAMNAMESTRING" : "YOUR SLACK TEAM NAME"
+  "teamDomain": "ctrlla",
+  "channelName": "general",
+  "channelId": "C02D95JMS",
+
+  "debug": false,
+
+  "callouts": {
+    "timeBetween": {
+      "minTime": 15,
+      "maxTime": 30,
+      "units": "minutes"
+    },
+    "numPeople": 2,
+    "slidingWindowSize": 8,
+    "groupCalloutChance": 0.05
+  },
+
+  "exercises": [
+    {
+      "id": 0,
+      "name": "PUSHUPS",
+      "minReps": 20,
+      "maxReps": 40,
+      "units": "REP"
+    },
+    {
+      "id": 1,
+      "name": "PLANK",
+      "minReps": 40,
+      "maxReps": 60,
+      "units": "SECOND"
+    },
+    {
+      "id": 2,
+      "name": "WALL SIT",
+      "minReps": 40,
+      "maxReps": 60,
+      "units": "SECOND"
+    },
+    {
+      "id": 3,
+      "name": "PUSHUPS",
+      "minReps": 20,
+      "maxReps": 40,
+      "units": "REP"
+    },
+    {
+      "id": 4,
+      "name": "SITUPS",
+      "minReps": 15,
+      "maxReps": 25,
+      "units": "REP"
+    }
+  ]
 }

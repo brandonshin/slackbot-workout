@@ -2,5 +2,4 @@ config.json
 *.pyc
 
 log*.csv
-log*.csv_DEBUG
 user_cache.save

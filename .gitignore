@@ -1,4 +1,3 @@
-config.json
 *.pyc
 
 log*.csv

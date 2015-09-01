@@ -18,7 +18,6 @@ URL_TOKEN_STRING =  os.environ['SLACK_URL_TOKEN_STRING']
 
 HASH = "%23"
 
-
 # Configuration values to be set in setConfiguration
 class Bot:
     def __init__(self):
@@ -54,14 +53,14 @@ class Bot:
         with open('config.json') as f:
             settings = json.load(f)
 
-            self.team_domain = settings["teamDomain"]
-            self.channel_name = settings["channelName"]
+            self.team_domain = os.environ['TEAM_DOMAIN']
+            self.channel_name = os.environ['CHANNEL_NAME']
             self.min_countdown = settings["callouts"]["timeBetween"]["minTime"]
             self.max_countdown = settings["callouts"]["timeBetween"]["maxTime"]
             self.num_people_per_callout = settings["callouts"]["numPeople"]
             self.sliding_window_size = settings["callouts"]["slidingWindowSize"]
             self.group_callout_chance = settings["callouts"]["groupCalloutChance"]
-            self.channel_id = settings["channelId"]
+            self.channel_id = os.environ['CHANNEL_ID']
             self.exercises = settings["exercises"]
 
             self.debug = settings["debug"]
@@ -190,7 +189,7 @@ def assignExercise(bot, exercise):
     exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
 
     winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW "
-    
+
     # EVERYBODY
     if random.random() < bot.group_callout_chance:
         winner_announcement += "@channel!"
@@ -198,7 +197,7 @@ def assignExercise(bot, exercise):
         for user_id in bot.user_cache:
             user = bot.user_cache[user_id]
             user.addExercise(exercise, exercise_reps)
-        
+
         logExercise(bot,"@channel",exercise["name"],exercise_reps,exercise["units"])
 
     else:

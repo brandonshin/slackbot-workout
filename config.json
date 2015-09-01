@@ -3,8 +3,8 @@
 
   "callouts": {
     "timeBetween": {
-      "minTime": 17,
-      "maxTime": 23,
+      "minTime": 28,
+      "maxTime": 50,
       "units": "minutes"
     },
     "numPeople": 3,
@@ -16,35 +16,35 @@
     {
       "id": 0,
       "name": "pushups",
-      "minReps": 15,
-      "maxReps": 20,
+      "minReps": 5,
+      "maxReps": 15,
       "units": "rep"
     },
     {
       "id": 1,
       "name": "planks",
-      "minReps": 40,
+      "minReps": 20,
       "maxReps": 60,
       "units": "second"
     },
     {
       "id": 2,
       "name": "wall sit",
-      "minReps": 40,
+      "minReps": 20,
       "maxReps": 50,
       "units": "second"
     },
     {
       "id": 3,
       "name": "chair dips",
-      "minReps": 15,
+      "minReps": 5,
       "maxReps": 30,
       "units": "rep"
     },
     {
       "id": 4,
       "name": "calf raises",
-      "minReps": 20,
+      "minReps": 10,
       "maxReps": 30,
       "units": "rep"
     }

@@ -12,11 +12,16 @@ import datetime
 from User import User
 
 # Environment variables must be set with your tokens
-USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
-URL_TOKEN_STRING =  os.environ['SLACK_URL_TOKEN_STRING']
+CONFIG_FILE_STRING = os.environ['CONFIG_FILE']
+USER_TOKEN_STRING = ''
+URL_TOKEN_STRING = ''
 
 HASH = "%23"
 
+with open(CONFIG_FILE_STRING) as f:
+    settings = json.load(f)
+    USER_TOKEN_STRING = settings['userToken']
+    URL_TOKEN_STRING = settings['urlToken']
 
 # Configuration values to be set in setConfiguration
 class Bot:
@@ -50,7 +55,7 @@ class Bot:
     '''
     def setConfiguration(self):
         # Read variables fromt the configuration file
-        with open('config.json') as f:
+        with open(CONFIG_FILE_STRING) as f:
             settings = json.load(f)
 
             self.team_domain = settings["teamDomain"]
@@ -221,7 +226,7 @@ def assignExercise(bot, exercise):
 
     # Announce the user
     if not bot.debug:
-        requests.post(bot.post_URL, data=winner_announcement)
+        response = requests.post(bot.post_URL, data=winner_announcement)
     print winner_announcement
 
 

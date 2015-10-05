@@ -48,3 +48,28 @@ A fun hack that gets Slackbot to force your teammates to work out!
     `$ python slackbotExercise.py`
 
 Run the script to start the workouts and hit ctrl+c to stop the script. Hope you have fun with it!
+
+## Docker
+
+This project includes a Dockerfile that will run the python script within a container.
+
+To run the Docker container, follow these steps:
+
+#### Pull the container
+
+```sh
+$ docker pull slackbots/exercise
+```
+
+#### Run the container
+
+This container expects a config file somewhere in its file system. The easiest
+way to do this, is to mount a directory on the host, inside of the container. We
+do this using the `-v` flag when running the container.
+
+The example we give is `-v ".:/slackbot"`, Where `.` is the current direcotry
+you're mounting. Just make sure you have a JSON config file in it.
+
+```sh
+$ docker run -t -v ".:/slackbot" -e "CONFIG_FILE=/slackbot/config.json" slackbots/exercise
+```

@@ -4,7 +4,16 @@ import json
 import datetime
 
 # Environment variables must be set with your tokens
-USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
+CONFIG_FILE_STRING = os.environ['CONFIG_FILE']
+USER_TOKEN_STRING = ''
+URL_TOKEN_STRING = ''
+
+HASH = "%23"
+
+with open(CONFIG_FILE_STRING) as f:
+    settings = json.load(f)
+    USER_TOKEN_STRING = settings['userToken']
+    URL_TOKEN_STRING = settings['urlToken']
 
 class User:
 

@@ -7,7 +7,6 @@ import os
 from random import shuffle
 import pickle
 import os.path
-import time
 from datetime import datetime
 
 from User import User

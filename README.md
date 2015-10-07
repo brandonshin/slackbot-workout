@@ -48,3 +48,25 @@ A fun hack that gets Slackbot to force your teammates to work out!
     `$ python slackbotExercise.py`
 
 Run the script to start the workouts and hit ctrl+c to stop the script. Hope you have fun with it!
+
+
+## Docker instructions
+
+1. Follow above instructions 1-6.
+
+2. Open `.env.default` and set `SLACK_USER_TOKEN_STRING` and `SLACK_URL_TOKEN_STRING`. Save the file as `.env` in the same directory.
+
+3. Build the image:
+
+    `$ docker build --rm -t slackbot_workout .`
+
+4.  Open `default.json` and set `teamDomain` (ex: ctrlla) `channelName` (ex: general) and `channelId` (ex: B22D35YMS). Save the file as `config.json` in the same directory. Set any other configurations as you like.
+
+    If you don't know the channel Id, fetch it using
+
+    `$ docker run --rm --env-file .env slackbot_workout python fetchChannelId.py channelname`
+
+4. Run the image:
+
+    `$ docker run -d slackbot_workout`
+

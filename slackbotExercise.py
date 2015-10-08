@@ -7,8 +7,7 @@ import os
 from random import shuffle
 import pickle
 import os.path
-import time
-from datetime import datetime
+import datetime
 
 from User import User
 
@@ -63,6 +62,9 @@ class Bot:
             self.group_callout_chance = settings["callouts"]["groupCalloutChance"]
             self.channel_id = settings["channelId"]
             self.exercises = settings["exercises"]
+            self.office_hours_on = settings["officeHours"]["on"]
+            self.office_hours_begin = settings["officeHours"]["begin"]
+            self.office_hours_end = settings["officeHours"]["end"]
 
             self.debug = settings["debug"]
 
@@ -191,7 +193,7 @@ def assignExercise(bot, exercise):
     exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
 
     winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW "
-    
+
     # EVERYBODY
     if random.random() < bot.group_callout_chance:
         winner_announcement += "@channel!"
@@ -199,7 +201,7 @@ def assignExercise(bot, exercise):
         for user_id in bot.user_cache:
             user = bot.user_cache[user_id]
             user.addExercise(exercise, exercise_reps)
-        
+
         logExercise(bot,"@channel",exercise["name"],exercise_reps,exercise["units"])
 
     else:
@@ -228,7 +230,7 @@ def logExercise(bot,username,exercise,reps,units):
     with open(filename, 'a') as f:
         writer = csv.writer(f)
 
-        writer.writerow([str(datetime.now()),username,exercise,reps,units,bot.debug])
+        writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,bot.debug])
 
 def saveUsers(bot):
     # Write to the command console today's breakdown
@@ -249,7 +251,7 @@ def saveUsers(bot):
                 s += str(0).ljust(len(exercise["name"]) + 2)
         s += "\n"
 
-        user.storeSession(str(datetime.now()))
+        user.storeSession(str(datetime.datetime.now()))
 
     s += "```"
 
@@ -262,20 +264,45 @@ def saveUsers(bot):
     with open('user_cache.save','wb') as f:
         pickle.dump(bot.user_cache,f)
 
+def isOfficeHours(bot):
+    if not bot.office_hours_on:
+        if bot.debug:
+            print "not office hours"
+        return True
+    now = datetime.datetime.now()
+    now_time = now.time()
+    if now_time >= datetime.time(bot.office_hours_begin) and now_time <= datetime.time(bot.office_hours_end):
+        if bot.debug:
+            print "in office hours"
+        return True
+    else:
+        if bot.debug:
+            print "out office hours"
+        return False
 
 def main():
     bot = Bot()
 
     try:
         while True:
-            # Re-fetch config file if settings have changed
-            bot.setConfiguration()
+            if isOfficeHours(bot):
+                # Re-fetch config file if settings have changed
+                bot.setConfiguration()
 
-            # Get an exercise to do
-            exercise = selectExerciseAndStartTime(bot)
+                # Get an exercise to do
+                exercise = selectExerciseAndStartTime(bot)
 
-            # Assign the exercise to someone
-            assignExercise(bot, exercise)
+                # Assign the exercise to someone
+                assignExercise(bot, exercise)
+
+            else:
+                # Sleep the script and check again for office hours
+                if not bot.debug:
+                    time.sleep(5*60) # Sleep 5 minutes
+                else:
+                    # If debugging, check again in 5 seconds
+                    time.sleep(5)
+
     except KeyboardInterrupt:
         saveUsers(bot)
 

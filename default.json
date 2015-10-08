@@ -3,6 +3,12 @@
   "channelName": "general",
   "channelId": "channelIdHere",
 
+  "officeHours": {
+    "on": false,
+    "begin": 9,
+    "end": 17
+   },
+
   "debug": false,
 
   "callouts": {

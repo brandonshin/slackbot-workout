@@ -29,8 +29,12 @@ A fun hack that gets Slackbot to force your teammates to work out!
 6. Save your SLACK_USER_TOKEN_STRING and SLACK_URL_TOKEN_STRING as environmental variables in your terminal.
 
     `$ export SLACK_USER_TOKEN_STRING=YOURUSERTOKEN`
-
+    
     `$ export SLACK_URL_TOKEN_STRING=YOURURLTOKEN`
+    
+    If you need help with this, try adapting the first 5 steps of the guide to [edit your .bash_profile](http://natelandau.com/my-mac-osx-bash_profile/)
+    
+7. Set up channel and customize configurations
 
     Open `default.json` and set `teamDomain` (ex: ctrlla) `channelName` (ex: general) and `channelId` (ex: B22D35YMS). Save the file as `config.json` in the same directory. Set any other configurations as you like.
 
@@ -38,10 +42,10 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
     `$ python fetchChannelId.py channelname`
 
-7. If you haven't set up pip for python, go in your terminal and run.
+8. If you haven't set up pip for python, go in your terminal and run.
 `$ sudo easy_install pip`
 
-8. While in the project directory, run
+9. While in the project directory, run
 
     `$ sudo pip install -r requirements.txt`
 

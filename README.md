@@ -67,9 +67,12 @@ This container expects a config file somewhere in its file system. The easiest
 way to do this, is to mount a directory on the host, inside of the container. We
 do this using the `-v` flag when running the container.
 
-The example we give is `-v ".:/slackbot"`, Where `.` is the current direcotry
+The example we give is `-v "$PWD:/slackbot"`, Where `$PWD` is the current direcotry
 you're mounting. Just make sure you have a JSON config file in it.
 
+After that, you'll need to set an environment variable when running the
+container to point to the configuration file.
+
 ```sh
-$ docker run -t -v ".:/slackbot" -e "CONFIG_FILE=/slackbot/config.json" slackbots/exercise
+$ docker run -t -v "$PWD:/slackbot" -e "CONFIG_FILE=/slackbot/config.json" slackbots/exercise
 ```

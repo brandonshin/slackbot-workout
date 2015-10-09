@@ -75,8 +75,10 @@ class Bot:
 '''
 Selects an active user from a list of users
 '''
-def selectUser(bot, exercise):
+def selectUsers(bot, exercise, n):
     active_users = fetchActiveUsers(bot)
+
+    prioritized = []
 
     # Add all active users not already in the user queue
     # Shuffles to randomly add new active users
@@ -97,7 +99,7 @@ def selectUser(bot, exercise):
         # User should be active and not have done exercise yet
         if user in active_users and not user.hasDoneExercise(exercise):
             bot.user_queue.remove(user)
-            return user
+            prioritized.append(user)
         elif user in active_users:
             # Decrease sliding window by one. Basically, we don't want to jump
             # too far ahead in our queue
@@ -109,11 +111,11 @@ def selectUser(bot, exercise):
     for user in bot.user_queue:
         if user in active_users:
             bot.user_queue.remove(user)
-            return user
+            prioritized.append(user)
 
     # If we weren't able to select one, just pick a random
     print "Selecting user at random (queue length was " + str(len(bot.user_queue)) + ")"
-    return active_users[random.randrange(0, len(active_users))]
+    return list(set(prioritized + active_users))[:n]
 
 
 '''
@@ -205,17 +207,11 @@ def assignExercise(bot, exercise):
         logExercise(bot,"@channel",exercise["name"],exercise_reps,exercise["units"])
 
     else:
-        winners = [selectUser(bot, exercise) for i in range(bot.num_people_per_callout)]
+        winners = selectUsers(bot, exercise, bot.num_people_per_callout)
 
-        for i in range(bot.num_people_per_callout):
-            winner_announcement += str(winners[i].getUserHandle())
-            if i == bot.num_people_per_callout - 2:
-                winner_announcement += ", and "
-            elif i == bot.num_people_per_callout - 1:
-                winner_announcement += "!"
-            else:
-                winner_announcement += ", "
+        winner_announcement += " ".join(map((lambda u: u.getUserHandle()),winners))
 
+        for i in range(len(winners)):
             winners[i].addExercise(exercise, exercise_reps)
             logExercise(bot,winners[i].getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
 

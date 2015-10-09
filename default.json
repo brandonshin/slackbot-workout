@@ -1,7 +1,9 @@
 {
   "teamDomain": "yourDomainHere",
-  "channelName": "general",
-  "channelId": "channelIdHere",
+  "channelName": "exercise",
+  "channelId": "",
+  "userToken": "",
+  "urlToken": "",
 
   "officeHours": {
     "on": false,

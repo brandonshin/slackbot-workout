@@ -6,7 +6,8 @@
   "officeHours": {
     "on": false,
     "begin": 9,
-    "end": 17
+    "end": 17,
+    "signoffMessage": "Great workout today, team! Rest up for our next session."
    },
 
   "debug": false,

@@ -7,7 +7,7 @@
     "on": false,
     "begin": 9,
     "end": 17,
-    "onlyWeekdays": true,
+    "onlyWeekdays": true
    },
 
   "debug": false,

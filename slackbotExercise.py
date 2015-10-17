@@ -278,7 +278,7 @@ def isOfficeHours(bot, date):
             return True
         else:
             if bot.debug:
-                pritn "is not weekday"
+                print "is not weekday"
             return False
 
     time = date.time()

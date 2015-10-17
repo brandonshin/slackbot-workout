@@ -65,6 +65,7 @@ class Bot:
             self.office_hours_on = settings["officeHours"]["on"]
             self.office_hours_begin = settings["officeHours"]["begin"]
             self.office_hours_end = settings["officeHours"]["end"]
+            self.office_hours_weekdays = settings["officeHours"]["onlyWeekdays"]
 
             self.debug = settings["debug"]
 
@@ -264,14 +265,25 @@ def saveUsers(bot):
     with open('user_cache.save','wb') as f:
         pickle.dump(bot.user_cache,f)
 
-def isOfficeHours(bot):
+def isOfficeHours(bot, date):
     if not bot.office_hours_on:
         if bot.debug:
             print "not office hours"
         return True
-    now = datetime.datetime.now()
-    now_time = now.time()
-    if now_time >= datetime.time(bot.office_hours_begin) and now_time <= datetime.time(bot.office_hours_end):
+
+    if bot.office_hours_weekdays:
+        if d.isoweekday() in range (1, 6):
+            if bot.debug:
+                print "is weekday"
+            return True
+        else:
+            if bot.debug:
+                pritn "is not weekday"
+            return False
+
+    time = date.time()
+
+    if time >= datetime.time(bot.office_hours_begin) and time <= datetime.time(bot.office_hours_end):
         if bot.debug:
             print "in office hours"
         return True
@@ -285,7 +297,7 @@ def main():
 
     try:
         while True:
-            if isOfficeHours(bot):
+            if isOfficeHours(bot, datetime.datetime.now()):
                 # Re-fetch config file if settings have changed
                 bot.setConfiguration()
 

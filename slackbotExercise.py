@@ -272,7 +272,7 @@ def isOfficeHours(bot, date):
         return True
 
     if bot.office_hours_weekdays:
-        if d.isoweekday() in range (1, 6):
+        if date.isoweekday() in range (1, 6):
             if bot.debug:
                 print "is weekday"
             return True

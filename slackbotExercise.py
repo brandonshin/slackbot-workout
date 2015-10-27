@@ -93,8 +93,7 @@ def selectUsers(bot, exercise, n):
     sliding_window = bot.sliding_window_size
 
     # find a user to draw, priority going to first in
-    for i in range(len(bot.user_queue)):
-        user = bot.user_queue[i]
+    for user in bot.user_queue:
 
         # User should be active and not have done exercise yet
         if user in active_users and not user.hasDoneExercise(exercise):

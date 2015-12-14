@@ -1,16 +1,13 @@
-import os
 import requests
 import json
 import datetime
 
-# Environment variables must be set with your tokens
-USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
-
 class User:
 
-    def __init__(self, user_id):
+    def __init__(self, user_id, user_token):
         # The Slack ID of the user
         self.id = user_id
+        self.user_token = user_token
 
         # The username (@username) and real name
         self.username, self.real_name = self.fetchNames()
@@ -42,7 +39,7 @@ class User:
 
 
     def fetchNames(self):
-        params = {"token": USER_TOKEN_STRING, "user": self.id}
+        params = {"token": self.user_token, "user": self.id}
         response = requests.get("https://slack.com/api/users.info",
                 params=params)
         user_obj = json.loads(response.text, encoding='utf-8')["user"]
@@ -62,7 +59,7 @@ class User:
     '''
     def isActive(self):
         try:
-            params = {"token": USER_TOKEN_STRING, "user": self.id}
+            params = {"token": self.user_token, "user": self.id}
             response = requests.get("https://slack.com/api/users.getPresence",
                     params=params)
             status = json.loads(response.text, encoding='utf-8')["presence"]

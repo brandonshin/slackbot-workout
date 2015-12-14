@@ -9,14 +9,16 @@ import pickle
 import os.path
 
 from user.user import User
+from util.fetchChannelId import fetchChannelId
 
 HASH = "%23"
 
 # Configuration values to be set in setConfiguration
 class Bot:
-    def __init__(self, logger, configurator, tokens):
+    def __init__(self, logger, configurator, tokens, shouldCache=False):
         self.configurator = configurator
         self.logger = logger
+        self.shouldCache = shouldCache
         self.userToken = tokens.getUserToken()
         self.urlToken = tokens.getUrlToken()
 
@@ -32,7 +34,7 @@ class Bot:
 
 
     def loadUserCache(self):
-        if os.path.isfile('user_cache.save'):
+        if self.shouldCache and os.path.isfile('user_cache.save'):
             with open('user_cache.save','rb') as f:
                 self.user_cache = pickle.load(f)
                 print "Loading " + str(len(self.user_cache)) + " users from cache."
@@ -55,13 +57,13 @@ class Bot:
         self.num_people_per_callout = settings["callouts"]["numPeople"]
         self.sliding_window_size = settings["callouts"]["slidingWindowSize"]
         self.group_callout_chance = settings["callouts"]["groupCalloutChance"]
-        self.channel_id = settings["channelId"]
         self.exercises = settings["exercises"]
         self.office_hours_on = settings["officeHours"]["on"]
         self.office_hours_begin = settings["officeHours"]["begin"]
         self.office_hours_end = settings["officeHours"]["end"]
         self.debug = settings["debug"]
 
+        self.channel_id = fetchChannelId(self.channel_name, self.userToken)
         self.post_URL = "https://" + self.team_domain + ".slack.com/services/hooks/slackbot?token=" + self.urlToken + "&channel=" + HASH + self.channel_name
 
 
@@ -124,7 +126,7 @@ class Bot:
         for user_id in user_ids:
             # Add user to the cache if not already
             if user_id not in self.user_cache:
-                self.user_cache[user_id] = User(user_id)
+                self.user_cache[user_id] = User(user_id, self.userToken)
                 if not self.first_run:
                     # Push our new users near the front of the queue!
                     self.user_queue.insert(2,self.user_cache[user_id])
@@ -192,11 +194,11 @@ class Bot:
         if random.random() < self.group_callout_chance:
             winner_announcement += "@channel!"
 
-            for user_id in self.user_cache:
-                user = self.user_cache[user_id]
+            # Populate the user_cache
+            active_users = self.fetchActiveUsers()
+            for user in active_users:
                 user.addExercise(exercise, exercise_reps)
-
-            self.logger.logExercise(self,"@channel",exercise["name"],exercise_reps,exercise["units"])
+                self.logger.logExercise(user.getUserHandle(),exercise["name"],exercise_reps,exercise["units"], self.debug)
 
         else:
             winners = [self.selectUser(exercise) for i in range(self.num_people_per_callout)]
@@ -211,7 +213,7 @@ class Bot:
                     winner_announcement += ", "
 
                 winners[i].addExercise(exercise, exercise_reps)
-                self.logger.logExercise(self,winners[i].getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
+                self.logger.logExercise(winners[i].getUserHandle(),exercise["name"],exercise_reps,exercise["units"], self.debug)
 
         # Announce the user
         if not self.debug:
@@ -219,7 +221,7 @@ class Bot:
         print winner_announcement
 
 
-    def saveUsers(self):
+    def printStats(self):
         # Write to the command console today's breakdown
         s = "```\n"
         #s += "Username\tAssigned\tComplete\tPercent
@@ -247,9 +249,11 @@ class Bot:
         print s
 
 
+    def saveUsers(self):
         # write to file
-        with open('user_cache.save','wb') as f:
-            pickle.dump(self.user_cache,f)
+        if self.shouldCache:
+            with open('user_cache.save','wb') as f:
+                pickle.dump(self.user_cache,f)
 
     def isOfficeHours(self):
         if not self.office_hours_on:

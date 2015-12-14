@@ -1,11 +1,13 @@
 from bot.bot import Bot
-from logger.loggers import CsvLogger
+from logger.loggers import PostgresDatabaseLogger
 from util.configurators import EnvironmentTokenProvider, JsonFileConfigurationProvider
 import time
 import os
 
 def main():
-    logger = CsvLogger(False)
+    logger = PostgresDatabaseLogger('flexecution', 'flexecution',
+            host='flexecution-postgres.chlee7xx28jo.us-west-2.rds.amazonaws.com', port=5432,
+            user='flexecution', password='flexecution')
     configuration = JsonFileConfigurationProvider(os.getcwd() + '/config.json')
     tokens = EnvironmentTokenProvider()
     bot = Bot(logger, configuration, tokens)

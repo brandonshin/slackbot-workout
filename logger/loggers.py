@@ -23,23 +23,26 @@ class CsvLogger(BaseLogger):
             writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,debug])
 
 class PostgresDatabaseLogger(BaseLogger):
-    def __init__(self, dbhost, dbport, dbname, username, password):
-        self.dbname = dbname
-        self.dbhost = dbhost
-        self.dbport = dbport
-        self.username = username
-        self.password = password
+    def __init__(self, dbname, tablename, **kwargs):
+        self.kwargs = kwargs
+        self.kwargs.update({'dbname': dbname})
+        self.tablename = tablename
         self.maybeCreateDatabase()
 
-    def withConnection(self, func):
+    def withConnection(self, func, debug=False):
         conn = None
         try:
-            conn = psycopg2.connect(database=self.dbname, host=self.dbhost, port=self.dbport,
-                    user=self.username, password=self.password)
+            conn = psycopg2.connect(**self.kwargs)
             cursor = conn.cursor()
+            if debug:
+                print "precursor"
             func(cursor)
             conn.commit()
-        except psycopg2.PostgresException:
+            if debug:
+                print "committed"
+        except psycopg2.Error as e:
+            if debug:
+                print e
             conn.rollback()
         finally:
             if conn:
@@ -53,18 +56,18 @@ class PostgresDatabaseLogger(BaseLogger):
                     exercise VARCHAR(100),
                     reps INT,
                     units VARCHAR(50),
-                    time TIMESTAMP
-                )
-            """.format(self.dbname))
+                    time TIMESTAMP DEFAULT current_timestamp
+                );
+            """.format(self.tablename))
         self.withConnection(createDatabaseCommand)
 
     def logExercise(self, username, exercise, reps, units, debug):
         def logExerciseCommand(cursor):
             cursor.execute("""
                 INSERT INTO {}
-                    (username, exercise, reps, units, time)
+                    (username, exercise, reps, units)
                 VALUES
-                    (%s, %s, %d, %s, current_timestamp())
-            """, (username, exercise, reps, units))
-        self.withConnection(logExerciseCommand)
+                    (%s, %s, %s, %s);
+            """.format(self.tablename), (username, exercise, reps, units))
+        self.withConnection(logExerciseCommand, debug=debug)
 

@@ -262,7 +262,8 @@ class Bot:
             return True
         now = datetime.datetime.now()
         now_time = now.time()
-        if now_time >= datetime.time(self.office_hours_begin) and now_time <= datetime.time(self.office_hours_end):
+        is_weekday = now.weekday() < 5 # Monday - 0, ..., Sunday - 6
+        if datetime.time(self.office_hours_begin) <= now_time <= datetime.time(self.office_hours_end) and is_weekday:
             if self.debug:
                 print "in office hours"
             return True

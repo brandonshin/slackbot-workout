@@ -1,164 +1,103 @@
 import random
 import time
 import datetime
-import requests
-import json
-import os
 from random import shuffle
-import pickle
-import os.path
 
-from user.user import User
-from util.fetchChannelId import fetchChannelId
-
-HASH = "%23"
+class NoEligibleUsersException(Exception):
+    def __str__(self):
+        return "No available users at this time"
 
 # Configuration values to be set in setConfiguration
 class Bot:
-    def __init__(self, logger, configurator, tokens, shouldCache=False):
-        self.configurator = configurator
+    def __init__(self, slack_api, logger, configurator, user_manager):
+        self.slack_api = slack_api
         self.logger = logger
-        self.shouldCache = shouldCache
-        self.userToken = tokens.getUserToken()
-        self.urlToken = tokens.getUrlToken()
+        self.configurator = configurator
+        self.user_manager = user_manager
+        self.bot_name = 'Flexbot'
 
-        self.loadConfiguration()
-        self.first_run = True
-
-        # local cache of usernames
-        # maps userIds to usernames
-        self.user_cache = self.loadUserCache()
+        self.load_configuration()
 
         # round robin store
         self.user_queue = []
-
-
-    def loadUserCache(self):
-        if self.shouldCache and os.path.isfile('user_cache.save'):
-            with open('user_cache.save','rb') as f:
-                self.user_cache = pickle.load(f)
-                print "Loading " + str(len(self.user_cache)) + " users from cache."
-                return self.user_cache
-
-        return {}
 
     '''
     Sets the configuration file.
 
     Runs after every callout so that settings can be changed realtime
     '''
-    def loadConfiguration(self):
+    def load_configuration(self):
         # Read variables from the configurator
-        settings = self.configurator.getConfiguration()
+        settings = self.configurator.get_configuration()
         self.team_domain = settings["teamDomain"]
         self.channel_name = settings["channelName"]
         self.min_countdown = settings["callouts"]["timeBetween"]["minTime"]
         self.max_countdown = settings["callouts"]["timeBetween"]["maxTime"]
         self.num_people_per_callout = settings["callouts"]["numPeople"]
-        self.sliding_window_size = settings["callouts"]["slidingWindowSize"]
         self.group_callout_chance = settings["callouts"]["groupCalloutChance"]
         self.exercises = settings["exercises"]
         self.office_hours_on = settings["officeHours"]["on"]
         self.office_hours_begin = settings["officeHours"]["begin"]
         self.office_hours_end = settings["officeHours"]["end"]
         self.debug = settings["debug"]
+        self.user_exercise_limit = settings["user_exercise_limit"]
+        self.channel_id = self.slack_api.fetch_channel_id(self.channel_name)
 
-        self.channel_id = fetchChannelId(self.channel_name, self.userToken)
-        self.post_URL = "https://" + self.team_domain + ".slack.com/services/hooks/slackbot?token=" + self.urlToken + "&channel=" + HASH + self.channel_name
-
-
-################################################################################
-    '''
-    Selects an active user from a list of users
-    '''
-    def selectUser(self, exercise):
-        active_users = self.fetchActiveUsers()
+    def select_user(self, exercise):
+        """
+        Selects an active user from a list of users
+        """
+        active_users = self.user_manager.fetch_active_users()
 
         # Add all active users not already in the user queue
         # Shuffles to randomly add new active users
         shuffle(active_users)
-        bothArrays = set(active_users).intersection(self.user_queue)
-        for user in active_users:
-            if user not in bothArrays:
-                self.user_queue.append(user)
+        new_users = set(active_users) - set(self.user_queue)
+        self.user_queue.extend(list(new_users))
+        eligible_users = filter(lambda u: u.total_exercises() <= self.user_exercise_limit,
+                self.user_queue)
+        num_eligible_users = len(eligible_users)
 
-        # The max number of users we are willing to look forward
-        # to try and find a good match
-        sliding_window = self.sliding_window_size
+        if num_eligible_users == 0:
+            raise NoEligibleUsersException()
 
         # find a user to draw, priority going to first in
-        for i in range(len(self.user_queue)):
+        for i in range(num_eligible_users):
             user = self.user_queue[i]
 
             # User should be active and not have done exercise yet
-            if user in active_users and not user.hasDoneExercise(exercise):
-                self.user_queue.remove(user)
-                return user
-            elif user in active_users:
-                # Decrease sliding window by one. Basically, we don't want to jump
-                # too far ahead in our queue
-                sliding_window -= 1
-                if sliding_window <= 0:
-                    break
-
-        # If everybody has done exercises or we didn't find a person within our sliding window,
-        for user in self.user_queue:
-            if user in active_users:
+            if user in active_users and not user.has_done_exercise(exercise['id']):
                 self.user_queue.remove(user)
                 return user
 
-        # If we weren't able to select one, just pick a random
-        print "Selecting user at random (queue length was " + str(len(self.user_queue)) + ")"
-        return active_users[random.randrange(0, len(active_users))]
+        # Everyone has done this exercise, so pick an eligible user at random
+        return eligible_users[random.randint(0, num_eligible_users - 1)]
+
+    def post_message(self, message):
+        if self.debug:
+            print message
+        else:
+            self.slack_api.chat.post_message(self.channel_id, message, username=self.bot_name,
+                icon_emoji=":muscle")
 
 
-    '''
-    Fetches a list of all active users in the channel
-    '''
-    def fetchActiveUsers(self):
-        # Check for new members
-        params = {"token": self.userToken, "channel": self.channel_id}
-        response = requests.get("https://slack.com/api/channels.info", params=params)
-        user_ids = json.loads(response.text, encoding='utf-8')["channel"]["members"]
-
-        active_users = []
-
-        for user_id in user_ids:
-            # Add user to the cache if not already
-            if user_id not in self.user_cache:
-                self.user_cache[user_id] = User(user_id, self.userToken)
-                if not self.first_run:
-                    # Push our new users near the front of the queue!
-                    self.user_queue.insert(2,self.user_cache[user_id])
-
-            if self.user_cache[user_id].isActive():
-                active_users.append(self.user_cache[user_id])
-
-        if self.first_run:
-            self.first_run = False
-
-        return active_users
-
-    '''
-    Selects an exercise and start time, and sleeps until the time
-    period has past.
-    '''
-    def selectExerciseAndStartTime(self):
-        next_time_interval = self.selectNextTimeInterval()
-        minute_interval = next_time_interval/60
-        exercise = self.selectExercise()
+    def select_exercise_and_start_time(self):
+        """
+        Selects an exercise and start time, and sleeps until the time
+        period has past.
+        """
+        minute_interval = self.select_next_time_interval()
+        exercise = self.select_exercise()
 
         # Announcement String of next lottery time
         lottery_announcement = "NEXT LOTTERY FOR " + exercise["name"].upper() + " IS IN " + str(minute_interval) + (" MINUTES" if minute_interval != 1 else " MINUTE")
 
         # Announce the exercise to the thread
-        if not self.debug:
-            requests.post(self.post_URL, data=lottery_announcement)
-        print lottery_announcement
+        self.post_message(lottery_announcement)
 
         # Sleep the script until time is up
         if not self.debug:
-            time.sleep(next_time_interval)
+            time.sleep(minute_interval * 60)
         else:
             # If debugging, once every 5 seconds
             time.sleep(5)
@@ -169,7 +108,7 @@ class Bot:
     '''
     Selects the next exercise
     '''
-    def selectExercise(self):
+    def select_exercise(self):
         idx = random.randrange(0, len(self.exercises))
         return self.exercises[idx]
 
@@ -177,14 +116,47 @@ class Bot:
     '''
     Selects the next time interval
     '''
-    def selectNextTimeInterval(self):
-        return random.randrange(self.min_countdown * 60, self.max_countdown * 60)
+    def select_next_time_interval(self):
+        # How much time is there left in the day
+        time_left = datetime.datetime.now().replace(hour=self.office_hours_end, minute=0,
+                second=0, microsecond=0) - datetime.datetime.now()
+        self.debug_print("time_left (min): %d" % (time_left.seconds / 60))
+
+        # How many exercises remain to be done
+        exercise_count = sum(map(lambda u: u.total_exercises(),
+            self.user_manager.fetch_active_users()))
+        self.debug_print("exercise_count: %d" % exercise_count)
+        max_exercises = self.user_exercise_limit * len(self.user_manager.users)
+        self.debug_print("max_exercises: %d" % max_exercises)
+        remaining_exercises = max_exercises - exercise_count
+        self.debug_print("remaining_exercises: %d" % remaining_exercises)
+
+        if remaining_exercises == 0:
+            raise NoEligibleUsersException()
+
+        # People called out per round
+        num_online_users = len(self.user_manager.fetch_active_users())
+        self.debug_print("num_online_users: %d" % num_online_users)
+        avg_people_per_callout = num_online_users * self.group_callout_chance \
+                + self.num_people_per_callout * (1 - self.group_callout_chance)
+        self.debug_print("avg_people_per_callout: %d" % avg_people_per_callout)
+
+        avg_minutes_per_exercise = time_left.seconds / float(remaining_exercises *
+                avg_people_per_callout * 60)
+        self.debug_print("avg_minutes_per_exercise: %d" % avg_minutes_per_exercise)
+
+        if avg_minutes_per_exercise <= self.min_countdown:
+            return self.min_countdown
+        elif avg_minutes_per_exercise >= self.max_countdown:
+            return self.max_countdown
+        else:
+            return avg_minutes_per_exercise
 
 
     '''
     Selects a person to do the already-selected exercise
     '''
-    def assignExercise(self, exercise):
+    def assign_exercise(self, exercise):
         # Select number of reps
         exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
 
@@ -195,16 +167,24 @@ class Bot:
             winner_announcement += "@channel!"
 
             # Populate the user_cache
-            active_users = self.fetchActiveUsers()
+            active_users = self.user_manager.fetch_active_users()
             for user in active_users:
-                user.addExercise(exercise, exercise_reps)
-                self.logger.logExercise(user.getUserHandle(),exercise["name"],exercise_reps,exercise["units"], self.debug)
+                user.add_exercise(exercise['id'], exercise_reps)
+                self.logger.log_exercise(user.get_user_handle(),exercise["name"],exercise_reps,exercise["units"])
 
         else:
-            winners = [self.selectUser(exercise) for i in range(self.num_people_per_callout)]
-
+            winners = []
             for i in range(self.num_people_per_callout):
-                winner_announcement += str(winners[i].getUserHandle())
+                try:
+                    winners.append(self.select_user(exercise))
+                except:
+                    break
+
+            if len(winners) == 0:
+                raise NoEligibleUsersException()
+
+            for user in winners:
+                winner_announcement += str(user.get_user_handle())
                 if i == self.num_people_per_callout - 2:
                     winner_announcement += ", and "
                 elif i == self.num_people_per_callout - 1:
@@ -212,13 +192,11 @@ class Bot:
                 else:
                     winner_announcement += ", "
 
-                winners[i].addExercise(exercise, exercise_reps)
-                self.logger.logExercise(winners[i].getUserHandle(),exercise["name"],exercise_reps,exercise["units"], self.debug)
+                user.add_exercise(exercise['id'], exercise_reps)
+                self.logger.log_exercise(user.get_user_handle(),exercise["name"],exercise_reps,exercise["units"])
 
         # Announce the user
-        if not self.debug:
-            requests.post(self.post_URL, data=winner_announcement)
-        print winner_announcement
+        self.post_message(winner_announcement)
 
 
     def printStats(self):
@@ -240,34 +218,24 @@ class Bot:
                     s += str(0).ljust(len(exercise["name"]) + 2)
             s += "\n"
 
-            user.storeSession(str(datetime.datetime.now()))
-
         s += "```"
 
-        if not self.debug:
-            requests.post(self.post_URL, data=s)
-        print s
+        self.post_message(s)
 
-
-    def saveUsers(self):
-        # write to file
-        if self.shouldCache:
-            with open('user_cache.save','wb') as f:
-                pickle.dump(self.user_cache,f)
-
-    def isOfficeHours(self):
+    def is_office_hours(self):
         if not self.office_hours_on:
-            if self.debug:
-                print "not office hours"
+            self.debug_print("not office hours")
             return True
         now = datetime.datetime.now()
         now_time = now.time()
         is_weekday = now.weekday() < 5 # Monday - 0, ..., Sunday - 6
         if datetime.time(self.office_hours_begin) <= now_time <= datetime.time(self.office_hours_end) and is_weekday:
-            if self.debug:
-                print "in office hours"
+            self.debug_print("in office hours")
             return True
         else:
-            if self.debug:
-                print "out office hours"
+            self.debug_print("out office hours")
             return False
+
+    def debug_print(self, msg):
+        if self.debug:
+            print msg

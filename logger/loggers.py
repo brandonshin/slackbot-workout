@@ -8,48 +8,54 @@ class BaseLogger:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def logExercise(self, time, username, exercise, reps, units):
+    def log_exercise(self, username, exercise, reps, units):
         pass
+
+class StdOutLogger(BaseLogger):
+    def log_exercise(self, username, exercise, reps, units):
+        print "%s %s %d %s" % (username, exercise, reps, units)
 
 class CsvLogger(BaseLogger):
     def __init__(self, debug):
+        self.debug = debug
         debugString = "_DEBUG" if debug else ""
         logfilename = "log" + time.strftime("%Y%m%d-%H%M")
         self.csv_filename = logfilename + debugString + ".csv" if debug else logfilename + ".csv"
 
-    def logExercise(self, username, exercise, reps, units, debug):
+    def log_exercise(self, username, exercise, reps, units):
         with open(self.csv_filename, 'a') as f:
             writer = csv.writer(f)
-            writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,debug])
+            writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,self.debug])
 
 class PostgresDatabaseLogger(BaseLogger):
     def __init__(self, dbname, tablename, **kwargs):
+        self.debug = 'debug' in kwargs and kwargs['debug'] == True
         self.kwargs = kwargs
         self.kwargs.update({'dbname': dbname})
         self.tablename = tablename
-        self.maybeCreateDatabase()
+        self.maybe_create_database()
 
-    def withConnection(self, func, debug=False):
+    def with_connection(self, func):
         conn = None
         try:
             conn = psycopg2.connect(**self.kwargs)
             cursor = conn.cursor()
-            if debug:
+            if self.debug:
                 print "precursor"
             func(cursor)
             conn.commit()
-            if debug:
+            if self.debug:
                 print "committed"
         except psycopg2.Error as e:
-            if debug:
+            if self.debug:
                 print e
             conn.rollback()
         finally:
             if conn:
                 conn.close()
 
-    def maybeCreateDatabase(self):
-        def createDatabaseCommand(cursor):
+    def maybe_create_database(self):
+        def create_database_command(cursor):
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS {} (
                     username VARCHAR(100),
@@ -59,15 +65,15 @@ class PostgresDatabaseLogger(BaseLogger):
                     time TIMESTAMP DEFAULT current_timestamp
                 );
             """.format(self.tablename))
-        self.withConnection(createDatabaseCommand)
+        self.with_connection(create_database_command)
 
-    def logExercise(self, username, exercise, reps, units, debug):
-        def logExerciseCommand(cursor):
+    def log_exercise(self, username, exercise, reps, units):
+        def log_exercise_command(cursor):
             cursor.execute("""
                 INSERT INTO {}
                     (username, exercise, reps, units)
                 VALUES
                     (%s, %s, %s, %s);
             """.format(self.tablename), (username, exercise, reps, units))
-        self.withConnection(logExerciseCommand, debug=debug)
+        self.with_connection(log_exercise_command)
 

@@ -6,56 +6,45 @@ class TokenProvider:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def getUserToken(self):
-        pass
-
-    @abstractmethod
-    def getUrlToken(self):
+    def get_user_token(self):
         pass
 
 class EnvironmentTokenProvider(TokenProvider):
-    def getUserToken(self):
+    def get_user_token(self):
         return os.environ['SLACK_USER_TOKEN_STRING']
 
-    def getUrlToken(self):
-        return os.environ['SLACK_URL_TOKEN_STRING']
-
 class InMemoryTokenProvider(TokenProvider):
-    def __init__(self, userToken, urlToken):
-        self.userToken = userToken
-        self.urlToken = urlToken
+    def __init__(self, user_token):
+        self.user_token = user_token
 
-    def getUserToken(self):
-        return self.userToken
-
-    def getUrlToken(self):
-        return self.urlToken
+    def get_user_token(self):
+        return self.user_token
 
 class ConfigurationProvider:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def getConfiguration(self):
+    def get_configuration(self):
         pass
 
 class JsonFileConfigurationProvider(ConfigurationProvider):
     def __init__(self, filename):
         self.filename = filename
 
-    def getConfiguration(self):
+    def get_configuration(self):
         with open(self.filename, 'r') as f:
             return json.load(f)
 
 class InMemoryConfigurationProvider(ConfigurationProvider):
     def __init__(self, configuration):
-        self.setConfiguration(configuration)
+        self.set_configuration(configuration)
 
-    def setConfiguration(self, configuration):
+    def set_configuration(self, configuration):
         self.configuration = configuration
 
-    def updateConfiguration(self, updates):
+    def update_configuration(self, updates):
         self.configuration.update(updates)
 
-    def getConfiguration(self):
+    def get_configuration(self):
         return self.configuration
 

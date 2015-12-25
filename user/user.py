@@ -1,82 +1,34 @@
-import requests
-import json
-import datetime
-
 class User:
-
-    def __init__(self, user_id, user_token):
+    def __init__(self, user_id, username, real_name):
         # The Slack ID of the user
         self.id = user_id
-        self.user_token = user_token
 
         # The username (@username) and real name
-        self.username, self.real_name = self.fetchNames()
+        self.username = username
+        self.real_name = real_name
 
-        # A list of all exercises done by user
-        self.exercise_history = []
-
-        # A record of all exercise totals (quantity)
+        # Exercise history for the day
         self.exercises = {}
 
-        # A record of exercise counts (# of times)
-        self.exercise_counts = {}
+        # User's online status
+        self.online = False
 
-        # A record of past runs
-        self.past_workouts = {}
-
-        print "New user: " + self.real_name + " (" + self.username + ")"
-
-
-    def storeSession(self, run_name):
-        try:
-            self.past_workouts[run_name] = self.exercises
-        except:
-            self.past_workouts = {}
-
-        self.past_workouts[run_name] = self.exercises
-        self.exercises = {}
-        self.exercise_counts = {}
-
-
-    def fetchNames(self):
-        params = {"token": self.user_token, "user": self.id}
-        response = requests.get("https://slack.com/api/users.info",
-                params=params)
-        user_obj = json.loads(response.text, encoding='utf-8')["user"]
-
-        username = user_obj["name"]
-        real_name = user_obj["profile"]["real_name"]
-
-        return username, real_name
-
-
-    def getUserHandle(self):
+    def get_user_handle(self):
         return ("@" + self.username).encode('utf-8')
 
-
-    '''
-    Returns true if a user is currently "active", else false
-    '''
-    def isActive(self):
-        try:
-            params = {"token": self.user_token, "user": self.id}
-            response = requests.get("https://slack.com/api/users.getPresence",
-                    params=params)
-            status = json.loads(response.text, encoding='utf-8')["presence"]
-
-            return status == "active"
-        except requests.exceptions.ConnectionError:
-            print "Error fetching online status for " + self.getUserHandle()
-            return False
-
-    def addExercise(self, exercise, reps):
+    def add_exercise(self, exercise_id, reps):
         # Add to total counts
-        self.exercises[exercise["id"]] = self.exercises.get(exercise["id"], 0) + reps
-        self.exercise_counts[exercise["id"]] = self.exercise_counts.get(exercise["id"], 0) + 1
+        try:
+            current_sets, current_reps = self.exercises[exercise_id]
+            self.exercises[exercise_id] = (current_sets + 1, current_reps + reps)
+        except:
+            self.exercises[exercise_id] = (1, reps)
 
-        # Add to exercise history record
-        self.exercise_history.append([datetime.datetime.now().isoformat(),exercise["id"],exercise["name"],reps,exercise["units"]])
+    def total_exercises(self):
+        total = 0
+        for exercise_id in self.exercises:
+            total += self.exercises[exercise_id][0]
+        return total
 
-    def hasDoneExercise(self, exercise):
-        return exercise["id"] in self.exercise_counts
-
+    def has_done_exercise(self, exercise_id):
+        return exercise_id in self.exercises

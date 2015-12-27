@@ -1,4 +1,4 @@
 #!/bin/bash
 
 apt-get update
-apt-get install postgresql-common libpq-dev python-dev
+apt-get install python-pip postgresql-common libpq-dev python-dev

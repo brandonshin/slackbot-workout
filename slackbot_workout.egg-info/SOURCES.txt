@@ -7,6 +7,7 @@ logger/__init__.py
 logger/loggers.py
 server/__init__.py
 server/server.py
+server/web.py
 slackbot_workout.egg-info/PKG-INFO
 slackbot_workout.egg-info/SOURCES.txt
 slackbot_workout.egg-info/dependency_links.txt

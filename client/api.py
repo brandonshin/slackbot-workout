@@ -1,11 +1,13 @@
 from slacker import Slacker
 
 class SlackbotApi(Slacker):
-    def __init__(self, channel_name, bot_name, debug=False, **kwargs):
+    def __init__(self, configuration, **kwargs):
         super(SlackbotApi, self).__init__(**kwargs)
-        self.channel_id = self.fetch_channel_id(channel_name)
-        self.bot_name = bot_name
-        self.debug = debug
+        self.configuration = configuration
+        config_dict = configuration.get_configuration()
+        self.channel_id = self.fetch_channel_id(config_dict['channelName'])
+        self.bot_name = config_dict['botName']
+        self.debug = config_dict['debug']
 
     def fetch_channel_id(self, channel_name):
         channels = self.channels.list()

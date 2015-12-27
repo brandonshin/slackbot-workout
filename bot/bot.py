@@ -14,7 +14,6 @@ class Bot:
         self.logger = logger
         self.configurator = configurator
         self.user_manager = user_manager
-        self.bot_name = 'Flexbot'
 
         self.load_configuration()
 

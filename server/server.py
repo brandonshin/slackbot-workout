@@ -7,14 +7,11 @@ import threading
 import cherrypy
 
 class Server:
-    def __init__(self, logger, configuration, tokens, channel_name, bot_name):
+    def __init__(self, logger, configuration, tokens):
         self.logger = logger
         self.configuration = configuration
         self.tokens = tokens
-        self.channel_name = channel_name
-        self.bot_name = bot_name
-        self.slack_api = SlackbotApi(channel_name, bot_name, token=self.tokens.get_user_token(),
-            debug=configuration.get_configuration()["debug"])
+        self.slack_api = SlackbotApi(configuration, token=self.tokens.get_user_token())
         self.user_manager = UserManager(self.slack_api, self.configuration)
         self.bot = Bot(self.slack_api, self.logger, self.configuration, self.user_manager)
         self.web_server = FlexbotWebServer(self.user_manager)

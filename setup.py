@@ -10,7 +10,7 @@ setup(
         'cherrypy>=4.0.0'
     ],
 
-    author = "Miles Yucht",
+    author = "Brandon Shin, Miles Yucht",
     author_email = "mgyucht@gmail.com",
     description = "A fun framework for incorporating more exercise into your life at work through Slack.",
     license = "MIT",

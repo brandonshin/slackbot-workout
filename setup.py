@@ -1,12 +1,13 @@
 from setuptools import setup, find_packages
 setup(
     name = "slackbot-workout",
-    version = "0.1",
+    version = "0.2",
     packages = find_packages(),
 
     install_requires = [
-        'requests==2.7.0',
-        'psycopg2>=2.6.1'
+        'slacker>=0.8.6',
+        'psycopg2>=2.6.1',
+        'cherrypy>=4.0.0'
     ],
 
     author = "Miles Yucht",

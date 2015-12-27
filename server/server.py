@@ -14,13 +14,17 @@ class Server:
         self.slack_api = SlackbotApi(configuration, token=self.tokens.get_user_token())
         self.user_manager = UserManager(self.slack_api, self.configuration)
         self.bot = Bot(self.slack_api, self.logger, self.configuration, self.user_manager)
-        self.web_server = FlexbotWebServer(self.user_manager)
+        self.web_server = FlexbotWebServer(self.user_manager, configuration)
 
     def start(self):
         workout_loop_thread = threading.Thread(target=self.workout_loop)
         workout_loop_thread.daemon = False
         workout_loop_thread.start()
         # Start the webserver
+        cherrypy.config.update({'server.socket_host': '0.0.0.0',
+                                'server.socket_port': 80,
+                                'log.screen': True,
+                               })
         cherrypy.quickstart(self.web_server)
 
     def workout_loop(self):

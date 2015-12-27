@@ -21,7 +21,7 @@ class SlackbotApi(Slacker):
             print message
         else:
             self.chat.post_message(self.channel_id, message, username=self.bot_name,
-                icon_emoji=":muscle")
+                    icon_emoji=':muscle:')
 
     def get_members(self):
         response = self.channels.info(self.channel_id).body

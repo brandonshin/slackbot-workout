@@ -9,8 +9,8 @@ class NoEligibleUsersException(Exception):
 
 # Configuration values to be set in setConfiguration
 class Bot:
-    def __init__(self, slack_api, logger, configurator, user_manager):
-        self.slack_api = slack_api
+    def __init__(self, api, logger, configurator, user_manager):
+        self.api = api
         self.logger = logger
         self.configurator = configurator
         self.user_manager = user_manager
@@ -41,7 +41,6 @@ class Bot:
         self.office_hours_end = settings["officeHours"]["end"]
         self.debug = settings["debug"]
         self.user_exercise_limit = settings["user_exercise_limit"]
-        self.channel_id = self.slack_api.fetch_channel_id(self.channel_name)
 
     def select_user(self, exercise):
         """
@@ -73,14 +72,6 @@ class Bot:
         # Everyone has done this exercise, so pick an eligible user at random
         return eligible_users[random.randint(0, num_eligible_users - 1)]
 
-    def post_message(self, message):
-        if self.debug:
-            print message
-        else:
-            self.slack_api.chat.post_message(self.channel_id, message, username=self.bot_name,
-                icon_emoji=":muscle")
-
-
     def select_exercise_and_start_time(self):
         """
         Selects an exercise and start time, and sleeps until the time
@@ -93,7 +84,7 @@ class Bot:
         lottery_announcement = "NEXT LOTTERY FOR " + exercise["name"].upper() + " IS IN " + str(minute_interval) + (" MINUTES" if minute_interval != 1 else " MINUTE")
 
         # Announce the exercise to the thread
-        self.post_message(lottery_announcement)
+        self.api.post_flex_message(lottery_announcement)
 
         # Sleep the script until time is up
         if not self.debug:
@@ -196,31 +187,7 @@ class Bot:
                 self.logger.log_exercise(user.get_user_handle(),exercise["name"],exercise_reps,exercise["units"])
 
         # Announce the user
-        self.post_message(winner_announcement)
-
-
-    def printStats(self):
-        # Write to the command console today's breakdown
-        s = "```\n"
-        #s += "Username\tAssigned\tComplete\tPercent
-        s += "Username".ljust(15)
-        for exercise in self.exercises:
-            s += exercise["name"] + "  "
-        s += "\n---------------------------------------------------------------\n"
-
-        for user_id in self.user_cache:
-            user = self.user_cache[user_id]
-            s += user.username.ljust(15)
-            for exercise in self.exercises:
-                if exercise["id"] in user.exercises:
-                    s += str(user.exercises[exercise["id"]]).ljust(len(exercise["name"]) + 2)
-                else:
-                    s += str(0).ljust(len(exercise["name"]) + 2)
-            s += "\n"
-
-        s += "```"
-
-        self.post_message(s)
+        self.api.post_flex_message(winner_announcement)
 
     def is_office_hours(self):
         if not self.office_hours_on:

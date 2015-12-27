@@ -1,1 +1,2 @@
 slacker>=0.8.6
+cherrypy>=4.0.0

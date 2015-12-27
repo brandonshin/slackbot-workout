@@ -1,25 +1,30 @@
 from bot.bot import Bot, NoEligibleUsersException
-from logger.loggers import CsvLogger
 from user.manager import UserManager
-from util.configurators import EnvironmentTokenProvider, JsonFileConfigurationProvider
 from client.api import SlackbotApi
+from web import FlexbotWebServer
 import time
-import os
 import threading
+import cherrypy
 
 class Server:
-    def __init__(self):
-        self.logger = CsvLogger(False)
-        self.configuration = JsonFileConfigurationProvider(os.getcwd() + '/config.json')
-        self.tokens = EnvironmentTokenProvider()
-        self.slack_api = SlackbotApi(token=self.tokens.get_user_token())
-        self.user_manager = UserManager(self.slack_api, 'testflexecution2')
+    def __init__(self, logger, configuration, tokens, channel_name, bot_name):
+        self.logger = logger
+        self.configuration = configuration
+        self.tokens = tokens
+        self.channel_name = channel_name
+        self.bot_name = bot_name
+        self.slack_api = SlackbotApi(channel_name, bot_name, token=self.tokens.get_user_token(),
+            debug=configuration.get_configuration()["debug"])
+        self.user_manager = UserManager(self.slack_api, self.configuration)
         self.bot = Bot(self.slack_api, self.logger, self.configuration, self.user_manager)
+        self.web_server = FlexbotWebServer(self.user_manager)
 
     def start(self):
         workout_loop_thread = threading.Thread(target=self.workout_loop)
         workout_loop_thread.daemon = False
         workout_loop_thread.start()
+        # Start the webserver
+        cherrypy.quickstart(self.web_server, "/flex")
 
     def workout_loop(self):
         was_office_hours = False
@@ -39,7 +44,7 @@ class Server:
 
                 else:
                     if was_office_hours:
-                        self.bot.printStats()
+                        self.user_manager.stats()
                         self.user_manager.clear_users()
                     if not self.bot.debug:
                         time.sleep(5*60) # Sleep 5 minutes

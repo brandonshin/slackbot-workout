@@ -30,5 +30,11 @@ class User:
             total += self.exercises[exercise_id][0]
         return total
 
+    def get_exercise_count(self, exercise_id):
+        try:
+            return self.exercises[exercise_id][0]
+        except:
+            return 0
+
     def has_done_exercise(self, exercise_id):
         return exercise_id in self.exercises

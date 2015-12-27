@@ -1,22 +1,45 @@
 from user import User
 
 class UserManager:
-    def __init__(self, api, channel_name):
+    def __init__(self, api, configuration):
         self.api = api
-        self.channel_id = self.api.fetch_channel_id(channel_name)
+        self.configuration = configuration
         self.users = {}
+        self.load_configuration()
+
+    def load_configuration(self):
+        self.exercises = self.configuration.get_configuration()['exercises']
+
+    def stats(self, user_id_list=[]):
+        # Write to the command console today's breakdown
+        s = "```\n"
+        #s += "Username\tAssigned\tComplete\tPercent
+        s += "Username".ljust(15)
+        for exercise in self.exercises:
+            s += exercise["name"] + "  "
+        s += "\n---------------------------------------------------------------\n"
+
+        user_ids = user_id_list if len(user_id_list) > 0 else self.users.keys()
+        for user_id in user_ids:
+            user = self.users[user_id]
+            s += user.username.ljust(15)
+            for exercise in self.exercises:
+                s += str(user.get_exercise_count(exercise["id"])).ljust(len(exercise["name"]) + 2)
+            s += "\n"
+
+        s += "```"
+        return s
 
     def fetch_users(self):
         """
         Fetches a list of all active users in the channel
         """
         # Check for new members
-        response = self.api.channels.info(self.channel_id).body
-        user_ids = response['channel']['members']
+        user_ids = self.api.get_members()
 
         for user_id in user_ids:
             if user_id not in self.users:
-                user_json = self.api.users.info(user_id).body['user']
+                user_json = self.api.get_user_info(user_id)
                 username = user_json['name']
                 real_name = user_json['profile']['real_name']
                 self.users[user_id] = User(user_id, username, real_name)
@@ -25,16 +48,10 @@ class UserManager:
         self.fetch_users()
         active_users = []
         for user_id in self.users:
-            if self.is_active(user_id):
+            if self.api.is_active(user_id):
                 active_users.append(self.users[user_id])
         return active_users
 
     def clear_users(self):
         self.users = {}
 
-    def is_active(self, user_id):
-        """
-        Returns true if a user is currently "active", else false
-        """
-        response = self.api.users.get_presence(user_id).body
-        return response['presence'] == "active"

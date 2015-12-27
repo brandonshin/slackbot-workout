@@ -1,7 +1,13 @@
+from logger.loggers import StdOutLogger
+from util.configurators import EnvironmentTokenProvider, JsonFileConfigurationProvider
+import os
 from server.server import Server
 
 def main():
-    server = Server()
+    logger = StdOutLogger()
+    config = JsonFileConfigurationProvider(os.getcwd() + '/config.json')
+    tokens = EnvironmentTokenProvider()
+    server = Server(logger, config, tokens, 'testflexecution2', 'Flexbot')
     server.start()
 
 if __name__ == "__main__":

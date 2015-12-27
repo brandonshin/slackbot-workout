@@ -5,10 +5,15 @@ class FlexbotWebServer(object):
         self.user_manager = user_manager
 
     @cherrypy.expose
+    def index(self):
+        return "Welcome to flexbot's webserver!"
+
+    @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
-    def POST(self):
+    def flex(self):
         posted_text = cherrypy.request.json["text"]
+        print posted_text
         return {
             "text": posted_text
         }

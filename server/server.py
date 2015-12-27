@@ -21,7 +21,7 @@ class Server:
         workout_loop_thread.daemon = False
         workout_loop_thread.start()
         # Start the webserver
-        cherrypy.quickstart(self.web_server, "/flex")
+        cherrypy.quickstart(self.web_server)
 
     def workout_loop(self):
         was_office_hours = False

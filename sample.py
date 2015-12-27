@@ -7,7 +7,7 @@ def main():
     logger = StdOutLogger()
     config = JsonFileConfigurationProvider(os.getcwd() + '/config.json')
     tokens = EnvironmentTokenProvider()
-    server = Server(logger, config, tokens, 'testflexecution2', 'Flexbot')
+    server = Server(logger, config, tokens)
     server.start()
 
 if __name__ == "__main__":

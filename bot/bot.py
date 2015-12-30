@@ -7,6 +7,7 @@ class NoEligibleUsersException(Exception):
     def __str__(self):
         return "No available users at this time"
 
+
 # Configuration values to be set in setConfiguration
 class Bot:
     def __init__(self, api, logger, configurator, user_manager):
@@ -20,12 +21,13 @@ class Bot:
         # round robin store
         self.user_queue = []
 
-    '''
-    Sets the configuration file.
 
-    Runs after every callout so that settings can be changed realtime
-    '''
     def load_configuration(self):
+        """
+        Sets the configuration file.
+
+        Runs after every callout so that settings can be changed realtime
+        """
         # Read variables from the configurator
         settings = self.configurator.get_configuration()
         self.team_domain = settings["teamDomain"]
@@ -41,9 +43,10 @@ class Bot:
         self.debug = settings["debug"]
         self.user_exercise_limit = settings["user_exercise_limit"]
 
-    def select_user(self, exercise):
+
+    def update_user_queue(self):
         """
-        Selects an active user from a list of users
+        Update our internal user queue from the user user_manager
         """
         active_users = self.user_manager.fetch_active_users()
 
@@ -52,8 +55,25 @@ class Bot:
         shuffle(active_users)
         new_users = set(active_users) - set(self.user_queue)
         self.user_queue.extend(list(new_users))
-        eligible_users = filter(lambda u: u.total_exercises() <= self.user_exercise_limit,
+
+
+    def get_eligible_users(self):
+        """
+        Get the current eligible users.
+        Assumes that update_user_queue() has already been called to update the internal user queue.
+        """
+        return filter(lambda u: u.total_exercises() <= self.user_exercise_limit,
                 self.user_queue)
+
+
+    def select_user(self, exercise):
+        """
+        Selects an active user from a list of users
+        """
+        self.update_user_queue()
+
+        eligible_users = self.get_eligible_users()
+
         num_eligible_users = len(eligible_users)
 
         if num_eligible_users == 0:
@@ -71,11 +91,21 @@ class Bot:
         # Everyone has done this exercise, so pick an eligible user at random
         return eligible_users[random.randint(0, num_eligible_users - 1)]
 
+
     def select_exercise_and_start_time(self):
         """
         Selects an exercise and start time, and sleeps until the time
         period has past.
         """
+        self.update_user_queue()
+
+        eligible_users = self.get_eligible_users()
+
+        num_eligible_users = len(eligible_users)
+
+        if num_eligible_users == 0:
+            raise NoEligibleUsersException()
+
         minute_interval = self.select_next_time_interval()
         exercise = self.select_exercise()
 
@@ -95,18 +125,18 @@ class Bot:
         return exercise
 
 
-    '''
-    Selects the next exercise
-    '''
     def select_exercise(self):
+        """
+        Selects the next exercise
+        """
         idx = random.randrange(0, len(self.exercises))
         return self.exercises[idx]
 
 
-    '''
-    Selects the next time interval
-    '''
     def select_next_time_interval(self):
+        """
+        Selects the next time interval
+        """
         # How much time is there left in the day
         time_left = datetime.datetime.now().replace(hour=self.office_hours_end, minute=0,
                 second=0, microsecond=0) - datetime.datetime.now()
@@ -143,10 +173,10 @@ class Bot:
             return avg_minutes_per_exercise
 
 
-    '''
-    Selects a person to do the already-selected exercise
-    '''
     def assign_exercise(self, exercise):
+        """
+        Selects a person to do the already-selected exercise
+        """
         # Select number of reps
         exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
 
@@ -188,7 +218,11 @@ class Bot:
         # Announce the user
         self.api.post_flex_message(winner_announcement)
 
+
     def is_office_hours(self):
+        """
+        Does the current time frame fall with the configured office hours?
+        """
         if not self.office_hours_on:
             self.debug_print("not office hours")
             return True
@@ -202,6 +236,11 @@ class Bot:
             self.debug_print("out office hours")
             return False
 
+
     def debug_print(self, msg):
+        """
+        Helper function that only prings the debug message if debug is turned on. Otherwise, message
+        is ignored.
+        """
         if self.debug:
             print msg

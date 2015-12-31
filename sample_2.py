@@ -1,7 +1,8 @@
-from logger.loggers import StdOutLogger
-from util.configurators import InMemoryTokenProvider, JsonFileConfigurationProvider
+from slackbot_workout.loggers import StdOutLogger
+from slackbot_workout.configurators import InMemoryTokenProvider, JsonFileConfigurationProvider
+from slackbot_workout.server import Server
+
 import os
-from server.server import Server
 
 def main():
     logger = StdOutLogger()

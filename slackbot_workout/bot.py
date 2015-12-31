@@ -28,7 +28,6 @@ class Bot:
     def load_configuration(self):
         # Read variables from the configurator
         settings = self.configurator.get_configuration()
-        self.team_domain = settings["teamDomain"]
         self.channel_name = settings["channelName"]
         self.min_countdown = settings["callouts"]["timeBetween"]["minTime"]
         self.max_countdown = settings["callouts"]["timeBetween"]["maxTime"]

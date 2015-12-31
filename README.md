@@ -3,12 +3,11 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
 <img src = "https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_10_at_5_57_55_PM-1433984292189.png" width = 500>
 
-
 # Instructions
 
 1. Clone the repo and navigate into the directory in your terminal.
 
-    `$ git clone git@github.com:brandonshin/slackbot-workout.git`
+    `$ git clone git@github.com:mgyucht/slackbot-workout.git`
 
 2. Go to your slack home page [https://{yourgroup}.slack.com/home](http://my.slack.com/home) & click on **Integrations** on the left sidebar.
 
@@ -22,33 +21,25 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
     <img src="https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_05_at_7_00_24_PM-1433557433415.png" width = 500>
 
-5. In the **Slackbot** (Remote control page). Register an integration & you should see this. __Make sure you grab just the token out of the url__, e.g. `AizJbQ24l38ai4DlQD9yFELb`
+5. Save your `SLACK_USER_TOKEN_STRING` as environmental variables in your terminal.
 
-    <img src="https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_03_at_8_44_00_AM-1433557565175.png" width = 500>
+    ```
+    $ export SLACK_USER_TOKEN_STRING=YOURUSERTOKEN
+    ```
 
-6. Save your SLACK_USER_TOKEN_STRING and SLACK_URL_TOKEN_STRING as environmental variables in your terminal.
+    Alternatively, if you're using the `InMemoryTokenConfigurator` you can provide the token within
+    the Python program itself.
 
-    `$ export SLACK_USER_TOKEN_STRING=YOURUSERTOKEN`
-    
-    `$ export SLACK_URL_TOKEN_STRING=YOURURLTOKEN`
-    
-    If you need help with this, try adapting the first 5 steps of the guide to [edit your .bash_profile](http://natelandau.com/my-mac-osx-bash_profile/)
-    
-7. Set up channel and customize configurations
+6. Set up channel and customize configurations
 
-    Open `default.json` and set `teamDomain` (ex: ctrlla) `channelName` (ex: general) and `channelId` (ex: B22D35YMS). Save the file as `config.json` in the same directory. Set any other configurations as you like.
+    Open `config.json` and set `channelName` (ex: general). Set any other configurations as you like.
 
-    If you don't know the channel Id, fetch it using
+7. While in the project directory, run
 
-    `$ python fetchChannelId.py channelname`
+    ```
+    $ sudo ./install-dependencies.sh
+    $ sudo pip install -r requirements.txt
+    $ python sample.py
+    ```
 
-8. If you haven't set up pip for python, go in your terminal and run.
-`$ sudo easy_install pip`
-
-9. While in the project directory, run
-
-    `$ sudo pip install -r requirements.txt`
-
-    `$ python slackbotExercise.py`
-
-Run the script to start the workouts and hit ctrl+c to stop the script. Hope you have fun with it!
+    Run the script to start the workouts and hit ctrl+\ to stop the script. Hope you have fun with it!

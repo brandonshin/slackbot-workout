@@ -17,12 +17,13 @@ class User:
         return ("@" + self.username).encode('utf-8')
 
     def add_exercise(self, exercise_id, reps):
-        # Add to total counts
-        try:
-            current_sets, current_reps = self.exercises[exercise_id]
-            self.exercises[exercise_id] = (current_sets + 1, current_reps + reps)
-        except:
-            self.exercises[exercise_id] = (1, reps)
+        if reps > 0:
+            # Add to total counts
+            try:
+                current_sets, current_reps = self.exercises[exercise_id]
+                self.exercises[exercise_id] = (current_sets + 1, current_reps + reps)
+            except:
+                self.exercises[exercise_id] = (1, reps)
 
     def total_exercises(self):
         total = 0

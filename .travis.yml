@@ -5,4 +5,4 @@ branches:
   only:
     - hackathon
 install: "pip install -r requirements.txt"
-script: "echo \"Travis run successfully\""
+script: nosetests -sv

@@ -32,7 +32,7 @@ class UserManager:
 
     def fetch_users(self):
         """
-        Fetches a list of all active users in the channel
+        Fetches all users in the channel
         """
         # Check for new members
         user_ids = self.api.get_members()
@@ -45,6 +45,9 @@ class UserManager:
                 self.users[user_id] = User(user_id, username, real_name)
 
     def fetch_active_users(self):
+        """
+        Returns a list of all active users in the channel
+        """
         self.fetch_users()
         active_users = []
         for user_id in self.users:

@@ -1,6 +1,6 @@
-from bot.bot import Bot, NoEligibleUsersException
-from user.manager import UserManager
-from client.api import SlackbotApi
+from bot import Bot, NoEligibleUsersException
+from manager import UserManager
+from api import SlackbotApi
 from web import FlexbotWebServer
 import time
 import threading

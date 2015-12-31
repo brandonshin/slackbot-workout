@@ -1,6 +1,6 @@
-from server.server import Server
-from logger.loggers import PostgresDatabaseLogger
-from util.configurators import EnvironmentTokenProvider, JsonFileConfigurationProvider
+from slackbot_workout.server import Server
+from slackbot_workout.loggers import PostgresDatabaseLogger
+from slackbot_workout.configurators import EnvironmentTokenProvider, JsonFileConfigurationProvider
 import os
 
 def main():

@@ -34,7 +34,7 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
 6. Set up channel and customize configurations
 
-    Open `config.json` and set `teamDomain` (ex: ctrlla) and `channelName` (ex: general). Set any other configurations as you like.
+    Open `config.json` and set `channelName` (ex: general). Set any other configurations as you like.
 
 7. While in the project directory, run
 

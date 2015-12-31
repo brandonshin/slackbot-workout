@@ -7,3 +7,5 @@ user_cache.save
 
 build/
 dist/
+
+.DS_STORE

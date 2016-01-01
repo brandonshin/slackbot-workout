@@ -13,6 +13,9 @@ class User:
         # User's online status
         self.online = False
 
+    def __str__(self):
+        return self.get_user_handle()
+
     def get_user_handle(self):
         return ("@" + self.username).encode('utf-8')
 

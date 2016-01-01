@@ -30,7 +30,6 @@ class Bot:
         """
         # Read variables from the configurator
         settings = self.configurator.get_configuration()
-        self.channel_name = settings["channelName"]
         self.min_countdown = settings["callouts"]["timeBetween"]["minTime"]
         self.max_countdown = settings["callouts"]["timeBetween"]["maxTime"]
         self.num_people_per_callout = settings["callouts"]["numPeople"]
@@ -58,19 +57,18 @@ class Bot:
 
     def get_eligible_users(self):
         """
-        Get the current eligible users.
-        Assumes that update_user_queue() has already been called to update the internal user queue.
+        Get the current eligible users. These are users who are online and have not yet completed
+        their maximum daily limit of exercises.
         """
-        return filter(lambda u: u.total_exercises() <= self.user_exercise_limit,
-                self.user_queue)
+        self.update_user_queue()
+
+        return filter(lambda u: u.total_exercises() < self.user_exercise_limit, self.user_queue)
 
 
     def select_user(self, exercise):
         """
         Selects an active user from a list of users
         """
-        self.update_user_queue()
-
         eligible_users = self.get_eligible_users()
 
         num_eligible_users = len(eligible_users)
@@ -83,7 +81,7 @@ class Bot:
             user = self.user_queue[i]
 
             # User should be active and not have done exercise yet
-            if user in active_users and not user.has_done_exercise(exercise['id']):
+            if user in eligible_users and not user.has_done_exercise(exercise['id']):
                 self.user_queue.remove(user)
                 return user
 
@@ -96,8 +94,6 @@ class Bot:
         Selects an exercise and start time, and sleeps until the time
         period has past.
         """
-        self.update_user_queue()
-
         eligible_users = self.get_eligible_users()
 
         num_eligible_users = len(eligible_users)
@@ -142,10 +138,10 @@ class Bot:
         self.debug_print("time_left (min): %d" % (time_left.seconds / 60))
 
         # How many exercises remain to be done
-        exercise_count = sum(map(lambda u: u.total_exercises(),
-            self.user_manager.fetch_active_users()))
+        eligible_users = self.get_eligible_users()
+        exercise_count = sum(map(lambda u: u.total_exercises(), eligible_users))
         self.debug_print("exercise_count: %d" % exercise_count)
-        max_exercises = self.user_exercise_limit * len(self.user_manager.users)
+        max_exercises = self.user_exercise_limit * len(eligible_users)
         self.debug_print("max_exercises: %d" % max_exercises)
         remaining_exercises = max_exercises - exercise_count
         self.debug_print("remaining_exercises: %d" % remaining_exercises)
@@ -154,7 +150,7 @@ class Bot:
             raise NoEligibleUsersException()
 
         # People called out per round
-        num_online_users = len(self.user_manager.fetch_active_users())
+        num_online_users = len(eligible_users)
         self.debug_print("num_online_users: %d" % num_online_users)
         avg_people_per_callout = num_online_users * self.group_callout_chance \
                 + self.num_people_per_callout * (1 - self.group_callout_chance)
@@ -169,7 +165,7 @@ class Bot:
         elif avg_minutes_per_exercise >= self.max_countdown:
             return self.max_countdown
         else:
-            return avg_minutes_per_exercise
+            return int(avg_minutes_per_exercise)
 
 
     def assign_exercise(self, exercise):

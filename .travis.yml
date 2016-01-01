@@ -4,5 +4,9 @@ python:
 branches:
   except:
     - master
+addons:
+  postgresql: "9.4"
 install: "pip install -r requirements.txt"
+before_script:
+  - psql -c 'CREATE DATABASE travis_ci_test;' -U postgres
 script: nosetests -sv

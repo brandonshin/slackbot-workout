@@ -57,17 +57,17 @@ def get_sample_bot():
     return (um, bot)
 
 
-class TestBot:
+class TestBot(object):
     def test_init(self):
         _, bot = get_sample_bot()
         assert bot.user_queue == []
 
     def test_select_next_time_interval(self):
         um, bot = get_sample_bot()
-        um.fetch_active_users.return_value = [
+        eligible_users = [
             User('slackid1', 'username1', 'real name 1'),
             User('slackid2', 'username2', 'real name 2'),
         ]
-        interval = bot.select_next_time_interval()
+        interval = bot.select_next_time_interval(eligible_users)
         assert isinstance(interval, int) or (isinstance(interval, float) and interval.is_integer())
 

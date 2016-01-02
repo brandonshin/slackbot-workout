@@ -1,19 +1,26 @@
 import cherrypy
+import logging
 
 class FlexbotWebServer(object):
     def __init__(self, user_manager, configuration):
         self.user_manager = user_manager
         self.configuration = configuration
-        config_json = configuration.get_configuration()
+        self.load_configuration()
+        self.logger = logging.getLogger(__name__)
+
+    def load_configuration(self):
+        config_json = self.configuration.get_configuration()
         self.bot_name = config_json['botName'].lower()
 
     @cherrypy.expose
     def index(self):
-        return "Welcome to flexbot's webserver!"
+        self.load_configuration()
+        return "Welcome to {}'s webserver!".format(self.bot_name)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def flex(self, **args):
+        self.load_configuration()
         user_id = args['user_id']
         text = args['text'].lower()
         if user_id != "USLACKBOT" and self.bot_name in text:
@@ -32,6 +39,11 @@ class FlexbotWebServer(object):
                     break
             if len(users_to_print) > 0:
                 stats = self.user_manager.stats(list(set(users_to_print)))
+                self.logger.info("""\
+                vvvvvvvvvvvvvvvvvvvvvvvv
+                responding:
+                {}
+                ^^^^^^^^^^^^^^^^^^^^^^^^""".format(stats))
                 return {
                     "text": stats
                 }

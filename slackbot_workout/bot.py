@@ -1,7 +1,7 @@
+import datetime
+import logging
 import random
 import time
-import datetime
-from random import shuffle
 
 class NoEligibleUsersException(Exception):
     def __str__(self):
@@ -9,12 +9,13 @@ class NoEligibleUsersException(Exception):
 
 
 # Configuration values to be set in setConfiguration
-class Bot:
-    def __init__(self, api, logger, configurator, user_manager):
+class Bot(object):
+    def __init__(self, api, workout_logger, configurator, user_manager):
         self.api = api
-        self.logger = logger
+        self.workout_logger = workout_logger
         self.configurator = configurator
         self.user_manager = user_manager
+        self.logger = logging.getLogger(__name__)
 
         self.load_configuration()
 
@@ -50,7 +51,7 @@ class Bot:
 
         # Add all active users not already in the user queue
         # Shuffles to randomly add new active users
-        shuffle(active_users)
+        random.shuffle(active_users)
         new_users = set(active_users) - set(self.user_queue)
         self.user_queue.extend(list(new_users))
 
@@ -101,7 +102,7 @@ class Bot:
         if num_eligible_users == 0:
             raise NoEligibleUsersException()
 
-        minute_interval = self.select_next_time_interval()
+        minute_interval = self.select_next_time_interval(eligible_users)
         exercise = self.select_exercise()
 
         # Announcement String of next lottery time
@@ -128,37 +129,36 @@ class Bot:
         return self.exercises[idx]
 
 
-    def select_next_time_interval(self):
+    def select_next_time_interval(self, eligible_users):
         """
         Selects the next time interval
         """
         # How much time is there left in the day
         time_left = datetime.datetime.now().replace(hour=self.office_hours_end, minute=0,
                 second=0, microsecond=0) - datetime.datetime.now()
-        self.debug_print("time_left (min): %d" % (time_left.seconds / 60))
+        self.logger.debug("time_left (min): %d", time_left.seconds / 60)
 
         # How many exercises remain to be done
-        eligible_users = self.get_eligible_users()
         exercise_count = sum(map(lambda u: u.total_exercises(), eligible_users))
-        self.debug_print("exercise_count: %d" % exercise_count)
+        self.logger.debug("exercise_count: %d", exercise_count)
         max_exercises = self.user_exercise_limit * len(eligible_users)
-        self.debug_print("max_exercises: %d" % max_exercises)
+        self.logger.debug("max_exercises: %d", max_exercises)
         remaining_exercises = max_exercises - exercise_count
-        self.debug_print("remaining_exercises: %d" % remaining_exercises)
+        self.logger.debug("remaining_exercises: %d", remaining_exercises)
 
         if remaining_exercises == 0:
             raise NoEligibleUsersException()
 
         # People called out per round
         num_online_users = len(eligible_users)
-        self.debug_print("num_online_users: %d" % num_online_users)
+        self.logger.debug("num_online_users: %d", num_online_users)
         avg_people_per_callout = num_online_users * self.group_callout_chance \
                 + self.num_people_per_callout * (1 - self.group_callout_chance)
-        self.debug_print("avg_people_per_callout: %d" % avg_people_per_callout)
+        self.logger.debug("avg_people_per_callout: %d", avg_people_per_callout)
 
         avg_minutes_per_exercise = time_left.seconds / float(remaining_exercises *
                 avg_people_per_callout * 60)
-        self.debug_print("avg_minutes_per_exercise: %d" % avg_minutes_per_exercise)
+        self.logger.debug("avg_minutes_per_exercise: %d", avg_minutes_per_exercise)
 
         if avg_minutes_per_exercise <= self.min_countdown:
             return self.min_countdown
@@ -185,7 +185,7 @@ class Bot:
             active_users = self.user_manager.fetch_active_users()
             for user in active_users:
                 user.add_exercise(exercise['id'], exercise_reps)
-                self.logger.log_exercise(user.get_user_handle(),exercise["name"],exercise_reps,exercise["units"])
+                self.workout_logger.log_exercise(user.get_user_handle(),exercise["name"],exercise_reps,exercise["units"])
 
         else:
             winners = []
@@ -208,7 +208,7 @@ class Bot:
                     winner_announcement += ", "
 
                 user.add_exercise(exercise['id'], exercise_reps)
-                self.logger.log_exercise(user.get_user_handle(),exercise["name"],exercise_reps,exercise["units"])
+                self.workout_logger.log_exercise(user.get_user_handle(),exercise["name"],exercise_reps,exercise["units"])
 
         # Announce the user
         self.api.post_flex_message(winner_announcement)
@@ -219,23 +219,14 @@ class Bot:
         Does the current time frame fall with the configured office hours?
         """
         if not self.office_hours_on:
-            self.debug_print("not office hours")
+            self.logger.debug("not office hours")
             return True
         now = datetime.datetime.now()
         now_time = now.time()
         is_weekday = now.weekday() < 5 # Monday - 0, ..., Sunday - 6
         if datetime.time(self.office_hours_begin) <= now_time <= datetime.time(self.office_hours_end) and is_weekday:
-            self.debug_print("in office hours")
+            self.logger.debug("in office hours")
             return True
         else:
-            self.debug_print("out office hours")
+            self.logger.debug("out office hours")
             return False
-
-
-    def debug_print(self, msg):
-        """
-        Helper function that only prings the debug message if debug is turned on. Otherwise, message
-        is ignored.
-        """
-        if self.debug:
-            print msg

@@ -10,7 +10,8 @@ class FlexbotWebServer(object):
 
     def load_configuration(self):
         config_json = self.configuration.get_configuration()
-        self.bot_name = config_json['botName'].lower()
+        self.bot_name = config_json['botName']
+        self.channel_name = config_json['channelName']
 
     @cherrypy.expose
     def index(self):
@@ -23,7 +24,7 @@ class FlexbotWebServer(object):
         self.load_configuration()
         user_id = args['user_id']
         text = args['text'].lower()
-        if user_id != "USLACKBOT" and self.bot_name in text:
+        if user_id != "USLACKBOT" and self.bot_name.lower() in text:
             return self.handle_message(text)
 
     def handle_message(self, text):
@@ -40,7 +41,7 @@ class FlexbotWebServer(object):
         - `{bot_name} user1 [user2 [...]]`: print the stats for user1, user2, ...
         - `{bot_name} channel`: print the stats for everyone in the channel
         - `{bot_name}, I don't have to listen to you`: doubles your exercise quota permanently (coming soon)
-        """
+        """.format(channel_name=self.channel_name, bot_name=self.bot_name)
         return {'text': helptext}
 
     def print_stats(self, text):

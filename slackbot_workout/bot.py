@@ -189,7 +189,8 @@ class Bot(object):
 
         else:
             winners = []
-            for i in range(self.num_people_per_callout):
+            people_in_callout = min(self.num_people_per_callout, len(self.get_eligible_users()))
+            for i in range(people_in_callout):
                 try:
                     winners.append(self.select_user(exercise))
                 except:
@@ -200,9 +201,9 @@ class Bot(object):
 
             for user in winners:
                 winner_announcement += str(user.get_user_handle())
-                if i == self.num_people_per_callout - 2:
+                if i == people_in_callout - 2:
                     winner_announcement += ", and "
-                elif i == self.num_people_per_callout - 1:
+                elif i == people_in_callout - 1:
                     winner_announcement += "!"
                 else:
                     winner_announcement += ", "

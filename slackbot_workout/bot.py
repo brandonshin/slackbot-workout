@@ -219,7 +219,7 @@ class Bot(object):
 
 
     def num_people_in_current_callout(self):
-        return min(self.num_people_in_callout, len(self.get_eligible_users()))
+        return min(self.num_people_per_callout, len(self.get_eligible_users()))
 
 
     def is_office_hours(self):

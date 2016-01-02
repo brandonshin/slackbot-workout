@@ -25,18 +25,21 @@ class FlexbotWebServer(object):
         self.load_configuration()
         user_id = args['user_id']
         text = args['text'].lower()
-        if user_id != "USLACKBOT" and self.bot_name.lower() in text:
+        if user_id != "USLACKBOT" and text.startswith(self.bot_name.lower()):
             return self.handle_message(text)
 
     def handle_message(self, text):
-        if "help" in text:
+        args = text.split()[1:]
+        if args[0] == "help":
             return self.print_help()
-        elif "exercises" in text:
+        elif args[0] == "exercises":
             return self.print_exercises()
-        elif "info" in text:
-            return self.print_exercise_info(text)
+        elif args[0] == "info":
+            return self.print_exercise_info(" ".join(args[1:]))
+        elif args[0] == "stats":
+            return self.print_stats(args[1:])
         else:
-            return self.print_stats(text)
+            return self.cant_parse_message()
 
     def print_help(self):
         helptext = """\
@@ -55,47 +58,42 @@ Welcome to {channel_name}! I am {bot_name}, your friendly helpful workout bot. H
         exercises_text += ", ".join(map(lambda e: e['name'], self.exercises))
         return {'text': exercises_text}
 
-    def print_exercise_info(self, text):
+    def print_exercise_info(self, exercise_name):
         exercise_reverse_lookup = {}
-        exercises_to_print = []
         for exercise in self.exercises:
             exercise_reverse_lookup[exercise['name']] = exercise
-        for word in text:
-            if word in exercise_reverse_lookup:
-                exercises_to_print.append(exercise_reverse_lookup[word])
-        if len(exercises_to_print) > 0:
-            exercise_infos = []
-            for exercise in exercises_to_print:
-                exercise_info = "{} description: {}".format(exercise['name'], exercise['info'])
-                exercise_infos.append(exercise_info)
-            exercise_info_text = "\n".join(exercise_infos)
-            return {'text': exercise_info_text}
+        if exercise_name in exercise_reverse_lookup:
+            exercise = exercise_reverse_lookup[exercise_name]
+            exercise_info = "{} description: {}".format(exercise['name'], exercise['info'])
+            return {'text': exercise_info}
         else:
-            return {'text': 'You need to give me an exercise!'}
+            return {'text': 'I don\'t recognize that exercise...'}
 
-    def print_stats(self, text):
-        words = text.split()
+    def print_stats(self, usernames):
         user_reverse_lookup = {}
-        users_to_print = []
+        users_to_print = set()
         for user_id in self.user_manager.users:
             user = self.user_manager.users[user_id]
             user_reverse_lookup[user.username.lower()] = user_id
             user_reverse_lookup[user.real_name.lower()] = user_id
-        for word in words:
-            if word in user_reverse_lookup:
-                users_to_print.append(user_reverse_lookup[word])
-            elif word == "channel" or word == "@channel":
+        for username in usernames:
+            username = username[1:] if username.startwith("@") else username
+            if username in user_reverse_lookup:
+                users_to_print.add(user_reverse_lookup[username])
+            elif username == "channel":
                 users_to_print = self.user_manager.users.keys()
                 break
         if len(users_to_print) > 0:
-            stats = self.user_manager.stats(list(set(users_to_print)))
+            stats = self.user_manager.stats(list(users_to_print))
             self.logger.info("""\
-            vvvvvvvvvvvvvvvvvvvvvvvv
-            responding:
-            {}
-            ^^^^^^^^^^^^^^^^^^^^^^^^""".format(stats))
+vvvvvvvvvvvvvvvvvvvvvvvv
+responding:
+{}
+^^^^^^^^^^^^^^^^^^^^^^^^""".format(stats))
             return {
                 "text": stats
             }
 
-
+    def cant_parse_message(self):
+        # alternatively respond with an error message here
+        pass

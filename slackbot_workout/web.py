@@ -70,6 +70,8 @@ Welcome to {channel_name}! I am {bot_name}, your friendly helpful workout bot. H
                 exercise_infos.append(exercise_info)
             exercise_info_text = "\n".join(exercise_infos)
             return {'text': exercise_info_text}
+        else:
+            return {'text': 'You need to give me an exercise!'}
 
     def print_stats(self, text):
         words = text.split()

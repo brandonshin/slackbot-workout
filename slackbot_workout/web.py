@@ -47,8 +47,8 @@ Welcome to {channel_name}! I am {bot_name}, your friendly helpful workout bot. H
 - `{bot_name} help`: print this help message
 - `{bot_name} exercises`: print the exercises that I can announce
 - `{bot_name} info <EXERCISE>`: print a short informational blob on how to do `EXERCISE` correctly
-- `{bot_name} user1 [user2 [...]]`: print the stats for user1, user2, ...
-- `{bot_name} channel`: print the stats for everyone in the channel
+- `{bot_name} stats user1 [user2 [...]]`: print the stats for user1, user2, ...
+- `{bot_name} stats channel`: print the stats for everyone in the channel
 - `{bot_name}, I don't have to listen to you`: doubles your exercise quota permanently (coming soon)
 """.format(channel_name=self.channel_name, bot_name=self.bot_name)
         return {'text': helptext}

@@ -52,7 +52,7 @@ Welcome to {channel_name}! I am {bot_name}, your friendly helpful workout bot. H
 
     def print_exercises(self):
         exercises_text = "The currently supported exercises are: "
-        exercises_text += map(lambda e: e['name'], self.exercises).join(", ")
+        exercises_text += ", ".join(map(lambda e: e['name'], self.exercises))
         return {'text': exercises_text}
 
     def print_exercise_info(self, text):

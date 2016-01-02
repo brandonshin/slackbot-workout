@@ -35,13 +35,12 @@ class FlexbotWebServer(object):
 
     def print_help(self):
         helptext = """\
-        Welcome to {channel_name}! I am {bot_name}, your friendly helpful workout bot. Here are a
-        couple useful commands you can use to talk with me:
-        - `{bot_name} help`: print this help message
-        - `{bot_name} user1 [user2 [...]]`: print the stats for user1, user2, ...
-        - `{bot_name} channel`: print the stats for everyone in the channel
-        - `{bot_name}, I don't have to listen to you`: doubles your exercise quota permanently (coming soon)
-        """.format(channel_name=self.channel_name, bot_name=self.bot_name)
+Welcome to {channel_name}! I am {bot_name}, your friendly helpful workout bot. Here are a couple useful commands you can use to talk with me:
+- `{bot_name} help`: print this help message
+- `{bot_name} user1 [user2 [...]]`: print the stats for user1, user2, ...
+- `{bot_name} channel`: print the stats for everyone in the channel
+- `{bot_name}, I don't have to listen to you`: doubles your exercise quota permanently (coming soon)
+""".format(channel_name=self.channel_name, bot_name=self.bot_name)
         return {'text': helptext}
 
     def print_stats(self, text):

@@ -77,7 +77,7 @@ Welcome to {channel_name}! I am {bot_name}, your friendly helpful workout bot. H
             user_reverse_lookup[user.username.lower()] = user_id
             user_reverse_lookup[user.real_name.lower()] = user_id
         for username in usernames:
-            username = username[1:] if username.startwith("@") else username
+            username = username[1:] if username.startswith("@") else username
             if username in user_reverse_lookup:
                 users_to_print.add(user_reverse_lookup[username])
             elif username == "channel":

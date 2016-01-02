@@ -1,0 +1,50 @@
+channelName: general
+botName: Flexbot
+
+officeHours:
+ on: No
+ begin: 9
+ end: 17
+
+debug: No
+
+callouts:
+ timeBetween:
+  minTime: 17
+  maxTime: 23
+  units: minutes
+ numPeople: 3
+ groupCalloutChance: 0.05
+
+exercises:
+ -
+  id: 0
+  name: pushups
+  minReps: 15
+  maxReps: 20
+  units: rep
+ -
+  id: 1
+  name: planks
+  minReps: 40
+  maxReps: 60
+  units: second
+ -
+  name: wall sit
+  minReps: 40
+  maxReps: 50
+  units: second
+ -
+  id: 3
+  name: chair dips
+  minReps: 15
+  maxReps: 30
+  units: rep
+ -
+  id: 4
+  name: calf raises
+  minReps: 20
+  maxReps: 30
+  units: rep
+
+user_exercise_limit: 3

@@ -1,6 +1,7 @@
+from abc import ABCMeta, abstractmethod
 import json
 import os
-from abc import ABCMeta, abstractmethod
+import yaml
 
 class TokenProvider(object):
     __metaclass__ = ABCMeta
@@ -34,6 +35,14 @@ class JsonFileConfigurationProvider(ConfigurationProvider):
     def get_configuration(self):
         with open(self.filename, 'r') as f:
             return json.load(f)
+
+class YamlFileConfigurationProvider(ConfigurationProvider):
+    def __init__(self, filename):
+        self.filename = filename
+
+    def get_configuration(self):
+        with open(self.filename, 'r') as f:
+            return yaml.load(f)
 
 class InMemoryConfigurationProvider(ConfigurationProvider):
     def __init__(self, configuration):

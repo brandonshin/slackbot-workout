@@ -31,7 +31,7 @@ class FlexbotWebServer(object):
         if "help" in text:
             return self.print_help()
         else:
-            return self.print_stats()
+            return self.print_stats(text)
 
     def print_help(self):
         helptext = """\

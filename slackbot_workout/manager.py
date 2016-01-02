@@ -1,6 +1,6 @@
 from user import User
 
-class UserManager:
+class UserManager(object):
     def __init__(self, api, configuration):
         self.api = api
         self.configuration = configuration

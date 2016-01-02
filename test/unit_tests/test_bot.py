@@ -57,7 +57,7 @@ def get_sample_bot():
     return (um, bot)
 
 
-class TestBot:
+class TestBot(object):
     def test_init(self):
         _, bot = get_sample_bot()
         assert bot.user_queue == []

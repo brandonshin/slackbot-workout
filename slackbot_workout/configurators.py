@@ -2,7 +2,7 @@ import json
 import os
 from abc import ABCMeta, abstractmethod
 
-class TokenProvider:
+class TokenProvider(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
@@ -20,7 +20,7 @@ class InMemoryTokenProvider(TokenProvider):
     def get_user_token(self):
         return self.user_token
 
-class ConfigurationProvider:
+class ConfigurationProvider(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod

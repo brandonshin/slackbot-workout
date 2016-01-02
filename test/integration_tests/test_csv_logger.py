@@ -2,7 +2,7 @@ import os
 
 from slackbot_workout.loggers import CsvLogger
 
-class TestCsvLogger:
+class TestCsvLogger(object):
     def teardown(self):
         logfiles = [f for f in os.listdir('.') if f.endswith('.csv')]
         for f in logfiles:

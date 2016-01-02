@@ -1,4 +1,4 @@
-class User:
+class User(object):
     def __init__(self, user_id, username, real_name):
         # The Slack ID of the user
         self.id = user_id

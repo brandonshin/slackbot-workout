@@ -1,6 +1,6 @@
 from slackbot_workout.user import User
 
-class TestUser:
+class TestUser(object):
     def test_init(self):
         u = User('id', 'un', 'rn')
         assert u.id == 'id'

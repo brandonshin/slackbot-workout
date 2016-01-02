@@ -1,13 +1,18 @@
+import logging
+
 from slacker import Slacker
 
 class SlackbotApi(Slacker):
     def __init__(self, configuration, **kwargs):
         super(SlackbotApi, self).__init__(**kwargs)
+        self.logger = logging.getLogger(__name__)
         self.configuration = configuration
-        config_dict = configuration.get_configuration()
+        self.load_configuration()
+
+    def load_configuration(self):
+        config_dict = self.configuration.get_configuration()
         self.channel_id = self.fetch_channel_id(config_dict['channelName'])
         self.bot_name = config_dict['botName']
-        self.debug = config_dict['debug']
 
     def fetch_channel_id(self, channel_name):
         channels = self.channels.list()
@@ -17,11 +22,9 @@ class SlackbotApi(Slacker):
         return None
 
     def post_flex_message(self, message):
-        if self.debug:
-            print message
-        else:
-            self.chat.post_message(self.channel_id, message, username=self.bot_name,
-                    icon_emoji=':muscle:')
+        self.logger.debug("Sending message: %s", message)
+        self.chat.post_message(self.channel_id, message, username=self.bot_name,
+                icon_emoji=':muscle:')
 
     def get_members(self):
         response = self.channels.info(self.channel_id).body

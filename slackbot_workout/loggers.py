@@ -1,10 +1,11 @@
-import time
+from abc import ABCMeta, abstractmethod
 import csv
 import datetime
-from abc import ABCMeta, abstractmethod
+import logging
 import psycopg2
+import time
 
-class BaseLogger:
+class BaseLogger(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
@@ -54,22 +55,22 @@ class CsvLogger(BaseLogger):
                     exercises[username] = [exercise_data]
         return exercises
 
-class PostgresConnector:
+class PostgresConnector(object):
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+
     def with_connection(self, func):
         conn = None
         try:
             conn = psycopg2.connect(**self.kwargs)
             cursor = conn.cursor()
-            if self.debug:
-                print "precursor"
+            self.logger.debug("precursor")
             result = func(cursor)
             conn.commit()
-            if self.debug:
-                print "committed"
+            self.logger.debug("committed")
             return result
-        except psycopg2.Error as e:
-            if self.debug:
-                print e
+        except psycopg2.Error:
+            self.logger.exception("Failure during database connection")
             conn.rollback()
         finally:
             if conn:
@@ -77,6 +78,7 @@ class PostgresConnector:
 
 class PostgresDatabaseLogger(BaseLogger, PostgresConnector):
     def __init__(self, dbname, tablename, **kwargs):
+        super(PostgresDatabaseLogger, self).__init__()
         self.debug = 'debug' in kwargs and kwargs['debug'] == True
         self.kwargs = kwargs
         self.kwargs.update({'dbname': dbname})

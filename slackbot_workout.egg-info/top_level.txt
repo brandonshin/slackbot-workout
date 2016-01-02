@@ -1,6 +1,3 @@
-bot
-client
-logger
-server
-user
-util
+samples
+slackbot_workout
+test

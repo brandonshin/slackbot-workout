@@ -12,6 +12,7 @@ class FlexbotWebServer(object):
         config_json = self.configuration.get_configuration()
         self.bot_name = config_json['botName']
         self.channel_name = config_json['channelName']
+        self.exercises = config_json['exercises']
 
     @cherrypy.expose
     def index(self):
@@ -30,6 +31,10 @@ class FlexbotWebServer(object):
     def handle_message(self, text):
         if "help" in text:
             return self.print_help()
+        elif "exercises" in text:
+            return self.print_exercises()
+        elif "info" in text:
+            return self.print_exercise_info(text)
         else:
             return self.print_stats(text)
 
@@ -37,11 +42,34 @@ class FlexbotWebServer(object):
         helptext = """\
 Welcome to {channel_name}! I am {bot_name}, your friendly helpful workout bot. Here are a couple useful commands you can use to talk with me:
 - `{bot_name} help`: print this help message
+- `{bot_name} exercises`: print the exercises that I can announce
+- `{bot_name} info <EXERCISE>`: print a short informational blob on how to do `EXERCISE` correctly
 - `{bot_name} user1 [user2 [...]]`: print the stats for user1, user2, ...
 - `{bot_name} channel`: print the stats for everyone in the channel
 - `{bot_name}, I don't have to listen to you`: doubles your exercise quota permanently (coming soon)
 """.format(channel_name=self.channel_name, bot_name=self.bot_name)
         return {'text': helptext}
+
+    def print_exercises(self):
+        exercises_text = "The currently supported exercises are: "
+        exercises_text += map(lambda e: e['name'], self.exercises).join(", ")
+        return {'text': exercises_text}
+
+    def print_exercise_info(self, text):
+        exercise_reverse_lookup = {}
+        exercises_to_print = []
+        for exercise in self.exercises:
+            exercise_reverse_lookup[exercise['name']] = exercise
+        for word in text:
+            if word in exercise_reverse_lookup:
+                exercises_to_print.append(exercise_reverse_lookup[word])
+        if len(exercises_to_print) > 0:
+            exercise_infos = []
+            for exercise in exercises_to_print:
+                exercise_info = "{} description: {}".format(exercise['name'], exercise['info'])
+                exercise_infos.append(exercise_info)
+            exercise_info_text = "\n".join(exercise_infos)
+            return {'text': exercise_info_text}
 
     def print_stats(self, text):
         words = text.split()

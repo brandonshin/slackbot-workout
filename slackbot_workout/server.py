@@ -18,6 +18,11 @@ class Server(object):
         self.user_manager = UserManager(self.slack_api, self.configuration)
         self.bot = Bot(self.slack_api, self.workout_logger, self.configuration, self.user_manager)
         self.web_server = FlexbotWebServer(self.user_manager, configuration)
+        self.load_configuration()
+
+    def load_configuration(self):
+        config_json = self.configuration.get_configuration()
+        self.webserver_port = config_json['webserverPort']
 
     def start(self):
         self.logger.debug('Starting workout loop')
@@ -27,7 +32,7 @@ class Server(object):
         # Start the webserver
         self.logger.debug('Starting webserver')
         cherrypy.config.update({'server.socket_host': '0.0.0.0',
-                                'server.socket_port': 80,
+                                'server.socket_port': self.webserver_port,
                                 'log.screen': True,
                                })
         cherrypy.quickstart(self.web_server)

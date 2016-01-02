@@ -1,5 +1,6 @@
 channelName: general
 botName: Flexbot
+webserverPort: 8080
 
 officeHours:
  on: No

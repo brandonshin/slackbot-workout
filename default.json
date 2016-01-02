@@ -1,6 +1,7 @@
 {
   "channelName": "general",
   "botName": "yourBotName",
+  "webserverPort": 8080,
 
   "officeHours": {
     "on": false,

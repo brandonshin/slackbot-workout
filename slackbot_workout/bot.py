@@ -141,8 +141,10 @@ class Bot(object):
         # How many exercises remain to be done
         exercise_count = sum(map(lambda u: u.total_exercises(), eligible_users))
         self.logger.debug("exercise_count: %d", exercise_count)
+
         max_exercises = self.user_exercise_limit * len(eligible_users)
         self.logger.debug("max_exercises: %d", max_exercises)
+
         remaining_exercises = max_exercises - exercise_count
         self.logger.debug("remaining_exercises: %d", remaining_exercises)
 
@@ -152,8 +154,9 @@ class Bot(object):
         # People called out per round
         num_online_users = len(eligible_users)
         self.logger.debug("num_online_users: %d", num_online_users)
+
         avg_people_per_callout = num_online_users * self.group_callout_chance \
-                + self.num_people_per_callout * (1 - self.group_callout_chance)
+                + self.num_people_in_current_callout() * (1 - self.group_callout_chance)
         self.logger.debug("avg_people_per_callout: %d", avg_people_per_callout)
 
         avg_minutes_per_exercise = time_left.seconds / float(remaining_exercises *
@@ -189,7 +192,7 @@ class Bot(object):
 
         else:
             winners = []
-            people_in_callout = min(self.num_people_per_callout, len(self.get_eligible_users()))
+            people_in_callout = self.num_people_in_current_callout()
             for i in range(people_in_callout):
                 try:
                     winners.append(self.select_user(exercise))
@@ -213,6 +216,10 @@ class Bot(object):
 
         # Announce the user
         self.api.post_flex_message(winner_announcement)
+
+
+    def num_people_in_current_callout(self):
+        return min(self.num_people_in_callout, len(self.get_eligible_users()))
 
 
     def is_office_hours(self):

@@ -30,6 +30,7 @@ exercises:
   maxReps: 60
   units: second
  -
+  id: 2
   name: wall sit
   minReps: 40
   maxReps: 50

@@ -7,7 +7,8 @@ setup(
     install_requires = [
         'slacker>=0.8.6',
         'psycopg2>=2.6.1',
-        'cherrypy>=4.0.0'
+        'cherrypy>=4.0.0',
+        'pyyaml>=3.11'
     ],
 
     author = "Brandon Shin, Miles Yucht",

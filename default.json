@@ -1,7 +1,6 @@
 {
-  "teamDomain": "yourDomainHere",
   "channelName": "general",
-  "channelId": "channelIdHere",
+  "botName": "yourBotName",
 
   "officeHours": {
     "on": false,
@@ -18,7 +17,6 @@
       "units": "minutes"
     },
     "numPeople": 3,
-    "slidingWindowSize": 8,
     "groupCalloutChance": 0.05
   },
 
@@ -58,5 +56,7 @@
       "maxReps": 30,
       "units": "rep"
     }
-  ]
+  ],
+
+  "user_exercise_limit": 3
 }

@@ -114,3 +114,4 @@ exercises:
 
 
 user_exercise_limit: 3
+enable_acknowledgment: Yes

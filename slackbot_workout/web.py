@@ -1,5 +1,6 @@
 import cherrypy
 import logging
+import pystache
 
 class FlexbotWebServer(object):
     def __init__(self, user_manager, configuration):
@@ -13,6 +14,7 @@ class FlexbotWebServer(object):
         self.bot_name = config_json['botName']
         self.channel_name = config_json['channelName']
         self.exercises = config_json['exercises']
+        self.enable_acknowledgment = config_json['enable_acknowledgment']
 
     @cherrypy.expose
     def index(self):
@@ -42,15 +44,27 @@ class FlexbotWebServer(object):
             return self.cant_parse_message()
 
     def print_help(self):
-        helptext = """\
-Welcome to {channel_name}! I am {bot_name}, your friendly helpful workout bot. Here are a couple useful commands you can use to talk with me:
-- `{bot_name} help`: print this help message
-- `{bot_name} exercises`: print the exercises that I can announce
-- `{bot_name} info <EXERCISE>`: print a short informational blob on how to do `EXERCISE` correctly
-- `{bot_name} stats user1 [user2 [...]]`: print the stats for user1, user2, ...
-- `{bot_name} stats channel`: print the stats for everyone in the channel
-- `{bot_name}, I don't have to listen to you`: doubles your exercise quota permanently (coming soon)
-""".format(channel_name=self.channel_name, bot_name=self.bot_name)
+        template_options = {
+            'channel_name': self.channel_name,
+            'bot_name': self.bot_name,
+            'enable_acknoledgment': self.enable_acknowledgment
+        }
+        helptext = pystache.render("""\
+Welcome to {{channel_name}}! I am {{bot_name}}, your friendly helpful workout bot. Here are a couple useful commands you can use to talk with me:
+- `{{bot_name}} help`: print this help message
+- `{{bot_name}} exercises`: print the exercises that I can announce
+- `{{bot_name}} info <EXERCISE>`: print a short informational blob on how to do `EXERCISE` correctly
+- `{{bot_name}} stats user1 [user2 [...]]`: print the stats for user1, user2, ...
+- `{{bot_name}} stats channel`: print the stats for everyone in the channel
+{{#enable_acknowledgment}}
+- `{{bot_name}} done`: indicate that you have indeed finished your exercise for the current round
+{{/enable_acknowledgment}}
+- `{{bot_name}}, I don't have to listen to you`: doubles your exercise quota permanently (coming soon)
+{{#enable_acknowledgment}}
+
+A little primer on how I work: after I call you out for an exercise, I will only log your workout after you let me know that you have finished your assigned exercise by sending `{bot_name} done` to the channel. Otherwise, your workout will go unrecorded!
+{{/enable_acknowledgment}}
+""", template_options)
         return {'text': helptext}
 
     def print_exercises(self):

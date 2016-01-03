@@ -3,8 +3,9 @@ import logging
 import pystache
 
 class FlexbotWebServer(object):
-    def __init__(self, user_manager, configuration):
+    def __init__(self, user_manager, ack_handler, configuration):
         self.user_manager = user_manager
+        self.ack_handler = ack_handler
         self.configuration = configuration
         self.logger = logging.getLogger(__name__)
 
@@ -33,6 +34,8 @@ class FlexbotWebServer(object):
             return self.print_stats(args[1:])
         elif self.configuration.enable_acknowledgment() and command == "done":
             return self.acknowledge_user(user_id)
+        elif command == "reload":
+            return self.reload_configuration()
         else:
             return self.cant_parse_message()
 
@@ -102,9 +105,10 @@ responding:
             }
 
     def acknowledge_user(self, user_id):
-        # Check the list of users for the most recent callout
-        # If this user is on that list, then log their workout here
-        pass
+        self.ack_handler.acknowledge_user(user_id)
+
+    def reload_configuration(self):
+        self.configuration.set_configuration()
 
     def cant_parse_message(self):
         # alternatively respond with an error message here

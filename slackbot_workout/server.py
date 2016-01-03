@@ -1,7 +1,6 @@
 import cherrypy
 import logging
 import threading
-import time
 
 from api import SlackbotApi
 from bot import Bot, NoEligibleUsersException
@@ -10,15 +9,31 @@ import util
 from web import FlexbotWebServer
 
 class Server(object):
-    def __init__(self, workout_logger, configuration, tokens):
+    def __init__(self, workout_logger, configuration, tokens, **kwargs):
         self.logger = logging.getLogger(__name__)
         self.workout_logger = workout_logger
         self.configuration = configuration
         self.tokens = tokens
-        self.slack_api = SlackbotApi(configuration, token=self.tokens.get_user_token())
-        self.user_manager = UserManager(self.slack_api, self.configuration)
-        self.bot = Bot(self.slack_api, self.workout_logger, self.configuration, self.user_manager)
-        self.web_server = FlexbotWebServer(self.user_manager, configuration)
+
+        if 'slack_api' in kwargs:
+            self.slack_api = kwargs['slack_api']
+        else:
+            self.slack_api = SlackbotApi(configuration, token=self.tokens.get_user_token())
+
+        if 'user_manager' in kwargs:
+            self.user_manager = kwargs['user_manager']
+        else:
+            self.user_manager = UserManager(self.slack_api, self.configuration)
+
+        if 'bot' in kwargs:
+            self.bot = kwargs['bot']
+        else:
+            self.bot = Bot(self.slack_api, self.workout_logger, self.configuration, self.user_manager)
+
+        if 'web_server' in kwargs:
+            self.web_server = kwargs['web_server']
+        else:
+            self.web_server = FlexbotWebServer(self.user_manager, self, configuration)
 
     def start(self):
         self.logger.debug('Starting workout loop')
@@ -34,34 +49,53 @@ class Server(object):
         cherrypy.quickstart(self.web_server)
 
     def workout_loop(self):
+        """
+        Runs the workout bot in an infinite loop.
+        """
         was_office_hours = False
 
         while True:
+            was_office_hours = self.workout_step(was_office_hours)
+
+    def workout_step(self, was_office_hours):
+        """
+        Runs a step of the workout bot, handling exceptions. Returns True iff is_office_hours
+        returns true before the current workout.
+        """
+        is_office_hours = self.bot.is_office_hours()
+        try:
+            self._workout_step(was_office_hours, is_office_hours)
+        except NoEligibleUsersException:
+            util.sleep(minutes=5)
+        return is_office_hours
+
+    def _workout_step(self, was_office_hours, is_office_hours):
+        if is_office_hours:
+            # Get an exercise to do
+            exercise, reps, mins_to_exercise = self.bot.select_exercise_and_start_time()
+            util.sleep(minutes=mins_to_exercise)
+
+            # Assign the exercise to someone
+            self.current_winners = self.bot.assign_exercise(exercise, reps)
+            self.current_exercise = exercise
+            self.current_reps = reps
+        else:
+            if was_office_hours:
+                self.user_manager.stats()
+                self.user_manager.clear_users()
+            if not self.configuration.debug():
+                util.sleep(minutes=5) # Sleep 5 minutes
+            else:
+                # If debugging, check again in 5 seconds
+                util.sleep(seconds=5)
+
+    def acknowledge_winner(self, user_id):
+        if self.configuration.enable_acknowledgment():
             try:
-                is_office_hours = self.bot.is_office_hours()
-                if is_office_hours:
-                    self.configuration.set_configuration()
-
-                    # Get an exercise to do
-                    exercise, mins_to_exercise = self.bot.select_exercise_and_start_time()
-                    util.sleep(minutes=mins_to_exercise)
-
-                    # Assign the exercise to someone
-                    self.bot.assign_exercise(exercise)
-
-                else:
-                    if was_office_hours:
-                        self.user_manager.stats()
-                        self.user_manager.clear_users()
-                    if not self.bot.debug:
-                        util.sleep(minutes=5) # Sleep 5 minutes
-                    else:
-                        # If debugging, check again in 5 seconds
-                        util.sleep(seconds=5)
-                was_office_hours = is_office_hours
-
-            except KeyboardInterrupt:
-                self.logger.info("interrupted")
-                self.configuration.set_configuration()
-            except NoEligibleUsersException:
-                time.sleep(5*60)
+                user = filter(lambda u: u.id == user_id, self.current_winners)[0]
+                exercise = self.current_exercise
+                self.workout_logger.log_exercise(user.get_user_handle(), exercise["name"],
+                        self.current_reps, exercise["units"])
+                self.current_winners.remove(user)
+            except IndexError: # user not actually in the list of current winners
+                pass

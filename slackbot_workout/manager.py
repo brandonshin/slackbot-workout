@@ -5,17 +5,14 @@ class UserManager(object):
         self.api = api
         self.configuration = configuration
         self.users = {}
-        self.load_configuration()
-
-    def load_configuration(self):
-        self.exercises = self.configuration.get_configuration()['exercises']
 
     def stats(self, user_id_list=[]):
         # Write to the command console today's breakdown
         s = "```\n"
         #s += "Username\tAssigned\tComplete\tPercent
         s += "Username".ljust(15)
-        for exercise in self.exercises:
+        exercises = self.configuration.exercises()
+        for exercise in exercises:
             s += exercise["name"] + "  "
         s += "\n---------------------------------------------------------------\n"
 
@@ -23,7 +20,7 @@ class UserManager(object):
         for user_id in user_ids:
             user = self.users[user_id]
             s += user.username.ljust(15)
-            for exercise in self.exercises:
+            for exercise in exercises:
                 s += str(user.get_exercise_count(exercise["id"])).ljust(len(exercise["name"]) + 2)
             s += "\n"
 

@@ -6,29 +6,19 @@ class FlexbotWebServer(object):
     def __init__(self, user_manager, configuration):
         self.user_manager = user_manager
         self.configuration = configuration
-        self.load_configuration()
         self.logger = logging.getLogger(__name__)
-
-    def load_configuration(self):
-        config_json = self.configuration.get_configuration()
-        self.bot_name = config_json['botName']
-        self.channel_name = config_json['channelName']
-        self.exercises = config_json['exercises']
-        self.enable_acknowledgment = config_json['enable_acknowledgment']
 
     @cherrypy.expose
     def index(self):
-        self.load_configuration()
-        return "Welcome to {}'s webserver!".format(self.bot_name)
+        return "Welcome to {}'s webserver!".format(self.configuration.bot_name())
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def flex(self, **args):
-        self.load_configuration()
         user_id = args['user_id']
         text = args['text'].lower()
-        if user_id != "USLACKBOT" and text.startswith(self.bot_name.lower()):
-            return self.handle_message(text, user_id)
+        if user_id != "USLACKBOT" and text.startswith(self.configuration.bot_name().lower()):
+            return self.handle_message(text)
 
     def handle_message(self, text, user_id):
         args = text.split()[1:]
@@ -48,9 +38,9 @@ class FlexbotWebServer(object):
 
     def print_help(self):
         template_options = {
-            'channel_name': self.channel_name,
-            'bot_name': self.bot_name,
-            'enable_acknowledgment': self.enable_acknowledgment
+            'channel_name': self.configuration.channel_name(),
+            'bot_name': self.configuration.bot_name(),
+            'enable_acknowledgment': self.configuration.enable_acknowledgment()
         }
         helptext = pystache.render("""\
 Welcome to {{channel_name}}! I am {{bot_name}}, your friendly helpful workout bot. Here are a couple useful commands you can use to talk with me:
@@ -72,12 +62,12 @@ A little primer on how I work: after I call you out for an exercise, I will only
 
     def print_exercises(self):
         exercises_text = "The currently supported exercises are: "
-        exercises_text += ", ".join(map(lambda e: e['name'], self.exercises))
+        exercises_text += ", ".join(map(lambda e: e['name'], self.configuration.exercises()))
         return {'text': exercises_text}
 
     def print_exercise_info(self, exercise_name):
         exercise_reverse_lookup = {}
-        for exercise in self.exercises:
+        for exercise in self.configuration.exercises():
             exercise_reverse_lookup[exercise['name']] = exercise
         if exercise_name in exercise_reverse_lookup:
             exercise = exercise_reverse_lookup[exercise_name]

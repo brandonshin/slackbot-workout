@@ -54,12 +54,12 @@ class TestWeb(object):
     def test_flex_handler_done(self):
         ack_handler, server = get_server()
         server.flex(user_id='UREALUSER', text='testbot done realuser')
-        ack_handler.acknowledge_user.assert_called_once_with('UREALUSER')
+        ack_handler.acknowledge_winner.assert_called_once_with('UREALUSER')
 
     def test_flex_handler_done_disabled(self):
         ack_handler, server = get_server(enable_acknowledgment=False)
         server.flex(user_id='UREALUSER', text='testbot done realuser')
-        ack_handler.acknowledge_user.assert_never_called()
+        ack_handler.acknowledge_winner.assert_never_called()
 
     def test_flex_handler_bad_message(self):
         _, server = get_server()

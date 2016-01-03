@@ -7,10 +7,15 @@ formatters:
 handlers:
   console:
     class: logging.StreamHandler
-    level: DEBUG
+    level: INFO
     formatter: simple
     stream: ext://sys.stdout
+  file:
+    class: logging.FileHandler
+    level: DEBUG
+    formatter: simple
+    filename: slackbot.log
 
 root:
   level: DEBUG
-  handlers: [console]
+  handlers: [console, file]

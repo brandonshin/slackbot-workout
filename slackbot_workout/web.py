@@ -28,18 +28,21 @@ class FlexbotWebServer(object):
         user_id = args['user_id']
         text = args['text'].lower()
         if user_id != "USLACKBOT" and text.startswith(self.bot_name.lower()):
-            return self.handle_message(text)
+            return self.handle_message(text, user_id)
 
-    def handle_message(self, text):
+    def handle_message(self, text, user_id):
         args = text.split()[1:]
-        if args[0] == "help":
+        command = args[0]
+        if command == "help":
             return self.print_help()
-        elif args[0] == "exercises":
+        elif command == "exercises":
             return self.print_exercises()
-        elif args[0] == "info":
+        elif command == "info":
             return self.print_exercise_info(" ".join(args[1:]))
-        elif args[0] == "stats":
+        elif command == "stats":
             return self.print_stats(args[1:])
+        elif self.enable_acknowledgment and command == "done":
+            return self.acknowledge_user(user_id)
         else:
             return self.cant_parse_message()
 
@@ -107,6 +110,11 @@ responding:
             return {
                 "text": stats
             }
+
+    def acknowledge_user(self, user_id):
+        # Check the list of users for the most recent callout
+        # If this user is on that list, then log their workout here
+        pass
 
     def cant_parse_message(self):
         # alternatively respond with an error message here

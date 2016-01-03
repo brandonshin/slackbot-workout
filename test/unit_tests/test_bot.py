@@ -78,7 +78,7 @@ class TestBot(object):
         min_time = config.min_time_between_callouts()
         max_time = config.max_time_between_callouts()
         _, bot = get_sample_bot()
-        exercise, mins_to_exercise = bot._select_exercise_and_start_time(eligible_users())
+        exercise, reps, mins_to_exercise = bot._select_exercise_and_start_time(eligible_users())
         assert exercise['name'] in map(lambda e: e['name'], exercises)
         assert min_time <= mins_to_exercise <= max_time
 

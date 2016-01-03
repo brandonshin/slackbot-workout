@@ -31,7 +31,7 @@ class FlexbotWebServer(object):
             return self.print_exercise_info(" ".join(args[1:]))
         elif command == "stats":
             return self.print_stats(args[1:])
-        elif self.enable_acknowledgment and command == "done":
+        elif self.configuration.enable_acknowledgment() and command == "done":
             return self.acknowledge_user(user_id)
         else:
             return self.cant_parse_message()

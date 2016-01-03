@@ -55,7 +55,6 @@ class TestUserManager(object):
         mock_api = get_mock_api()
         um = make_user_manager(mock_api)
         assert um.users == {}
-        assert um.exercises == get_sample_config().get_configuration()['exercises']
 
     def test_fetch_users(self):
         mock_api = get_mock_api()

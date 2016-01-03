@@ -9,37 +9,15 @@ class NoEligibleUsersException(Exception):
 
 # Configuration values to be set in setConfiguration
 class Bot(object):
-    def __init__(self, api, workout_logger, configurator, user_manager):
+    def __init__(self, api, workout_logger, config, user_manager):
         self.api = api
         self.workout_logger = workout_logger
-        self.configurator = configurator
+        self.config = config
         self.user_manager = user_manager
         self.logger = logging.getLogger(__name__)
 
-        self.load_configuration()
-
         # round robin store
         self.user_queue = []
-
-
-    def load_configuration(self):
-        """
-        Sets the configuration file.
-
-        Runs after every callout so that settings can be changed realtime
-        """
-        # Read variables from the configurator
-        settings = self.configurator.get_configuration()
-        self.min_countdown = settings["callouts"]["timeBetween"]["minTime"]
-        self.max_countdown = settings["callouts"]["timeBetween"]["maxTime"]
-        self.num_people_per_callout = settings["callouts"]["numPeople"]
-        self.group_callout_chance = settings["callouts"]["groupCalloutChance"]
-        self.exercises = settings["exercises"]
-        self.office_hours_on = settings["officeHours"]["on"]
-        self.office_hours_begin = settings["officeHours"]["begin"]
-        self.office_hours_end = settings["officeHours"]["end"]
-        self.debug = settings["debug"]
-        self.user_exercise_limit = settings["user_exercise_limit"]
 
 
     def update_user_queue(self):
@@ -62,7 +40,8 @@ class Bot(object):
         """
         self.update_user_queue()
 
-        eligible_users = filter(lambda u: u.total_exercises() < self.user_exercise_limit, self.user_queue)
+        eligible_users = filter(lambda u: u.total_exercises() < self.config.user_exercise_limit(),
+                self.user_queue)
         if len(eligible_users) == 0:
             raise NoEligibleUsersException()
 
@@ -114,8 +93,9 @@ class Bot(object):
         """
         Selects the next exercise
         """
-        idx = random.randrange(0, len(self.exercises))
-        return self.exercises[idx]
+        exercises = self.config.exercises()
+        idx = random.randrange(0, len(exercises))
+        return exercises[idx]
 
 
     def select_next_time_interval(self, eligible_users):
@@ -123,7 +103,7 @@ class Bot(object):
         Selects the next time interval
         """
         # How much time is there left in the day
-        time_left = datetime.datetime.now().replace(hour=self.office_hours_end, minute=0,
+        time_left = datetime.datetime.now().replace(hour=self.config.office_hours_end(), minute=0,
                 second=0, microsecond=0) - datetime.datetime.now()
         self.logger.debug("time_left (min): %d", time_left.seconds / 60)
 
@@ -131,7 +111,7 @@ class Bot(object):
         exercise_count = sum(map(lambda u: u.total_exercises(), eligible_users))
         self.logger.debug("exercise_count: %d", exercise_count)
 
-        max_exercises = self.user_exercise_limit * len(eligible_users)
+        max_exercises = self.config.user_exercise_limit() * len(eligible_users)
         self.logger.debug("max_exercises: %d", max_exercises)
 
         remaining_exercises = max_exercises - exercise_count
@@ -144,20 +124,17 @@ class Bot(object):
         num_online_users = len(eligible_users)
         self.logger.debug("num_online_users: %d", num_online_users)
 
-        avg_people_per_callout = num_online_users * self.group_callout_chance \
-                + self.num_people_in_current_callout() * (1 - self.group_callout_chance)
+        avg_people_per_callout = num_online_users * self.config.group_callout_chance() \
+                + self.num_people_in_current_callout() * (1 - self.config.group_callout_chance())
         self.logger.debug("avg_people_per_callout: %d", avg_people_per_callout)
 
         avg_minutes_per_exercise = time_left.seconds / float(remaining_exercises *
                 avg_people_per_callout * 60)
         self.logger.debug("avg_minutes_per_exercise: %d", avg_minutes_per_exercise)
 
-        if avg_minutes_per_exercise <= self.min_countdown:
-            return self.min_countdown
-        elif avg_minutes_per_exercise >= self.max_countdown:
-            return self.max_countdown
-        else:
-            return int(avg_minutes_per_exercise)
+        return min(self.config.max_time_between_callouts(),
+                   max(self.config.min_time_between_callouts(),
+                       int(avg_minutes_per_exercise)))
 
 
     def assign_exercise(self, exercise):
@@ -172,7 +149,7 @@ class Bot(object):
         eligible_users = self.get_eligible_users()
 
         # EVERYBODY
-        if random.random() < self.group_callout_chance:
+        if random.random() < self.config.group_callout_chance():
             winner_announcement += "@channel!"
 
             # Populate the user_cache
@@ -209,20 +186,22 @@ class Bot(object):
 
 
     def num_people_in_current_callout(self):
-        return min(self.num_people_per_callout, len(self.user_queue))
+        return min(self.config.num_people_per_callout(), len(self.user_queue))
 
 
     def is_office_hours(self):
         """
         Does the current time frame fall with the configured office hours?
         """
-        if not self.office_hours_on:
+        if not self.config.office_hours_on():
             self.logger.debug("not office hours")
             return True
         now = datetime.datetime.now()
         now_time = now.time()
         is_weekday = now.weekday() < 5 # Monday - 0, ..., Sunday - 6
-        if datetime.time(self.office_hours_begin) <= now_time <= datetime.time(self.office_hours_end) and is_weekday:
+        office_hours_start = datetime.time(self.config.office_hours_begin())
+        office_hours_end = datetime.time(self.config.office_hours_end())
+        if office_hours_start <= now_time <= office_hours_end and is_weekday:
             self.logger.debug("in office hours")
             return True
         else:

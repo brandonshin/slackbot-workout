@@ -9,7 +9,7 @@ from slackbot_workout.user import User
 
 def get_sample_config():
     return InMemoryConfigurationProvider( {
-        "officeHours": {
+        "office_hours": {
             "on": False,
             "begin": 10,
             "end": 18
@@ -18,28 +18,28 @@ def get_sample_config():
         "debug": False,
 
         "callouts": {
-            "timeBetween": {
-                "minTime": 10,
-                "maxTime": 100,
+            "time_between": {
+                "min_time": 10,
+                "max_time": 100,
                 "units": "minutes"
             },
-            "numPeople": 1,
-            "groupCalloutChance": 0.1
+            "num_people": 1,
+            "group_callout_chance": 0.1
         },
 
         "exercises": [
             {
                 "id": 0,
                 "name": "pushups",
-                "minReps": 15,
-                "maxReps": 20,
+                "min_reps": 15,
+                "max_reps": 20,
                 "units": "rep"
             },
             {
                 "id": 1,
                 "name": "planks",
-                "minReps": 40,
-                "maxReps": 60,
+                "min_reps": 40,
+                "max_reps": 60,
                 "units": "second"
             },
         ],
@@ -74,10 +74,11 @@ class TestBot(object):
 
     def test_select_exercise_and_start_time(self):
         config = get_sample_config()
-        exercises = config.get_configuration()['exercises']
-        time_range = config.get_configuration()['callouts']['timeBetween']
+        exercises = config.exercises()
+        min_time = config.min_time_between_callouts()
+        max_time = config.max_time_between_callouts()
         _, bot = get_sample_bot()
         exercise, mins_to_exercise = bot._select_exercise_and_start_time(eligible_users())
         assert exercise['name'] in map(lambda e: e['name'], exercises)
-        assert time_range['minTime'] <= mins_to_exercise <= time_range['maxTime']
+        assert min_time <= mins_to_exercise <= max_time
 

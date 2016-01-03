@@ -14,6 +14,7 @@ class Server(object):
         self.workout_logger = workout_logger
         self.configuration = configuration
         self.tokens = tokens
+        self.current_winners = []
 
         if 'slack_api' in kwargs:
             self.slack_api = kwargs['slack_api']

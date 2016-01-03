@@ -47,7 +47,7 @@ class FlexbotWebServer(object):
         template_options = {
             'channel_name': self.channel_name,
             'bot_name': self.bot_name,
-            'enable_acknoledgment': self.enable_acknowledgment
+            'enable_acknowledgment': self.enable_acknowledgment
         }
         helptext = pystache.render("""\
 Welcome to {{channel_name}}! I am {{bot_name}}, your friendly helpful workout bot. Here are a couple useful commands you can use to talk with me:

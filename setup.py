@@ -8,7 +8,8 @@ setup(
         'slacker>=0.8.6',
         'psycopg2>=2.6.1',
         'cherrypy>=4.0.0',
-        'pyyaml>=3.11'
+        'pyyaml>=3.11',
+        'pystache>=0.5.4'
     ],
 
     author = "Brandon Shin, Miles Yucht",

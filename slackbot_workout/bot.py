@@ -79,6 +79,8 @@ class Bot(object):
     def _select_exercise_and_start_time(self, eligible_users):
         minute_interval = self.select_next_time_interval(eligible_users)
         exercise = self.select_exercise()
+        exercise_reps = random.randrange(exercise["min_reps"], exercise["max_reps"]+1)
+
 
         # Announcement String of next lottery time
         lottery_announcement = "NEXT LOTTERY FOR " + exercise["name"].upper() + " IS IN " + str(minute_interval) + (" MINUTES" if minute_interval != 1 else " MINUTE")
@@ -86,7 +88,7 @@ class Bot(object):
         # Announce the exercise to the thread
         self.api.post_flex_message(lottery_announcement)
 
-        return exercise, minute_interval
+        return exercise, exercise_reps, minute_interval
 
 
     def select_exercise(self):
@@ -137,28 +139,22 @@ class Bot(object):
                        int(avg_minutes_per_exercise)))
 
 
-    def assign_exercise(self, exercise):
+    def assign_exercise(self, exercise, exercise_reps):
         """
-        Selects a person to do the already-selected exercise
+        Selects a set of users or the channel to do the already-selected exercise, and returns the
+        list of winners.
         """
-        # Select number of reps
-        exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
-
         winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW "
 
         eligible_users = self.get_eligible_users()
+        winners = []
 
         # EVERYBODY
         if random.random() < self.config.group_callout_chance():
+            winners = eligible_users
             winner_announcement += "@channel!"
 
-            # Populate the user_cache
-            for user in eligible_users:
-                user.add_exercise(exercise['id'], exercise_reps)
-                self.workout_logger.log_exercise(user.get_user_handle(),exercise["name"],exercise_reps,exercise["units"])
-
         else:
-            winners = []
             people_in_callout = self.num_people_in_current_callout()
             for i in range(people_in_callout):
                 try:
@@ -178,12 +174,15 @@ class Bot(object):
                 else:
                     winner_announcement += ", "
 
+        for user in winners:
+            if not self.config.enable_acknowledgment():
                 user.add_exercise(exercise['id'], exercise_reps)
                 self.workout_logger.log_exercise(user.get_user_handle(),exercise["name"],exercise_reps,exercise["units"])
 
         # Announce the user
         self.api.post_flex_message(winner_announcement)
 
+        return winners
 
     def num_people_in_current_callout(self):
         return min(self.config.num_people_per_callout(), len(self.user_queue))

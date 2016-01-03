@@ -77,7 +77,10 @@ class ConfigurationProvider(object):
         return self.config['exercises']
 
     def user_exercise_limit(self):
-        return self.get_config_or_default(3, 'user_exercise_limit')
+        return self.get_config_or_default(3, ['user_exercise_limit'])
+
+    def enable_acknowledgment(self):
+        return self.get_config_or_default(False, ['enable_acknowledgment'])
 
 class JsonFileConfigurationProvider(ConfigurationProvider):
     def __init__(self, filename):

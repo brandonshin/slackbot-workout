@@ -4,7 +4,7 @@ from slackbot_workout.manager import UserManager
 from slackbot_workout.configurators import InMemoryConfigurationProvider
 from slackbot_workout.web import FlexbotWebServer
 
-def get_sample_config():
+def get_sample_config(enable_acknowledgment):
     return InMemoryConfigurationProvider({
         'bot_name': 'testbot',
         'channel_name': 'testchannel',
@@ -16,14 +16,16 @@ def get_sample_config():
             'id': 1,
             'name': 'exercise2',
             'info': 'exercise2 info'
-        }]
+        }],
+        'enable_acknowledgment': enable_acknowledgment
     })
 
-def get_server():
+def get_server(enable_acknowledgment=True):
     um = mock.Mock(spec=UserManager)
-    config = get_sample_config()
-    server = FlexbotWebServer(um, config)
-    return (um, server)
+    config = get_sample_config(enable_acknowledgment)
+    ack_handler = mock.Mock()
+    server = FlexbotWebServer(um, ack_handler, config)
+    return (ack_handler, server)
 
 class TestWeb(object):
     def test_flex_handler_from_slackbot(self):
@@ -48,6 +50,16 @@ class TestWeb(object):
         result = server.flex(user_id='UREALUSER', text='testbot info exercise1')
         assert 'exercise1 info' in result['text']
         assert 'exercise2 info' not in result['text']
+
+    def test_flex_handler_done(self):
+        ack_handler, server = get_server()
+        server.flex(user_id='UREALUSER', text='testbot done realuser')
+        ack_handler.acknowledge_user.assert_called_once_with('UREALUSER')
+
+    def test_flex_handler_done_disabled(self):
+        ack_handler, server = get_server(enable_acknowledgment=False)
+        server.flex(user_id='UREALUSER', text='testbot done realuser')
+        ack_handler.acknowledge_user.assert_never_called()
 
     def test_flex_handler_bad_message(self):
         _, server = get_server()

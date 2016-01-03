@@ -1,7 +1,6 @@
 import datetime
 import logging
 import random
-import time
 
 class NoEligibleUsersException(Exception):
     def __str__(self):
@@ -58,12 +57,16 @@ class Bot(object):
 
     def get_eligible_users(self):
         """
-        Get the current eligible users. These are users who are online and have not yet completed
-        their maximum daily limit of exercises.
+        Get the current eligible users; throws NoEligibleUsersException if there are none. These are
+        users who are online and have not yet completed their maximum daily limit of exercises.
         """
         self.update_user_queue()
 
-        return filter(lambda u: u.total_exercises() < self.user_exercise_limit, self.user_queue)
+        eligible_users = filter(lambda u: u.total_exercises() < self.user_exercise_limit, self.user_queue)
+        if len(eligible_users) == 0:
+            raise NoEligibleUsersException()
+
+        return eligible_users
 
 
     def select_user(self, exercise):
@@ -71,11 +74,7 @@ class Bot(object):
         Selects an active user from a list of users
         """
         eligible_users = self.get_eligible_users()
-
         num_eligible_users = len(eligible_users)
-
-        if num_eligible_users == 0:
-            raise NoEligibleUsersException()
 
         # find a user to draw, priority going to first in
         for i in range(num_eligible_users):
@@ -92,16 +91,13 @@ class Bot(object):
 
     def select_exercise_and_start_time(self):
         """
-        Selects an exercise and start time, and sleeps until the time
-        period has past.
+        Selects and announces to the channel an exercise and start time.
         """
         eligible_users = self.get_eligible_users()
+        return self._select_exercise_and_start_time(eligible_users)
 
-        num_eligible_users = len(eligible_users)
 
-        if num_eligible_users == 0:
-            raise NoEligibleUsersException()
-
+    def _select_exercise_and_start_time(self, eligible_users):
         minute_interval = self.select_next_time_interval(eligible_users)
         exercise = self.select_exercise()
 
@@ -111,14 +107,7 @@ class Bot(object):
         # Announce the exercise to the thread
         self.api.post_flex_message(lottery_announcement)
 
-        # Sleep the script until time is up
-        if not self.debug:
-            time.sleep(minute_interval * 60)
-        else:
-            # If debugging, once every 5 seconds
-            time.sleep(5)
-
-        return exercise
+        return exercise, minute_interval
 
 
     def select_exercise(self):
@@ -180,13 +169,14 @@ class Bot(object):
 
         winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW "
 
+        eligible_users = self.get_eligible_users()
+
         # EVERYBODY
         if random.random() < self.group_callout_chance:
             winner_announcement += "@channel!"
 
             # Populate the user_cache
-            active_users = self.user_manager.fetch_active_users()
-            for user in active_users:
+            for user in eligible_users:
                 user.add_exercise(exercise['id'], exercise_reps)
                 self.workout_logger.log_exercise(user.get_user_handle(),exercise["name"],exercise_reps,exercise["units"])
 
@@ -204,9 +194,9 @@ class Bot(object):
 
             for user in winners:
                 winner_announcement += str(user.get_user_handle())
-                if i == people_in_callout - 2:
+                if i == len(winners) - 2:
                     winner_announcement += ", and "
-                elif i == people_in_callout - 1:
+                elif i == len(winners) - 1:
                     winner_announcement += "!"
                 else:
                     winner_announcement += ", "

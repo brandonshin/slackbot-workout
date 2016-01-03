@@ -56,6 +56,11 @@ def get_sample_bot():
     bot = Bot(api, logger, config, um)
     return (um, bot)
 
+def eligible_users():
+    return [
+        User('slackid1', 'username1', 'real name 1'),
+        User('slackid2', 'username2', 'real name 2'),
+    ]
 
 class TestBot(object):
     def test_init(self):
@@ -63,11 +68,16 @@ class TestBot(object):
         assert bot.user_queue == []
 
     def test_select_next_time_interval(self):
-        um, bot = get_sample_bot()
-        eligible_users = [
-            User('slackid1', 'username1', 'real name 1'),
-            User('slackid2', 'username2', 'real name 2'),
-        ]
-        interval = bot.select_next_time_interval(eligible_users)
+        _, bot = get_sample_bot()
+        interval = bot.select_next_time_interval(eligible_users())
         assert isinstance(interval, int) or (isinstance(interval, float) and interval.is_integer())
+
+    def test_select_exercise_and_start_time(self):
+        config = get_sample_config()
+        exercises = config.get_configuration()['exercises']
+        time_range = config.get_configuration()['callouts']['timeBetween']
+        _, bot = get_sample_bot()
+        exercise, mins_to_exercise = bot._select_exercise_and_start_time(eligible_users())
+        assert exercise['name'] in map(lambda e: e['name'], exercises)
+        assert time_range['minTime'] <= mins_to_exercise <= time_range['maxTime']
 

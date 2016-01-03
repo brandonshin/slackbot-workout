@@ -2,7 +2,6 @@ import mock
 
 from slackbot_workout.manager import UserManager
 from slackbot_workout.configurators import InMemoryConfigurationProvider
-from slackbot_workout.user import User
 from slackbot_workout.web import FlexbotWebServer
 
 def get_sample_config():
@@ -17,7 +16,8 @@ def get_sample_config():
             'id': 1,
             'name': 'exercise2',
             'info': 'exercise2 info'
-        }]
+        }],
+        'enable_acknowledgment': True
     })
 
 def get_server():

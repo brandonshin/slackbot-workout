@@ -18,7 +18,7 @@ class FlexbotWebServer(object):
         user_id = args['user_id']
         text = args['text'].lower()
         if user_id != "USLACKBOT" and text.startswith(self.configuration.bot_name().lower()):
-            return self.handle_message(text)
+            return self.handle_message(text, user_id)
 
     def handle_message(self, text, user_id):
         args = text.split()[1:]

@@ -6,6 +6,7 @@ import time
 from api import SlackbotApi
 from bot import Bot, NoEligibleUsersException
 from manager import UserManager
+import util
 from web import FlexbotWebServer
 
 class Server(object):
@@ -48,7 +49,8 @@ class Server(object):
                     self.bot.load_configuration()
 
                     # Get an exercise to do
-                    exercise = self.bot.select_exercise_and_start_time()
+                    exercise, mins_to_exercise = self.bot.select_exercise_and_start_time()
+                    util.sleep(minutes=mins_to_exercise)
 
                     # Assign the exercise to someone
                     self.bot.assign_exercise(exercise)
@@ -58,14 +60,13 @@ class Server(object):
                         self.user_manager.stats()
                         self.user_manager.clear_users()
                     if not self.bot.debug:
-                        time.sleep(5*60) # Sleep 5 minutes
+                        util.sleep(minutes=5) # Sleep 5 minutes
                     else:
                         # If debugging, check again in 5 seconds
-                        time.sleep(5)
+                        util.sleep(seconds=5)
                 was_office_hours = is_office_hours
 
             except KeyboardInterrupt:
                 self.logger.info("interrupted")
             except NoEligibleUsersException:
                 time.sleep(5*60)
-

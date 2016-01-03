@@ -33,7 +33,7 @@ class FlexbotWebServer(object):
         elif command == "stats":
             return self.print_stats(args[1:])
         elif self.configuration.enable_acknowledgment() and command == "done":
-            return self.acknowledge_user(user_id)
+            return self.acknowledge_winner(user_id)
         elif command == "reload":
             return self.reload_configuration()
         else:
@@ -104,8 +104,8 @@ responding:
                 "text": stats
             }
 
-    def acknowledge_user(self, user_id):
-        self.ack_handler.acknowledge_user(user_id)
+    def acknowledge_winner(self, user_id):
+        self.ack_handler.acknowledge_winner(user_id)
 
     def reload_configuration(self):
         self.configuration.set_configuration()

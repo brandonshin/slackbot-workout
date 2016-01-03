@@ -19,11 +19,6 @@ class Server(object):
         self.user_manager = UserManager(self.slack_api, self.configuration)
         self.bot = Bot(self.slack_api, self.workout_logger, self.configuration, self.user_manager)
         self.web_server = FlexbotWebServer(self.user_manager, configuration)
-        self.load_configuration()
-
-    def load_configuration(self):
-        config_json = self.configuration.get_configuration()
-        self.webserver_port = config_json['webserverPort']
 
     def start(self):
         self.logger.debug('Starting workout loop')
@@ -33,7 +28,7 @@ class Server(object):
         # Start the webserver
         self.logger.debug('Starting webserver')
         cherrypy.config.update({'server.socket_host': '0.0.0.0',
-                                'server.socket_port': self.webserver_port,
+                                'server.socket_port': self.configuration.webserver_port(),
                                 'log.screen': True,
                                })
         cherrypy.quickstart(self.web_server)
@@ -45,8 +40,7 @@ class Server(object):
             try:
                 is_office_hours = self.bot.is_office_hours()
                 if is_office_hours:
-                    # Re-fetch config file if settings have changed
-                    self.bot.load_configuration()
+                    self.configuration.set_configuration()
 
                     # Get an exercise to do
                     exercise, mins_to_exercise = self.bot.select_exercise_and_start_time()
@@ -68,5 +62,6 @@ class Server(object):
 
             except KeyboardInterrupt:
                 self.logger.info("interrupted")
+                self.configuration.set_configuration()
             except NoEligibleUsersException:
                 time.sleep(5*60)

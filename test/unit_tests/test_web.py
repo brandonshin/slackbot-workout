@@ -2,13 +2,12 @@ import mock
 
 from slackbot_workout.manager import UserManager
 from slackbot_workout.configurators import InMemoryConfigurationProvider
-from slackbot_workout.user import User
 from slackbot_workout.web import FlexbotWebServer
 
 def get_sample_config():
     return InMemoryConfigurationProvider({
-        'botName': 'testbot',
-        'channelName': 'testchannel',
+        'bot_name': 'testbot',
+        'channel_name': 'testchannel',
         'exercises': [{
             'id': 0,
             'name': 'exercise1',
@@ -27,11 +26,6 @@ def get_server():
     return (um, server)
 
 class TestWeb(object):
-    def test_init(self):
-        _, server = get_server()
-        assert server.bot_name == 'testbot'
-        assert server.channel_name == 'testchannel'
-
     def test_flex_handler_from_slackbot(self):
         _, server = get_server()
         result = server.flex(user_id='USLACKBOT', text='testbot help')

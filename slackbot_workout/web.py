@@ -62,7 +62,7 @@ Welcome to {{channel_name}}! I am {{bot_name}}, your friendly helpful workout bo
 - `{{bot_name}}, I don't have to listen to you`: doubles your exercise quota permanently (coming soon)
 {{#enable_acknowledgment}}
 
-A little primer on how I work: after I call you out for an exercise, I will only log your workout after you let me know that you have finished your assigned exercise by sending `{bot_name} done` to the channel. Otherwise, your workout will go unrecorded!
+A little primer on how I work: after I call you out for an exercise, I will only log your workout after you let me know that you have finished your assigned exercise by sending `{{bot_name}} done` to the channel. Otherwise, your workout will go unrecorded!
 {{/enable_acknowledgment}}
 """, template_options)
         return {'text': helptext}

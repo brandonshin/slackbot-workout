@@ -72,6 +72,10 @@ class Server(object):
 
     def _workout_step(self, was_office_hours, is_office_hours):
         if is_office_hours:
+            # Clear the previous day's history if this is the first workout of the day
+            if not was_office_hours:
+                self.user_manager.clear_users()
+
             # Get an exercise to do
             exercise, reps, mins_to_exercise = self.bot.select_exercise_and_start_time()
             util.sleep(minutes=mins_to_exercise)
@@ -81,9 +85,11 @@ class Server(object):
             self.current_exercise = exercise
             self.current_reps = reps
         else:
+            # Show some stats if the final workout has just passed
             if was_office_hours:
-                self.user_manager.stats()
-                self.user_manager.clear_users()
+                self.slack_api.post_message(self.user_manager.stats())
+
+            # Sleep for a bit
             if not self.configuration.debug():
                 util.sleep(minutes=5) # Sleep 5 minutes
             else:
@@ -95,8 +101,12 @@ class Server(object):
             try:
                 user = filter(lambda u: u.id == user_id, self.current_winners)[0]
                 exercise = self.current_exercise
+
+                # Log the exercise, update the local user's information as well, and remove the user
+                # from the list of current winners
                 self.workout_logger.log_exercise(user.get_user_handle(), exercise["name"],
                         self.current_reps, exercise["units"])
+                self.user_manager.users[user.id].add_exercise(exercise['id'], self.current_reps)
                 self.current_winners.remove(user)
             except IndexError: # user not actually in the list of current winners
                 pass

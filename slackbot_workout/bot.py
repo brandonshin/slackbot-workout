@@ -152,7 +152,7 @@ class Bot(object):
         # EVERYBODY
         if random.random() < self.config.group_callout_chance():
             winners = eligible_users
-            winner_announcement += "@channel!"
+            winner_announcement += "<!channel>!"
 
         else:
             people_in_callout = self.num_people_in_current_callout()
@@ -166,7 +166,7 @@ class Bot(object):
                 raise NoEligibleUsersException()
 
             for user in winners:
-                winner_announcement += str(user.get_user_handle())
+                winner_announcement += str(user.get_mention())
                 if i == len(winners) - 2:
                     winner_announcement += ", and "
                 elif i == len(winners) - 1:

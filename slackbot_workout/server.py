@@ -87,7 +87,7 @@ class Server(object):
         else:
             # Show some stats if the final workout has just passed
             if was_office_hours:
-                self.slack_api.post_message(self.user_manager.stats())
+                self.slack_api.post_flex_message(self.user_manager.stats())
 
             # Sleep for a bit
             if not self.configuration.debug():

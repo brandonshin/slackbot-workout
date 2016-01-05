@@ -48,16 +48,18 @@ def get_server_and_mocks():
 
 class TestServer(object):
     @patch('slackbot_workout.util.time')
-    def test_is_office_hours(self, mock_time):
+    def test_is_first_office_hours(self, mock_time):
         server_and_mocks = get_server_and_mocks()
         server = server_and_mocks['server']
         bot = server_and_mocks['bot']
+        um = server_and_mocks['user_manager']
         bot.select_exercise_and_start_time.return_value = (sample_exercise(), 30, 5)
         user = sample_users()[0]
         bot.assign_exercise.return_value = [user]
 
         server._workout_step(False, True)
 
+        um.clear_users.assert_called_once_with()
         bot.select_exercise_and_start_time.assert_called_once_with()
         mock_time.sleep.assert_called_once_with(300)
         assert len(server.current_winners) == 1 and server.current_winners[0] == user
@@ -65,7 +67,7 @@ class TestServer(object):
         assert server.current_reps == 30
 
     @patch('slackbot_workout.util.time')
-    def test_not_office_hours(self, mock_time):
+    def test_first_not_office_hours(self, mock_time):
         server_and_mocks = get_server_and_mocks()
         server = server_and_mocks['server']
         um = server_and_mocks['user_manager']
@@ -74,7 +76,6 @@ class TestServer(object):
         server._workout_step(True, False)
 
         um.stats.assert_called_once_with()
-        um.clear_users.assert_called_once_with()
         mock_time.sleep.assert_called_once_with(300)
         bot.assign_exercise.assert_never_called()
         bot.select_exercise_and_start_time.assert_never_called()
@@ -83,7 +84,12 @@ class TestServer(object):
         server_and_mocks = get_server_and_mocks()
         server = server_and_mocks['server']
         logger = server_and_mocks['logger']
+        um = server_and_mocks['user_manager']
         users = sample_users()
+        umap = {}
+        for u in users:
+            umap[u.id] = u
+        um.users = umap
         server.current_winners = users
         server.current_exercise = sample_exercise()
         server.current_reps = 30

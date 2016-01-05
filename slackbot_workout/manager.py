@@ -5,6 +5,7 @@ class UserManager(object):
         self.api = api
         self.configuration = configuration
         self.users = {}
+        self.fetch_users()
 
     def stats(self, user_id_list=[]):
         # Write to the command console today's breakdown

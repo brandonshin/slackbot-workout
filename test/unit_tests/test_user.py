@@ -42,3 +42,7 @@ class TestUser(object):
         u.add_exercise('eid2', 0)
         assert u.has_done_exercise('eid1') == True
         assert u.has_done_exercise('eid2') == False
+
+    def test_get_mention(self):
+        u = User('id', 'un', 'rn')
+        assert u.get_mention() == '<@un>'

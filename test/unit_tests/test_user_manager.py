@@ -51,11 +51,6 @@ def get_mock_api():
     return mock_api
 
 class TestUserManager(object):
-    def test_init(self):
-        mock_api = get_mock_api()
-        um = make_user_manager(mock_api)
-        assert um.users == {}
-
     def test_fetch_users(self):
         mock_api = get_mock_api()
         um = make_user_manager(mock_api)

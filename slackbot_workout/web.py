@@ -19,7 +19,11 @@ class FlexbotWebServer(object):
         user_id = args['user_id']
         text = args['text'].lower()
         if user_id != "USLACKBOT" and text.startswith(self.configuration.bot_name().lower()):
-            return self.handle_message(text, user_id)
+            self.logger.debug('message: %s', args['text'])
+            response = self.handle_message(text, user_id)
+            if response is not None:
+                self.logger.debug('response: %s', response['text'])
+            return response
 
     def handle_message(self, text, user_id):
         args = text.split()[1:]
@@ -58,7 +62,7 @@ Welcome to {{channel_name}}! I am {{bot_name}}, your friendly helpful workout bo
 - `{{bot_name}}, I don't have to listen to you`: doubles your exercise quota permanently (coming soon)
 {{#enable_acknowledgment}}
 
-A little primer on how I work: after I call you out for an exercise, I will only log your workout after you let me know that you have finished your assigned exercise by sending `{bot_name} done` to the channel. Otherwise, your workout will go unrecorded!
+A little primer on how I work: after I call you out for an exercise, I will only log your workout after you let me know that you have finished your assigned exercise by sending `{{bot_name}} done` to the channel. Otherwise, your workout will go unrecorded!
 {{/enable_acknowledgment}}
 """, template_options)
         return {'text': helptext}
@@ -87,6 +91,7 @@ A little primer on how I work: after I call you out for an exercise, I will only
             user_reverse_lookup[user.username.lower()] = user_id
             user_reverse_lookup[user.real_name.lower()] = user_id
         for username in usernames:
+            self.logger.debug("Looking up username %s", username)
             username = username[1:] if username.startswith("@") else username
             if username in user_reverse_lookup:
                 users_to_print.add(user_reverse_lookup[username])
@@ -95,11 +100,6 @@ A little primer on how I work: after I call you out for an exercise, I will only
                 break
         if len(users_to_print) > 0:
             stats = self.user_manager.stats(list(users_to_print))
-            self.logger.info("""\
-vvvvvvvvvvvvvvvvvvvvvvvv
-responding:
-{}
-^^^^^^^^^^^^^^^^^^^^^^^^""".format(stats))
             return {
                 "text": stats
             }

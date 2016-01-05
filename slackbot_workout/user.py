@@ -19,6 +19,9 @@ class User(object):
     def get_user_handle(self):
         return ("@" + self.username).encode('utf-8')
 
+    def get_mention(self):
+        return "<" + self.get_user_handle() + ">"
+
     def add_exercise(self, exercise_id, reps):
         if reps > 0:
             # Add to total counts

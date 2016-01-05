@@ -17,9 +17,9 @@ class FlexbotWebServer(object):
     @cherrypy.tools.json_out()
     def flex(self, **args):
         user_id = args['user_id']
-        self.logger.debug('message: %s', args['text'])
         text = args['text'].lower()
         if user_id != "USLACKBOT" and text.startswith(self.configuration.bot_name().lower()):
+            self.logger.debug('message: %s', args['text'])
             response = self.handle_message(text, user_id)
             if response is not None:
                 self.logger.debug('response: %s', response['text'])

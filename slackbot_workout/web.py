@@ -17,12 +17,12 @@ class FlexbotWebServer(object):
     @cherrypy.tools.json_out()
     def flex(self, **args):
         user_id = args['user_id']
-        self.logger.debug('message: {}'.format(args['text']))
+        self.logger.debug('message: %s', args['text'])
         text = args['text'].lower()
         if user_id != "USLACKBOT" and text.startswith(self.configuration.bot_name().lower()):
             response = self.handle_message(text, user_id)
             if response is not None:
-                self.logger.debug('response: {}'.format(response['text']))
+                self.logger.debug('response: %s', response['text'])
             return response
 
     def handle_message(self, text, user_id):
@@ -91,6 +91,7 @@ A little primer on how I work: after I call you out for an exercise, I will only
             user_reverse_lookup[user.username.lower()] = user_id
             user_reverse_lookup[user.real_name.lower()] = user_id
         for username in usernames:
+            self.logger.debug("Looking up username %s", username)
             username = username[1:] if username.startswith("@") else username
             if username in user_reverse_lookup:
                 users_to_print.add(user_reverse_lookup[username])

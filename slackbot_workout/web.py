@@ -17,9 +17,13 @@ class FlexbotWebServer(object):
     @cherrypy.tools.json_out()
     def flex(self, **args):
         user_id = args['user_id']
+        self.logger.debug('message: %s'.format(args['text']))
         text = args['text'].lower()
         if user_id != "USLACKBOT" and text.startswith(self.configuration.bot_name().lower()):
-            return self.handle_message(text, user_id)
+            response = self.handle_message(text, user_id)
+            if response is not None:
+                self.logger.debug('response: %s'.format(response['text']))
+            return response
 
     def handle_message(self, text, user_id):
         args = text.split()[1:]
@@ -95,11 +99,6 @@ A little primer on how I work: after I call you out for an exercise, I will only
                 break
         if len(users_to_print) > 0:
             stats = self.user_manager.stats(list(users_to_print))
-            self.logger.info("""\
-vvvvvvvvvvvvvvvvvvvvvvvv
-responding:
-{}
-^^^^^^^^^^^^^^^^^^^^^^^^""".format(stats))
             return {
                 "text": stats
             }

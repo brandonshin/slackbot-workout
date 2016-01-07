@@ -16,7 +16,7 @@ class TestPostgresDatabaseLogger(PostgresConnector):
         logger.log_exercise('miles', 'pushups', 30, 'reps')
 
         def get_exercises(cursor):
-            cursor.execute("SELECT username, exercise, reps FROM {}".format(self.tablename))
+            cursor.execute("SELECT user_id, exercise, reps FROM {}".format(self.tablename))
             return cursor.fetchall()
         exercises = self.with_connection(get_exercises)
         assert exercises == [('miles', 'pushups', 30)]

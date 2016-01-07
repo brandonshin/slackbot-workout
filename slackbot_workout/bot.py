@@ -177,7 +177,7 @@ class Bot(object):
         for user in winners:
             if not self.config.enable_acknowledgment():
                 user.add_exercise(exercise['id'], exercise_reps)
-                self.workout_logger.log_exercise(user.get_user_handle(),exercise["name"],exercise_reps,exercise["units"])
+                self.workout_logger.log_exercise(user.id,exercise["name"],exercise_reps,exercise["units"])
 
         # Announce the user
         self.api.post_flex_message(winner_announcement)

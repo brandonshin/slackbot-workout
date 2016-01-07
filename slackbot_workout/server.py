@@ -104,8 +104,8 @@ class Server(object):
 
                 # Log the exercise, update the local user's information as well, and remove the user
                 # from the list of current winners
-                self.workout_logger.log_exercise(user.get_user_handle(), exercise["name"],
-                        self.current_reps, exercise["units"])
+                self.workout_logger.log_exercise(user.id, exercise["name"], self.current_reps,
+                        exercise["units"])
                 self.user_manager.users[user.id].add_exercise(exercise['id'], self.current_reps)
                 self.current_winners.remove(user)
             except IndexError: # user not actually in the list of current winners

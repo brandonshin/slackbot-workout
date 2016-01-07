@@ -97,4 +97,4 @@ class TestServer(object):
         server.acknowledge_winner('id1')
 
         assert server.current_winners == filter(lambda u: u.id != 'id1', users)
-        logger.log_exercise.assert_called_once_with('@username1', 'exercise1', 30, 'reps')
+        logger.log_exercise.assert_called_once_with('id1', 'exercise1', 30, 'reps')

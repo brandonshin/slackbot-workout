@@ -4,6 +4,7 @@ import threading
 
 from api import SlackbotApi
 from bot import Bot, NoEligibleUsersException
+from constants import Constants
 from manager import UserManager
 import util
 from web import FlexbotWebServer
@@ -107,5 +108,8 @@ class Server(object):
                 self.workout_logger.log_exercise(user.id, exercise, self.current_reps)
                 self.user_manager.users[user.id].add_exercise(exercise.id, self.current_reps)
                 self.current_winners.remove(user)
+                return Constants.ACKNOWLEDGE_SUCCEEDED
             except IndexError: # user not actually in the list of current winners
-                pass
+                return Constants.ACKNOWLEDGE_FAILED
+        else:
+            return Constants.ACKNOWLEDGE_DISABLED

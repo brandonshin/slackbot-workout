@@ -48,8 +48,8 @@ def get_sample_bot():
 
 def eligible_users():
     return [
-        User('slackid1', 'username1', 'real name 1'),
-        User('slackid2', 'username2', 'real name 2'),
+        User('slackid1', 'username1', 'real name', '1'),
+        User('slackid2', 'username2', 'real name', '2'),
     ]
 
 class TestBot(object):

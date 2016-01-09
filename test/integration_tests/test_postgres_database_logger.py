@@ -2,8 +2,8 @@ from slackbot_workout.exercise import Exercise
 from slackbot_workout.loggers import PostgresDatabaseLogger, PostgresConnector
 
 exercises = [
-    Exercise(1, 'pushups', 30, 40, 'reps', ''),
-    Exercise(1, 'situps', 30, 40, 'reps', '')
+    Exercise('pushups', 30, 40, 'reps', ''),
+    Exercise('situps', 30, 40, 'reps', '')
 ]
 
 class TestPostgresDatabaseLogger(PostgresConnector):

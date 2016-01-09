@@ -35,7 +35,7 @@ class FlexbotWebServer(object):
         elif command == "info":
             return self.print_exercise_info(" ".join(args[1:]))
         elif command == "stats":
-            return self.print_stats(args[1:])
+            return self.print_stats(user_id, args[1:])
         elif self.configuration.enable_acknowledgment() and command == "done":
             return self.acknowledge_winner(user_id)
         elif command == "reload":
@@ -83,21 +83,24 @@ A little primer on how I work: after I call you out for an exercise, I will only
         else:
             return {'text': 'I don\'t recognize that exercise...'}
 
-    def print_stats(self, usernames):
+    def print_stats(self, current_user_id, usernames):
         user_reverse_lookup = {}
         users_to_print = set()
-        for user_id in self.user_manager.users:
-            user = self.user_manager.users[user_id]
-            user_reverse_lookup[user.username.lower()] = user_id
-            user_reverse_lookup[user.real_name.lower()] = user_id
-        for username in usernames:
-            self.logger.debug("Looking up username %s", username)
-            username = username[1:] if username.startswith("@") else username
-            if username in user_reverse_lookup:
-                users_to_print.add(user_reverse_lookup[username])
-            elif username == "channel":
-                users_to_print = self.user_manager.users.keys()
-                break
+        if len(usernames) == 0:
+            users_to_print.add(current_user_id)
+        else:
+            for user_id in self.user_manager.users:
+                user = self.user_manager.users[user_id]
+                user_reverse_lookup[user.username.lower()] = user_id
+                user_reverse_lookup[user.real_name.lower()] = user_id
+            for username in usernames:
+                self.logger.debug("Looking up username %s", username)
+                username = username[1:] if username.startswith("@") else username
+                if username in user_reverse_lookup:
+                    users_to_print.add(user_reverse_lookup[username])
+                elif username == "channel":
+                    users_to_print = self.user_manager.users.keys()
+                    break
         if len(users_to_print) > 0:
             stats = self.user_manager.stats(list(users_to_print))
             return {

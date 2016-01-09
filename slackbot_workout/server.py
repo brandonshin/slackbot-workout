@@ -10,17 +10,16 @@ import util
 from web import FlexbotWebServer
 
 class Server(object):
-    def __init__(self, workout_logger, configuration, tokens, **kwargs):
+    def __init__(self, workout_logger, configuration, **kwargs):
         self.logger = logging.getLogger(__name__)
         self.workout_logger = workout_logger
         self.configuration = configuration
-        self.tokens = tokens
         self.current_winners = []
 
         if 'slack_api' in kwargs:
             self.slack_api = kwargs['slack_api']
         else:
-            self.slack_api = SlackbotApi(configuration, token=self.tokens.get_user_token())
+            self.slack_api = SlackbotApi(configuration, token=self.configuration.slack_token())
 
         if 'user_manager' in kwargs:
             self.user_manager = kwargs['user_manager']

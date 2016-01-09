@@ -54,7 +54,7 @@ Welcome to {{channel_name}}! I am {{bot_name}}, your friendly helpful workout bo
 - `{{bot_name}} help`: print this help message
 - `{{bot_name}} exercises`: print the exercises that I can announce
 - `{{bot_name}} info <EXERCISE>`: print a short informational blob on how to do `EXERCISE` correctly
-- `{{bot_name}} stats user1 [user2 [...]]`: print the stats for user1, user2, ...
+- `{{bot_name}} stats [user1 [user2 [...]]]`: print the stats for user1, user2, ... If no user is provided, prints the stats for the requesting user
 - `{{bot_name}} stats channel`: print the stats for everyone in the channel
 {{#enable_acknowledgment}}
 - `{{bot_name}} done`: indicate that you have indeed finished your exercise for the current round

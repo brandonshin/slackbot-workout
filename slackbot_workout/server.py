@@ -5,22 +5,26 @@ import threading
 from api import SlackbotApi
 from bot import Bot, NoEligibleUsersException
 from constants import Constants
+from logger_factory import LoggerFactory
 from manager import UserManager
 import util
 from web import FlexbotWebServer
 
 class Server(object):
-    def __init__(self, workout_logger, configuration, tokens, **kwargs):
+    def __init__(self, configuration, workout_logger=None, **kwargs):
         self.logger = logging.getLogger(__name__)
-        self.workout_logger = workout_logger
         self.configuration = configuration
-        self.tokens = tokens
+        if workout_logger == None:
+            logger_factory = LoggerFactory(self.configuration)
+            self.workout_logger = logger_factory.get_logger()
+        else:
+            self.workout_logger = workout_logger
         self.current_winners = []
 
         if 'slack_api' in kwargs:
             self.slack_api = kwargs['slack_api']
         else:
-            self.slack_api = SlackbotApi(configuration, token=self.tokens.get_user_token())
+            self.slack_api = SlackbotApi(configuration, token=self.configuration.slack_token())
 
         if 'user_manager' in kwargs:
             self.user_manager = kwargs['user_manager']

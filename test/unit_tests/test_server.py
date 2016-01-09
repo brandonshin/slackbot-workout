@@ -2,7 +2,7 @@ from mock import Mock, patch
 
 from slackbot_workout.api import SlackbotApi
 from slackbot_workout.bot import Bot
-from slackbot_workout.configurators import InMemoryConfigurationProvider, TokenProvider
+from slackbot_workout.configurators import InMemoryConfigurationProvider
 from slackbot_workout.exercise import Exercise
 from slackbot_workout.loggers import BaseLogger
 from slackbot_workout.manager import UserManager
@@ -26,12 +26,12 @@ sample_users = [
 def get_server_and_mocks():
     logger = Mock(spec=BaseLogger)
     config = sample_config()
-    token = Mock(spec=TokenProvider)
     api = Mock(spec=SlackbotApi)
     um = Mock(spec=UserManager)
     bot = Mock(spec=Bot)
     web = Mock(spec=FlexbotWebServer)
-    server = Server(logger, config, token, slack_api=api, user_manager=um, bot=bot, web_server=web)
+    server = Server(config, workout_logger=logger, slack_api=api, user_manager=um, bot=bot,
+            web_server=web)
     return {
         'api': api,
         'bot': bot,

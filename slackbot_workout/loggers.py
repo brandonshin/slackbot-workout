@@ -8,33 +8,45 @@ import time
 class BaseLogger(object):
     __metaclass__ = ABCMeta
 
-    @abstractmethod
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+
     def log_exercise(self, user_id, exercise, reps):
+        self.logger.debug("User {} completed {} {} of {}".format(user_id, reps, exercise.units,
+            exercise.name))
+        self._log_exercise(user_id, exercise, reps)
+
+    @abstractmethod
+    def _log_exercise(self, user_id, exercise, reps):
         pass
 
     @abstractmethod
     def get_todays_exercises(self):
         pass
 
-class StdOutLogger(BaseLogger):
-    def log_exercise(self, user_id, exercise, reps):
-        print "%s %s %d %s" % (user_id, exercise.name, reps, exercise.units)
+class InMemoryLogger(BaseLogger):
+    def __init__(self):
+        super(InMemoryLogger, self).__init__()
+        self.exercises = []
+
+    def _log_exercise(self, user_id, exercise, reps):
+        self.exercises.append((user_id, exercise, reps, datetime.datetime.now()))
 
     def get_todays_exercises(self):
-        # We aren't actually persisting this data, so return no exercises for anyone
-        return {}
+        return filter(lambda log: log[3].date() == datetime.date.today(), self.exercises)
 
 class CsvLogger(BaseLogger):
     format_string = "%Y%m%d"
 
     def __init__(self, debug=False):
+        super(CsvLogger, self).__init__()
         self.debug = debug
 
     def csv_filename(self):
         debugString = "_DEBUG" if self.debug else ""
         return "log" + time.strftime(self.format_string) + debugString + ".csv"
 
-    def log_exercise(self, user_id, exercise, reps):
+    def _log_exercise(self, user_id, exercise, reps):
         with open(self.csv_filename(), 'a') as f:
             writer = csv.writer(f)
             now = str(datetime.datetime.now())
@@ -57,18 +69,13 @@ class CsvLogger(BaseLogger):
         return exercises
 
 class PostgresConnector(object):
-    def __init__(self):
-        self.logger = logging.getLogger(__name__)
-
     def with_connection(self, func):
         conn = None
         try:
             conn = psycopg2.connect(**self.kwargs)
             cursor = conn.cursor()
-            self.logger.debug("precursor")
             result = func(cursor)
             conn.commit()
-            self.logger.debug("committed")
             return result
         except psycopg2.Error:
             self.logger.exception("Failure during database connection")
@@ -78,11 +85,10 @@ class PostgresConnector(object):
                 conn.close()
 
 class PostgresDatabaseLogger(BaseLogger, PostgresConnector):
-    def __init__(self, dbname, tablename, **kwargs):
+    def __init__(self, tablename, **kwargs):
         super(PostgresDatabaseLogger, self).__init__()
         self.debug = 'debug' in kwargs and kwargs['debug'] == True
         self.kwargs = kwargs
-        self.kwargs.update({'dbname': dbname})
         self.tablename = tablename
         self.maybe_create_table()
 
@@ -99,7 +105,7 @@ class PostgresDatabaseLogger(BaseLogger, PostgresConnector):
             """.format(self.tablename))
         self.with_connection(create_table_command)
 
-    def log_exercise(self, user_id, exercise, reps):
+    def _log_exercise(self, user_id, exercise, reps):
         def log_exercise_command(cursor):
             cursor.execute("""
                 INSERT INTO {}

@@ -1,13 +1,12 @@
 from slackbot_workout.server import Server
 from slackbot_workout.loggers import PostgresDatabaseLogger
-from slackbot_workout.configurators import EnvironmentTokenProvider, JsonFileConfigurationProvider
+from slackbot_workout.configurators import JsonFileConfigurationProvider
 import os
 
 def main():
-    logger = PostgresDatabaseLogger('flexecution', 'flexecution')
+    logger = PostgresDatabaseLogger('flexecution', dbname='flexecution')
     configuration = JsonFileConfigurationProvider(os.getcwd() + '/config.json')
-    tokens = EnvironmentTokenProvider()
-    server = Server(logger, configuration, tokens, 'testflexecution2')
+    server = Server(configuration, workout_logger=logger)
     server.start()
 
 if __name__ == "__main__":

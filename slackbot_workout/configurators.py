@@ -3,25 +3,9 @@ import json
 import os
 import yaml
 
+from constants import Constants
 from exercise import from_dict
-
-class TokenProvider(object):
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def get_user_token(self):
-        pass
-
-class EnvironmentTokenProvider(TokenProvider):
-    def get_user_token(self):
-        return os.environ['SLACK_USER_TOKEN_STRING']
-
-class InMemoryTokenProvider(TokenProvider):
-    def __init__(self, user_token):
-        self.user_token = user_token
-
-    def get_user_token(self):
-        return self.user_token
+from util import InvalidLoggerTypeException
 
 class ConfigurationProvider(object):
     __metaclass__ = ABCMeta
@@ -56,6 +40,9 @@ class ConfigurationProvider(object):
 
     def webserver_port(self):
         return self.get_config_or_default(80, ['webserver_port'])
+
+    def slack_token(self):
+        return self.config['slack_token']
 
     def office_hours_on(self):
         return self.get_config_or_default(False, ['office_hours', 'on'])
@@ -107,6 +94,16 @@ class ConfigurationProvider(object):
 
     def enable_acknowledgment(self):
         return self.get_config_or_default(False, ['enable_acknowledgment'])
+
+    def workout_logger_type(self):
+        log_type = self.get_config_or_default(Constants.IN_MEMORY_LOGGER, ['workout_logger_type'])
+        if log_type in Constants.LOGGER_CLASSES:
+            return log_type
+        else:
+            raise InvalidLoggerTypeException(log_type)
+
+    def workout_logger_settings(self):
+        return self.get_config_or_default(None, ['workout_logger_settings'])
 
 class JsonFileConfigurationProvider(ConfigurationProvider):
     def __init__(self, filename):

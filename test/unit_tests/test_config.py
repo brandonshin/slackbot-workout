@@ -12,6 +12,7 @@ class TestConfig(object):
         assert config.max_time_between_callouts() == 23
         assert config.group_callout_chance() == 0.05
         assert config.user_exercise_limit() == 3
+        assert config.exercises() == []
 
     def test_required_options(self):
         config = InMemoryConfigurationProvider({})
@@ -19,5 +20,4 @@ class TestConfig(object):
         assert_raises(KeyError, config.bot_name)
         assert_raises(KeyError, config.office_hours_begin)
         assert_raises(KeyError, config.office_hours_end)
-        assert_raises(KeyError, config.exercises)
 

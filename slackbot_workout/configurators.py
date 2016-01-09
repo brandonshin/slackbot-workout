@@ -3,6 +3,8 @@ import json
 import os
 import yaml
 
+from exercise import from_dict
+
 class TokenProvider(object):
     __metaclass__ = ABCMeta
 
@@ -28,8 +30,14 @@ class ConfigurationProvider(object):
     def load_configuration(self):
         pass
 
+    @abstractmethod
+    def load_exercise(self, filename):
+        pass
+
     def set_configuration(self):
         self.config = self.load_configuration()
+        if hasattr(self, 'exercise_list'):
+            del self.exercise_list
 
     def get_config_or_default(self, default, option_path):
         sub_config = self.config
@@ -73,8 +81,26 @@ class ConfigurationProvider(object):
     def group_callout_chance(self):
         return self.get_config_or_default(0.05, ['callouts', 'group_callout_chance'])
 
+    def exercise_directory(self):
+        return self.get_config_or_default('exercises', ['exercise_directory'])
+
     def exercises(self):
-        return self.config['exercises']
+        if not hasattr(self, 'exercise_list'):
+            self.exercise_list = self.load_exercises()
+        return self.exercise_list
+
+    def load_exercises(self):
+        """
+        Loads exercises from the exercise directory.
+        """
+        exercise_list = []
+        for dirname, _, filenames in os.walk(self.exercise_directory()):
+            for filename in filenames:
+                fname = os.path.join(dirname, filename)
+                if fname.endswith(".yaml"):
+                    exercise = self.load_exercise(fname)
+                    exercise_list.append(exercise)
+        return exercise_list
 
     def user_exercise_limit(self):
         return self.get_config_or_default(3, ['user_exercise_limit'])
@@ -87,22 +113,35 @@ class JsonFileConfigurationProvider(ConfigurationProvider):
         self.filename = filename
         self.set_configuration()
 
-    def load_configuration(self):
-        with open(self.filename, 'r') as f:
+    def load_file(self, filename):
+        with open(filename, 'r') as f:
             return json.load(f)
+
+    def load_configuration(self):
+        return self.load_file(self.filename)
+
+    def load_exercise(self, filename):
+        return from_dict(self.load_file(filename))
 
 class YamlFileConfigurationProvider(ConfigurationProvider):
     def __init__(self, filename):
         self.filename = filename
         self.set_configuration()
 
-    def load_configuration(self):
-        with open(self.filename, 'r') as f:
+    def load_file(self, filename):
+        with open(filename, 'r') as f:
             return yaml.load(f)
 
+    def load_configuration(self):
+        return self.load_file(self.filename)
+
+    def load_exercise(self, filename):
+        return from_dict(self.load_file(filename))
+
 class InMemoryConfigurationProvider(ConfigurationProvider):
-    def __init__(self, configuration):
+    def __init__(self, configuration, exercises=[]):
         self.configuration = configuration
+        self.provided_exercise_list = exercises
         self.set_configuration()
 
     def update_configuration(self, updates):
@@ -111,3 +150,8 @@ class InMemoryConfigurationProvider(ConfigurationProvider):
     def load_configuration(self):
         return self.configuration
 
+    def load_exercises(self):
+        return self.provided_exercise_list
+
+    def load_exercise(self, filename):
+        pass

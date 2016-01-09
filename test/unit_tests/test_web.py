@@ -1,24 +1,21 @@
 import mock
 
+from slackbot_workout.exercise import Exercise
 from slackbot_workout.manager import UserManager
 from slackbot_workout.configurators import InMemoryConfigurationProvider
 from slackbot_workout.web import FlexbotWebServer
+
+exercises = [
+    Exercise(0, 'exercise1', 30, 40, 'reps', 'exercise1 info'),
+    Exercise(1, 'exercise2', 30, 40, 'reps', 'exercise2 info'),
+]
 
 def get_sample_config(enable_acknowledgment):
     return InMemoryConfigurationProvider({
         'bot_name': 'testbot',
         'channel_name': 'testchannel',
-        'exercises': [{
-            'id': 0,
-            'name': 'exercise1',
-            'info': 'exercise1 info'
-        }, {
-            'id': 1,
-            'name': 'exercise2',
-            'info': 'exercise2 info'
-        }],
         'enable_acknowledgment': enable_acknowledgment
-    })
+    }, exercises)
 
 def get_server(enable_acknowledgment=True):
     um = mock.Mock(spec=UserManager)

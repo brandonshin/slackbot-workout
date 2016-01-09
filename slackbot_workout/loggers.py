@@ -9,7 +9,7 @@ class BaseLogger(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def log_exercise(self, user_id, exercise, reps, units):
+    def log_exercise(self, user_id, exercise, reps):
         pass
 
     @abstractmethod
@@ -17,8 +17,8 @@ class BaseLogger(object):
         pass
 
 class StdOutLogger(BaseLogger):
-    def log_exercise(self, user_id, exercise, reps, units):
-        print "%s %s %d %s" % (user_id, exercise, reps, units)
+    def log_exercise(self, user_id, exercise, reps):
+        print "%s %s %d %s" % (user_id, exercise.name, reps, exercise.units)
 
     def get_todays_exercises(self):
         # We aren't actually persisting this data, so return no exercises for anyone
@@ -34,10 +34,11 @@ class CsvLogger(BaseLogger):
         debugString = "_DEBUG" if self.debug else ""
         return "log" + time.strftime(self.format_string) + debugString + ".csv"
 
-    def log_exercise(self, user_id, exercise, reps, units):
+    def log_exercise(self, user_id, exercise, reps):
         with open(self.csv_filename(), 'a') as f:
             writer = csv.writer(f)
-            writer.writerow([str(datetime.datetime.now()),user_id,exercise,reps,units])
+            now = str(datetime.datetime.now())
+            writer.writerow([now, user_id, exercise.name, reps, exercise.units])
 
     def get_todays_exercises(self):
         exercises = {}
@@ -98,14 +99,14 @@ class PostgresDatabaseLogger(BaseLogger, PostgresConnector):
             """.format(self.tablename))
         self.with_connection(create_table_command)
 
-    def log_exercise(self, user_id, exercise, reps, units):
+    def log_exercise(self, user_id, exercise, reps):
         def log_exercise_command(cursor):
             cursor.execute("""
                 INSERT INTO {}
                     (user_id, exercise, reps, units)
                 VALUES
                     (%s, %s, %s, %s);
-            """.format(self.tablename), (user_id, exercise, reps, units))
+            """.format(self.tablename), (user_id, exercise.name, reps, exercise.units))
         self.with_connection(log_exercise_command)
 
     def get_todays_exercises(self):

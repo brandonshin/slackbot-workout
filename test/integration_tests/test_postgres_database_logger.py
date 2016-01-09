@@ -18,7 +18,7 @@ class TestPostgresDatabaseLogger(PostgresConnector):
         self.with_connection(clear_table)
 
     def test_log_exercise(self):
-        logger = PostgresDatabaseLogger(self.dbname, self.tablename)
+        logger = PostgresDatabaseLogger(self.tablename, dbname=self.dbname)
         logger.log_exercise('miles', exercises[0], 30)
 
         def get_exercises(cursor):
@@ -28,7 +28,7 @@ class TestPostgresDatabaseLogger(PostgresConnector):
         assert logged_exercises == [('miles', 'pushups', 30)]
 
     def test_get_todays_exercises(self):
-        logger = PostgresDatabaseLogger(self.dbname, self.tablename)
+        logger = PostgresDatabaseLogger(self.tablename, dbname=self.dbname)
         logger.log_exercise('miles', exercises[0], 30)
         logger.log_exercise('greg', exercises[1], 40)
 

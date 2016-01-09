@@ -30,7 +30,8 @@ def get_server_and_mocks():
     um = Mock(spec=UserManager)
     bot = Mock(spec=Bot)
     web = Mock(spec=FlexbotWebServer)
-    server = Server(logger, config, slack_api=api, user_manager=um, bot=bot, web_server=web)
+    server = Server(config, workout_logger=logger, slack_api=api, user_manager=um, bot=bot,
+            web_server=web)
     return {
         'api': api,
         'bot': bot,

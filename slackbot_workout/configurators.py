@@ -3,7 +3,9 @@ import json
 import os
 import yaml
 
+from constants import Constants
 from exercise import from_dict
+from util import InvalidLoggerTypeException
 
 class ConfigurationProvider(object):
     __metaclass__ = ABCMeta
@@ -92,6 +94,16 @@ class ConfigurationProvider(object):
 
     def enable_acknowledgment(self):
         return self.get_config_or_default(False, ['enable_acknowledgment'])
+
+    def workout_logger_type(self):
+        log_type = self.get_config_or_default(Constants.IN_MEMORY_LOGGER, ['workout_logger_type'])
+        if log_type in Constants.LOGGER_CLASSES:
+            return log_type
+        else:
+            raise InvalidLoggerTypeException(log_type)
+
+    def workout_logger_settings(self):
+        return self.get_config_or_default(None, ['workout_logger_settings'])
 
 class JsonFileConfigurationProvider(ConfigurationProvider):
     def __init__(self, filename):

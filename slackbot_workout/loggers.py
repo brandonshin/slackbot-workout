@@ -32,7 +32,7 @@ class InMemoryLogger(BaseLogger):
     def _log_exercise(self, user_id, exercise, reps):
         self.exercises.append((user_id, exercise, reps, datetime.datetime.now()))
 
-    def get_todays_exercise(self):
+    def get_todays_exercises(self):
         return filter(lambda log: log[3].date() == datetime.date.today(), self.exercises)
 
 class CsvLogger(BaseLogger):
@@ -85,11 +85,10 @@ class PostgresConnector(object):
                 conn.close()
 
 class PostgresDatabaseLogger(BaseLogger, PostgresConnector):
-    def __init__(self, dbname, tablename, **kwargs):
+    def __init__(self, tablename, **kwargs):
         super(PostgresDatabaseLogger, self).__init__()
         self.debug = 'debug' in kwargs and kwargs['debug'] == True
         self.kwargs = kwargs
-        self.kwargs.update({'dbname': dbname})
         self.tablename = tablename
         self.maybe_create_table()
 

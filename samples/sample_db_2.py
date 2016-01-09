@@ -4,9 +4,9 @@ from slackbot_workout.configurators import JsonFileConfigurationProvider
 import os
 
 def main():
-    logger = PostgresDatabaseLogger('flexecution', 'flexecution')
+    logger = PostgresDatabaseLogger('flexecution', dbname='flexecution')
     configuration = JsonFileConfigurationProvider(os.getcwd() + '/config.json')
-    server = Server(logger, configuration)
+    server = Server(configuration, workout_logger=logger)
     server.start()
 
 if __name__ == "__main__":

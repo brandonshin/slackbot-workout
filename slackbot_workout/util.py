@@ -19,3 +19,10 @@ class StatementRenderer(object):
             return self.format_string.format(username)
         else:
             return self.format_string
+
+class InvalidLoggerTypeException(Exception):
+    def __init__(self, logger_type):
+        self.logger_type = logger_type
+
+    def __str__(self):
+        return "{} is not a valid logger type".format(self.logger_type)

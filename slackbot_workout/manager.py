@@ -22,7 +22,7 @@ class UserManager(object):
             user = self.users[user_id]
             s += user.username.ljust(15)
             for exercise in exercises:
-                s += str(user.get_exercise_count(exercise.id)).ljust(len(exercise.name) + 2)
+                s += str(user.get_exercise_count(exercise.name)).ljust(len(exercise.name) + 2)
             s += "\n"
 
         s += "```"

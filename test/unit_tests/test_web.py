@@ -8,8 +8,8 @@ from slackbot_workout.util import StatementRenderer
 from slackbot_workout.web import FlexbotWebServer
 
 exercises = [
-    Exercise(0, 'exercise1', 30, 40, 'reps', 'exercise1 info'),
-    Exercise(1, 'exercise2', 30, 40, 'reps', 'exercise2 info'),
+    Exercise('exercise1', 30, 40, 'reps', 'exercise1 info'),
+    Exercise('exercise2', 30, 40, 'reps', 'exercise2 info'),
 ]
 
 def get_sample_config(enable_acknowledgment):

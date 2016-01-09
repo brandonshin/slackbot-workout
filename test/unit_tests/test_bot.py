@@ -9,10 +9,9 @@ from slackbot_workout.manager import UserManager
 from slackbot_workout.user import User
 
 exercises = [
-    Exercise(0, "pushups", 15, 20, "reps", ''),
-    Exercise(1, "planks", 40, 60, "seconds", '')
+    Exercise("pushups", 15, 20, "reps", ''),
+    Exercise("planks", 40, 60, "seconds", '')
 ]
-
 
 def get_sample_config():
     return InMemoryConfigurationProvider({
@@ -36,7 +35,6 @@ def get_sample_config():
 
         "user_exercise_limit": 3
     }, exercises)
-
 
 def get_sample_bot():
     api = Mock(spec=SlackbotApi)

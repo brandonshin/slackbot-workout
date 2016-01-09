@@ -60,7 +60,7 @@ class Bot(object):
             user = self.user_queue[i]
 
             # User should be active and not have done exercise yet
-            if user in eligible_users and not user.has_done_exercise(exercise.id):
+            if user in eligible_users and not user.has_done_exercise(exercise.name):
                 self.user_queue.remove(user)
                 return user
 
@@ -176,7 +176,7 @@ class Bot(object):
 
         for user in winners:
             if not self.config.enable_acknowledgment():
-                user.add_exercise(exercise.id, exercise_reps)
+                user.add_exercise(exercise.name, exercise_reps)
                 self.workout_logger.log_exercise(user.id, exercise, exercise_reps)
 
         # Announce the user

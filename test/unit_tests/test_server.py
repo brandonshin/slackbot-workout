@@ -16,7 +16,7 @@ def sample_config():
         'enable_acknowledgment': True
     })
 
-sample_exercise = Exercise(1, 'exercise1', 30, 40, 'reps', '')
+sample_exercise = Exercise('exercise1', 30, 40, 'reps', '')
 
 sample_users = [
     User('id1', 'username1', 'real name', '1'),

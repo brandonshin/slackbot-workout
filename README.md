@@ -23,25 +23,20 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
     <img src="https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_05_at_7_00_24_PM-1433557433415.png" width = 500>
 
-5. Save your `SLACK_USER_TOKEN_STRING` as environmental variables in your terminal.
+5. Set up channel and customize configurations
 
-    ```
-    $ export SLACK_USER_TOKEN_STRING=YOURUSERTOKEN
-    ```
+    Copy `default.yaml` or `default.json` and configure to your heart's desire. There are a handful of sample configurations located in the `samples/` directory.
 
-    Alternatively, if you're using the `InMemoryTokenConfigurator` you can provide the token within
-    the Python program itself.
-
-6. Set up channel and customize configurations
-
-    Open `config.json` and set `channelName` (ex: general). Set any other configurations as you like.
-
-7. While in the project directory, run
+6. While in the project directory, run
 
     ```
     $ sudo ./install-dependencies.sh
     $ sudo pip install -r requirements.txt
-    $ python sample.py
+    $ python -m samples.flexbot
     ```
 
     Run the script to start the workouts and hit ctrl+\ to stop the script. Hope you have fun with it!
+
+# Usage
+
+Currently, you can specify two configuration files, one which controls the behavior of slackbot, and the other which controls the behavior of the loggers in slackbot. The `samples.flexbot` module currently defaults to using `config.yaml` and `logging.yaml` in the current working directory, but you can specify alternate configuration files by using `--config` and `--logging-config` respectively. Slackbot can read both YAML and JSON files for the configuration files and exercise files.

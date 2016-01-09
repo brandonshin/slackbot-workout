@@ -3,12 +3,19 @@ from mock import Mock
 from slackbot_workout.api import SlackbotApi
 from slackbot_workout.bot import Bot
 from slackbot_workout.configurators import InMemoryConfigurationProvider
+from slackbot_workout.exercise import Exercise
 from slackbot_workout.loggers import BaseLogger
 from slackbot_workout.manager import UserManager
 from slackbot_workout.user import User
 
+exercises = [
+    Exercise(0, "pushups", 15, 20, "reps", ''),
+    Exercise(1, "planks", 40, 60, "seconds", '')
+]
+
+
 def get_sample_config():
-    return InMemoryConfigurationProvider( {
+    return InMemoryConfigurationProvider({
         "office_hours": {
             "on": False,
             "begin": 10,
@@ -27,25 +34,8 @@ def get_sample_config():
             "group_callout_chance": 0.1
         },
 
-        "exercises": [
-            {
-                "id": 0,
-                "name": "pushups",
-                "min_reps": 15,
-                "max_reps": 20,
-                "units": "rep"
-            },
-            {
-                "id": 1,
-                "name": "planks",
-                "min_reps": 40,
-                "max_reps": 60,
-                "units": "second"
-            },
-        ],
-
         "user_exercise_limit": 3
-    })
+    }, exercises)
 
 
 def get_sample_bot():
@@ -79,6 +69,6 @@ class TestBot(object):
         max_time = config.max_time_between_callouts()
         _, bot = get_sample_bot()
         exercise, reps, mins_to_exercise = bot._select_exercise_and_start_time(eligible_users())
-        assert exercise['name'] in map(lambda e: e['name'], exercises)
+        assert exercise.name in map(lambda e: e.name, exercises)
         assert min_time <= mins_to_exercise <= max_time
 

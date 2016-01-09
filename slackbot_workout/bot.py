@@ -60,7 +60,7 @@ class Bot(object):
             user = self.user_queue[i]
 
             # User should be active and not have done exercise yet
-            if user in eligible_users and not user.has_done_exercise(exercise['id']):
+            if user in eligible_users and not user.has_done_exercise(exercise.id):
                 self.user_queue.remove(user)
                 return user
 
@@ -79,11 +79,11 @@ class Bot(object):
     def _select_exercise_and_start_time(self, eligible_users):
         minute_interval = self.select_next_time_interval(eligible_users)
         exercise = self.select_exercise()
-        exercise_reps = random.randrange(exercise["min_reps"], exercise["max_reps"]+1)
+        exercise_reps = random.randrange(exercise.min_reps, exercise.max_reps+1)
 
 
         # Announcement String of next lottery time
-        lottery_announcement = "NEXT LOTTERY FOR " + exercise["name"].upper() + " IS IN " + str(minute_interval) + (" MINUTES" if minute_interval != 1 else " MINUTE")
+        lottery_announcement = "NEXT LOTTERY FOR " + exercise.name.upper() + " IS IN " + str(minute_interval) + (" MINUTES" if minute_interval != 1 else " MINUTE")
 
         # Announce the exercise to the thread
         self.api.post_flex_message(lottery_announcement)
@@ -144,7 +144,7 @@ class Bot(object):
         Selects a set of users or the channel to do the already-selected exercise, and returns the
         list of winners.
         """
-        winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW "
+        winner_announcement = "{} {} {} RIGHT NOW".format(exercise_reps, exercise.units, exercise.name)
 
         eligible_users = self.get_eligible_users()
         winners = []
@@ -176,8 +176,8 @@ class Bot(object):
 
         for user in winners:
             if not self.config.enable_acknowledgment():
-                user.add_exercise(exercise['id'], exercise_reps)
-                self.workout_logger.log_exercise(user.id,exercise["name"],exercise_reps,exercise["units"])
+                user.add_exercise(exercise.id, exercise_reps)
+                self.workout_logger.log_exercise(user.id, exercise, exercise_reps)
 
         # Announce the user
         self.api.post_flex_message(winner_announcement)

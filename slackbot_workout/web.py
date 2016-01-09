@@ -69,16 +69,16 @@ A little primer on how I work: after I call you out for an exercise, I will only
 
     def print_exercises(self):
         exercises_text = "The currently supported exercises are: "
-        exercises_text += ", ".join(map(lambda e: e['name'], self.configuration.exercises()))
+        exercises_text += ", ".join(map(lambda e: e.name, self.configuration.exercises()))
         return {'text': exercises_text}
 
     def print_exercise_info(self, exercise_name):
         exercise_reverse_lookup = {}
         for exercise in self.configuration.exercises():
-            exercise_reverse_lookup[exercise['name']] = exercise
+            exercise_reverse_lookup[exercise.name] = exercise
         if exercise_name in exercise_reverse_lookup:
             exercise = exercise_reverse_lookup[exercise_name]
-            exercise_info = "{} description: {}".format(exercise['name'], exercise['info'])
+            exercise_info = "{} description: {}".format(exercise.name, exercise.info)
             return {'text': exercise_info}
         else:
             return {'text': 'I don\'t recognize that exercise...'}

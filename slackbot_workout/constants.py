@@ -1,0 +1,4 @@
+class Constants(object):
+    ACKNOWLEDGE_SUCCEEDED = 0
+    ACKNOWLEDGE_FAILED = 1
+    ACKNOWLEDGE_DISABLED = 2

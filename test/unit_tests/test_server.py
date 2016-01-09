@@ -19,8 +19,8 @@ def sample_config():
 sample_exercise = Exercise(1, 'exercise1', 30, 40, 'reps', '')
 
 sample_users = [
-    User('id1', 'username1', 'real name 1'),
-    User('id2', 'username2', 'real name 2')
+    User('id1', 'username1', 'real name', '1'),
+    User('id2', 'username2', 'real name', '2')
 ]
 
 def get_server_and_mocks():

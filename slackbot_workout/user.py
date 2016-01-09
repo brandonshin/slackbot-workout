@@ -1,11 +1,12 @@
 class User(object):
-    def __init__(self, user_id, username, real_name):
+    def __init__(self, user_id, username, firstname, lastname):
         # The Slack ID of the user
         self.id = user_id
 
         # The username (@username) and real name
         self.username = username
-        self.real_name = real_name
+        self.firstname = firstname
+        self.lastname = lastname
 
         # Exercise history for the day
         self.exercises = {}

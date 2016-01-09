@@ -39,8 +39,9 @@ class UserManager(object):
             if user_id not in self.users:
                 user_json = self.api.get_user_info(user_id)
                 username = user_json['name']
-                real_name = user_json['profile']['real_name']
-                self.users[user_id] = User(user_id, username, real_name)
+                firstname = user_json['profile']['first_name']
+                lastname = user_json['profile']['last_name']
+                self.users[user_id] = User(user_id, username, firstname, lastname)
 
     def fetch_active_users(self):
         """
@@ -56,3 +57,8 @@ class UserManager(object):
     def clear_users(self):
         self.users = {}
 
+    def get_firstname(self, user_id):
+        try:
+            return self.users[user_id].firstname
+        except KeyError:
+            return None

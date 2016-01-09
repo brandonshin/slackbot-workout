@@ -2,14 +2,15 @@ from slackbot_workout.user import User
 
 class TestUser(object):
     def test_init(self):
-        u = User('id', 'un', 'rn')
+        u = User('id', 'un', 'fn', 'ln')
         assert u.id == 'id'
         assert u.username == 'un'
-        assert u.real_name == 'rn'
+        assert u.firstname == 'fn'
+        assert u.lastname == 'ln'
         assert u.total_exercises() == 0
 
     def test_total_exercises(self):
-        u = User('id', 'un', 'rn')
+        u = User('id', 'un', 'fn', 'ln')
         assert u.total_exercises() == 0
         u.add_exercise('eid1', 3)
         assert u.total_exercises() == 1
@@ -21,7 +22,7 @@ class TestUser(object):
         assert u.total_exercises() == 3
 
     def test_get_exercise_count(self):
-        u = User('id', 'un', 'rn')
+        u = User('id', 'un', 'fn', 'ln')
         assert u.get_exercise_count('eid1') == 0
         u.add_exercise('eid1', 3)
         assert u.get_exercise_count('eid1') == 1
@@ -33,7 +34,7 @@ class TestUser(object):
         assert u.get_exercise_count('eid1') == 2
 
     def test_has_done_exercise(self):
-        u = User('id', 'un', 'rn')
+        u = User('id', 'un', 'fn', 'ln')
         assert u.has_done_exercise('eid1') == False
         assert u.has_done_exercise('eid2') == False
         u.add_exercise('eid1', 5)
@@ -44,5 +45,5 @@ class TestUser(object):
         assert u.has_done_exercise('eid2') == False
 
     def test_get_mention(self):
-        u = User('id', 'un', 'rn')
+        u = User('id', 'un', 'fn', 'ln')
         assert u.get_mention() == '<@un>'

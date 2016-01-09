@@ -1,8 +1,26 @@
 import cherrypy
 import logging
 import pystache
+import random
+
+from constants import Constants
+from util import StatementRenderer
 
 class FlexbotWebServer(object):
+    SUCCESS_STATEMENTS = [
+        "Awesome job, {}! Keep up the good work.",
+        "Fantastic work, {}!",
+        "Took you long enough... :wink:",
+        ":weight_lifter:"
+    ]
+
+    FAILURE_STATEMENTS = [
+        "Way to jump the gun, Sparky",
+        "I know you're excited, but you can't take credit for someone else's exercise!"
+    ]
+
+    CHARS_TO_IGNORE = "!"
+
     def __init__(self, user_manager, ack_handler, configuration):
         self.user_manager = user_manager
         self.ack_handler = ack_handler
@@ -18,6 +36,8 @@ class FlexbotWebServer(object):
     def flex(self, **args):
         user_id = args['user_id']
         text = args['text'].lower()
+        for char in self.CHARS_TO_IGNORE:
+            text = text.replace(char, "")
         if user_id != "USLACKBOT" and text.startswith(self.configuration.bot_name().lower()):
             self.logger.debug('message: %s', args['text'])
             response = self.handle_message(text, user_id)
@@ -92,7 +112,6 @@ A little primer on how I work: after I call you out for an exercise, I will only
             for user_id in self.user_manager.users:
                 user = self.user_manager.users[user_id]
                 user_reverse_lookup[user.username.lower()] = user_id
-                user_reverse_lookup[user.real_name.lower()] = user_id
             for username in usernames:
                 self.logger.debug("Looking up username %s", username)
                 username = username[1:] if username.startswith("@") else username
@@ -108,7 +127,23 @@ A little primer on how I work: after I call you out for an exercise, I will only
             }
 
     def acknowledge_winner(self, user_id):
-        self.ack_handler.acknowledge_winner(user_id)
+        result = self.ack_handler.acknowledge_winner(user_id)
+        if result == Constants.ACKNOWLEDGE_SUCCEEDED:
+            return self.acknowledge_success(user_id)
+        elif result == Constants.ACKNOWLEDGE_FAILED:
+            return self.acknowledge_failure(user_id)
+
+    def _acknowledge_winner(self, user_id, statements_list):
+        statement = random.choice(statements_list)
+        username = self.user_manager.get_firstname(user_id)
+        rendered_statement = StatementRenderer(statement).render_statement(username)
+        return {'text': rendered_statement}
+
+    def acknowledge_success(self, user_id):
+        return self._acknowledge_winner(user_id, self.SUCCESS_STATEMENTS)
+
+    def acknowledge_failure(self, user_id):
+        return self._acknowledge_winner(user_id, self.FAILURE_STATEMENTS)
 
     def reload_configuration(self):
         self.configuration.set_configuration()

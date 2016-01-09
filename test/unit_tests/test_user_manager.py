@@ -25,14 +25,16 @@ def get_mock_api():
             return {
                 'name': 'User1',
                 'profile': {
-                    'real_name': 'User 1'
+                    'first_name': 'User',
+                    'last_name': '1'
                 }
             }
         elif user_id == 'uid2':
             return {
                 'name': 'User2',
                 'profile': {
-                    'real_name': 'User 2'
+                    'first_name': 'User',
+                    'last_name': '2'
                 }
             }
         else:
@@ -73,4 +75,11 @@ class TestUserManager(object):
         assert 'uid2' in um.users
         um.clear_users()
         assert len(um.users) == 0
+
+    def test_get_firstname(self):
+        mock_api = get_mock_api()
+        um = make_user_manager(mock_api)
+        um.fetch_users()
+        assert um.get_firstname('uid1') == 'User'
+        assert um.get_firstname('uid3') == None
 

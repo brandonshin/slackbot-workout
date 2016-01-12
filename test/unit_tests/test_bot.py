@@ -80,13 +80,13 @@ class TestBot(object):
         bot = bot_and_mocks['bot']
         um = bot_and_mocks['user_manager']
         logger = bot_and_mocks['logger']
-        um.fetch_active_users.return_value = active_users()[:1]
+        users = active_users()
+        um.fetch_active_users.return_value = users
+        um.get_current_winners.return_value = [(users[0], exercises[0], 10)]
 
         winners = bot.assign_exercise(exercises[0], 30)
 
-        assert len(bot.current_winners) == 1
-        assert bot.current_winners[0][0].id == 'slackid1'
-        print winners[0].total_exercises()
+        assert um.add_to_current_winners.call_count == 1
         assert winners[0].total_exercises() == 0
         assert logger.log_exercise.assert_never_called()
 
@@ -96,7 +96,7 @@ class TestBot(object):
         um = bot_and_mocks['user_manager']
         users = active_users()
         um.fetch_active_users.return_value = users
-        bot.current_winners = [(users[0], exercises[0], 10)]
+        um.get_current_winners.return_value = [(users[0], exercises[0], 10)]
         eligible_users = bot.get_eligible_users()
         assert eligible_users[0].id == 'slackid2'
 
@@ -110,11 +110,11 @@ class TestBot(object):
         for u in users:
             umap[u.id] = u
         um.users = umap
-        winner1 = (users[0], exercises[0], 10)
-        winner2 = (users[1], exercises[1], 20)
-        bot.current_winners = [winner1, winner2]
+        winner1 = (users[0].id, exercises[0], 10)
+        winner2 = (users[1].id, exercises[1], 20)
+        um.get_current_winners.return_value = [winner1, winner2]
 
         bot.acknowledge_winner('slackid1')
 
-        assert bot.current_winners == [winner2]
+        um.remove_from_current_winners.assert_called_once_with('slackid1')
         logger.log_exercise.assert_called_once_with('slackid1', winner1[1], winner1[2])

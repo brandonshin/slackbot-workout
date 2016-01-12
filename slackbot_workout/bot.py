@@ -16,7 +16,6 @@ class Bot(object):
 
         # round robin store
         self.user_queue = []
-        self.current_winners = []
 
     def update_user_queue(self):
         """
@@ -38,10 +37,10 @@ class Bot(object):
         """
         self.update_user_queue()
 
-        winners = map(lambda u: u[0], self.current_winners)
+        winners = map(lambda u: u[0], self.user_manager.get_current_winners())
         eligible_users = []
         for user in self.user_queue:
-            if user not in winners and user.total_exercises() < self.config.user_exercise_limit():
+            if user.id not in winners and user.total_exercises() < self.config.user_exercise_limit():
                 eligible_users.append(user)
 
         if len(eligible_users) == 0:
@@ -178,7 +177,7 @@ class Bot(object):
 
         for user in winners:
             if self.config.enable_acknowledgment():
-                self.current_winners.append((user, exercise, exercise_reps))
+                self.user_manager.add_to_current_winners(user.id, exercise, exercise_reps)
             else:
                 user.add_exercise(exercise.name, exercise_reps)
                 self.workout_logger.log_exercise(user.id, exercise, exercise_reps)
@@ -196,13 +195,14 @@ class Bot(object):
     def acknowledge_winner(self, user_id):
         if self.config.enable_acknowledgment():
             try:
-                user, exercise, reps = filter(lambda u: u[0].id == user_id, self.current_winners)[0]
+                _, exercise, reps = filter(lambda u: u[0] == user_id,
+                        self.user_manager.get_current_winners())[0]
 
                 # Log the exercise, update the local user's information as well, and remove the user
                 # from the list of current winners
-                self.workout_logger.log_exercise(user.id, exercise, reps)
-                self.user_manager.users[user.id].add_exercise(exercise.name, reps)
-                self.current_winners = filter(lambda u: u[0].id != user_id, self.current_winners)
+                self.workout_logger.log_exercise(user_id, exercise, reps)
+                self.user_manager.users[user_id].add_exercise(exercise.name, reps)
+                self.user_manager.remove_from_current_winners(user_id)
                 return Constants.ACKNOWLEDGE_SUCCEEDED
             except IndexError: # user not actually in the list of current winners
                 return Constants.ACKNOWLEDGE_FAILED

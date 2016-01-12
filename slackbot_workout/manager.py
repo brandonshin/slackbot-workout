@@ -5,6 +5,7 @@ class UserManager(object):
         self.api = api
         self.configuration = configuration
         self.users = {}
+        self.current_winners = []
         self.fetch_users()
 
     def stats(self, user_id_list=[]):
@@ -56,6 +57,15 @@ class UserManager(object):
 
     def clear_users(self):
         self.users = {}
+
+    def add_to_current_winners(self, user_id, exercise, reps):
+        self.current_winners.append((user_id, exercise, reps))
+
+    def get_current_winners(self):
+        return self.current_winners
+
+    def remove_from_current_winners(self, user_id):
+        self.current_winners = filter(lambda u: u[0] != user_id, self.current_winners)
 
     def get_firstname(self, user_id):
         try:

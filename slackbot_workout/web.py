@@ -139,6 +139,8 @@ A little primer on how I work: after I call you out for an exercise, I will only
     def _acknowledge_winner(self, user_id, statements_list):
         statement = random.choice(statements_list)
         username = self.user_manager.get_firstname(user_id)
+        if username == '':
+            username = self.user_manager.get_username(user_id)
         rendered_statement = StatementRenderer(statement).render_statement(username)
         return {'text': rendered_statement}
 

@@ -39,7 +39,7 @@ def get_mock_api():
             }
         elif user_id == 'uid3':
             return {
-                'name': 'User2',
+                'name': 'User3',
                 'profile': {
                 }
             }

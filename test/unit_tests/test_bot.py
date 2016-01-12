@@ -96,7 +96,7 @@ class TestBot(object):
         um = bot_and_mocks['user_manager']
         users = active_users()
         um.fetch_active_users.return_value = users
-        um.get_current_winners.return_value = [(users[0], exercises[0], 10)]
+        um.get_current_winners.return_value = [(users[0].id, exercises[0], 10)]
         eligible_users = bot.get_eligible_users()
         assert eligible_users[0].id == 'slackid2'
 

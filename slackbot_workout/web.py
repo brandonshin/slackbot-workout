@@ -58,6 +58,8 @@ class FlexbotWebServer(object):
             return self.print_stats(user_id, args[1:])
         elif self.configuration.enable_acknowledgment() and command == "done":
             return self.acknowledge_winner(user_id)
+        elif self.configuration.enable_acknowledgment() and command == "todo":
+            return self.print_assignments()
         elif command == "reload":
             return self.reload_configuration()
         else:
@@ -78,6 +80,7 @@ Welcome to {{channel_name}}! I am {{bot_name}}, your friendly helpful workout bo
 - `{{bot_name}} stats channel`: print the stats for everyone in the channel
 {{#enable_acknowledgment}}
 - `{{bot_name}} done`: indicate that you have indeed finished your exercise for the current round
+- `{{bot_name}} todo`: show users who have a pending exercise and the exercise they must do
 {{/enable_acknowledgment}}
 - `{{bot_name}}, I don't have to listen to you`: doubles your exercise quota permanently (coming soon)
 {{#enable_acknowledgment}}
@@ -144,6 +147,27 @@ A little primer on how I work: after I call you out for an exercise, I will only
 
     def acknowledge_failure(self, user_id):
         return self._acknowledge_winner(user_id, self.FAILURE_STATEMENTS)
+
+    def print_assignments(self):
+        response = ''
+        current_winners = self.user_manager.get_current_winners()
+        if len(current_winners) == 0:
+            response = 'No pending exercises. Keep on working out!'
+        else:
+            # Write to the command console today's breakdown
+            response = "```\n"
+            #s += "Username\tAssigned\tComplete\tPercent
+            response += "Username".ljust(15)
+            response += "Exercise"
+            response += "\n---------------------------------------------------------------\n"
+            for user_id, exercise, reps in current_winners:
+                response += self.user_manager.get_username(user_id).ljust(15)
+                response += "{} {} {}".format(reps, exercise.units, exercise.name)
+                response += "\n"
+
+            response += "```"
+        return {'text': response}
+
 
     def reload_configuration(self):
         self.configuration.set_configuration()

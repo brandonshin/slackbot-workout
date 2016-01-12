@@ -13,6 +13,12 @@ exercises = [
     Exercise("planks", 40, 60, "seconds", '')
 ]
 
+def active_users():
+    return [
+        User('slackid1', 'username1', 'real name', '1'),
+        User('slackid2', 'username2', 'real name', '2')
+    ]
+
 def get_sample_config():
     return InMemoryConfigurationProvider({
         "office_hours": {
@@ -33,7 +39,8 @@ def get_sample_config():
             "group_callout_chance": 0.1
         },
 
-        "user_exercise_limit": 3
+        "user_exercise_limit": 3,
+        "enable_acknowledgment": True
     }, exercises)
 
 def get_sample_bot():
@@ -42,22 +49,20 @@ def get_sample_bot():
     config = get_sample_config()
     um = Mock(spec=UserManager)
     bot = Bot(api, logger, config, um)
-    return (um, bot)
-
-def eligible_users():
-    return [
-        User('slackid1', 'username1', 'real name', '1'),
-        User('slackid2', 'username2', 'real name', '2'),
-    ]
+    return {
+        'user_manager': um,
+        'logger': logger,
+        'bot': bot
+    }
 
 class TestBot(object):
     def test_init(self):
-        _, bot = get_sample_bot()
+        bot = get_sample_bot()['bot']
         assert bot.user_queue == []
 
     def test_select_next_time_interval(self):
-        _, bot = get_sample_bot()
-        interval = bot.select_next_time_interval(eligible_users())
+        bot = get_sample_bot()['bot']
+        interval = bot.select_next_time_interval(active_users())
         assert isinstance(interval, int) or (isinstance(interval, float) and interval.is_integer())
 
     def test_select_exercise_and_start_time(self):
@@ -65,8 +70,51 @@ class TestBot(object):
         exercises = config.exercises()
         min_time = config.min_time_between_callouts()
         max_time = config.max_time_between_callouts()
-        _, bot = get_sample_bot()
-        exercise, reps, mins_to_exercise = bot._select_exercise_and_start_time(eligible_users())
+        bot = get_sample_bot()['bot']
+        exercise, reps, mins_to_exercise = bot._select_exercise_and_start_time(active_users())
         assert exercise.name in map(lambda e: e.name, exercises)
         assert min_time <= mins_to_exercise <= max_time
 
+    def test_assign_exercise_with_ack(self):
+        bot_and_mocks = get_sample_bot()
+        bot = bot_and_mocks['bot']
+        um = bot_and_mocks['user_manager']
+        logger = bot_and_mocks['logger']
+        um.fetch_active_users.return_value = active_users()[:1]
+
+        winners = bot.assign_exercise(exercises[0], 30)
+
+        assert len(bot.current_winners) == 1
+        assert bot.current_winners[0][0].id == 'slackid1'
+        print winners[0].total_exercises()
+        assert winners[0].total_exercises() == 0
+        assert logger.log_exercise.assert_never_called()
+
+    def test_get_eligible_users(self):
+        bot_and_mocks = get_sample_bot()
+        bot = bot_and_mocks['bot']
+        um = bot_and_mocks['user_manager']
+        users = active_users()
+        um.fetch_active_users.return_value = users
+        bot.current_winners = [(users[0], exercises[0], 10)]
+        eligible_users = bot.get_eligible_users()
+        assert eligible_users[0].id == 'slackid2'
+
+    def test_acknowledge_winner(self):
+        bot_and_mocks = get_sample_bot()
+        bot = bot_and_mocks['bot']
+        logger = bot_and_mocks['logger']
+        um = bot_and_mocks['user_manager']
+        umap = {}
+        users = active_users()
+        for u in users:
+            umap[u.id] = u
+        um.users = umap
+        winner1 = (users[0], exercises[0], 10)
+        winner2 = (users[1], exercises[1], 20)
+        bot.current_winners = [winner1, winner2]
+
+        bot.acknowledge_winner('slackid1')
+
+        assert bot.current_winners == [winner2]
+        logger.log_exercise.assert_called_once_with('slackid1', winner1[1], winner1[2])

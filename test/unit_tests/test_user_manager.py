@@ -97,7 +97,7 @@ class TestUserManager(object):
         um = make_user_manager(mock_api)
         um.fetch_users()
         assert um.get_username('uid1') == 'User1'
-        assert um.get_username('uid3') == None
+        assert um.get_username('uid0') == None
 
     def test_current_winners(self):
         mock_api = get_mock_api()

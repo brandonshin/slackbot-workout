@@ -1,9 +1,13 @@
+import json
+import logging
+
 from user import User
 
 class UserManager(object):
     def __init__(self, api, configuration):
         self.api = api
         self.configuration = configuration
+        self.logger = logging.getLogger(__name__)
         self.users = {}
         self.current_winners = []
         self.fetch_users()
@@ -39,9 +43,10 @@ class UserManager(object):
         for user_id in user_ids:
             if user_id not in self.users:
                 user_json = self.api.get_user_info(user_id)
+                self.logger.info("Adding user with json: %s", json.dumps(user_json))
                 username = user_json['name']
-                firstname = user_json['profile']['first_name']
-                lastname = user_json['profile']['last_name']
+                firstname = user_json['profile'].get('first_name', '')
+                lastname = user_json['profile'].get('last_name', '')
                 self.users[user_id] = User(user_id, username, firstname, lastname)
 
     def fetch_active_users(self):

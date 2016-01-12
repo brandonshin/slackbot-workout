@@ -41,6 +41,7 @@ class Bot(object):
         eligible_users = []
         for user in self.user_queue:
             if user.id not in winners and user.total_exercises() < self.config.user_exercise_limit():
+                self.logger.info("Adding %s to eligible_users list", user.username)
                 eligible_users.append(user)
 
         if len(eligible_users) == 0:
@@ -128,7 +129,8 @@ class Bot(object):
         self.logger.debug("num_online_users: %d", num_online_users)
 
         avg_people_per_callout = num_online_users * self.config.group_callout_chance() \
-                + self.num_people_in_current_callout() * (1 - self.config.group_callout_chance())
+                + (self.num_people_in_current_callout(eligible_users)
+                    * (1 - self.config.group_callout_chance()))
         self.logger.debug("avg_people_per_callout: %d", avg_people_per_callout)
 
         avg_minutes_per_exercise = time_left.seconds / float(remaining_exercises *
@@ -156,7 +158,7 @@ class Bot(object):
             winner_announcement += "<!channel>!"
 
         else:
-            people_in_callout = self.num_people_in_current_callout()
+            people_in_callout = self.num_people_in_current_callout(eligible_users)
             for i in range(people_in_callout):
                 try:
                     winners.append(self.select_user(exercise))
@@ -188,8 +190,8 @@ class Bot(object):
         return winners
 
 
-    def num_people_in_current_callout(self):
-        return min(self.config.num_people_per_callout(), len(self.user_queue))
+    def num_people_in_current_callout(self, active_users):
+        return min(self.config.num_people_per_callout(), len(active_users))
 
 
     def acknowledge_winner(self, user_id):

@@ -26,10 +26,10 @@ class TestLoggerFactory(object):
 
     @mock.patch('slackbot_workout.loggers.psycopg2')
     def test_postgres(self, fake_db_api):
-        settings = {
-            'dbname': 'flexecution',
-            'tablename': 'flexecution'
-        }
+        settings = [
+            { 'dbname': 'flexecution' },
+            { 'tablename': 'flexecution' }
+        ]
         mock_config = get_mock_config(logger_type=Constants.POSTGRES_DATABASE_LOGGER,
                 settings = settings)
         logger_factory = LoggerFactory(mock_config)

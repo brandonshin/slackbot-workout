@@ -23,7 +23,9 @@ class LoggerFactory(object):
         return loggers.CsvLogger(debug=self.configuration.debug())
 
     def get_postgres_database_logger(self):
-        dbsettings = self.configuration.workout_logger_settings()
+        dbsettings = {}
+        for setting in self.configuration.workout_logger_settings():
+            dbsettings.update(setting)
         tablename = dbsettings['tablename']
         del dbsettings['tablename']
         return loggers.PostgresDatabaseLogger(tablename, **dbsettings)

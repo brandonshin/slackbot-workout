@@ -19,7 +19,7 @@ def make_user_manager(mock_api):
 
 def get_mock_api():
     def get_members():
-        return ['uid1', 'uid2']
+        return ['uid1', 'uid2', 'uid3']
     def get_user_info(user_id):
         if user_id == 'uid1':
             return {
@@ -35,6 +35,12 @@ def get_mock_api():
                 'profile': {
                     'first_name': 'User',
                     'last_name': '2'
+                }
+            }
+        elif user_id == 'uid3':
+            return {
+                'name': 'User3',
+                'profile': {
                 }
             }
         else:
@@ -59,6 +65,9 @@ class TestUserManager(object):
         um.fetch_users()
         assert 'uid1' in um.users
         assert 'uid2' in um.users
+        assert 'uid3' in um.users
+        assert um.users['uid3'].firstname == ''
+        assert um.users['uid3'].lastname == ''
 
     def test_fetch_active_users(self):
         mock_api = get_mock_api()
@@ -81,14 +90,14 @@ class TestUserManager(object):
         um = make_user_manager(mock_api)
         um.fetch_users()
         assert um.get_firstname('uid1') == 'User'
-        assert um.get_firstname('uid3') == None
+        assert um.get_firstname('uid0') == None
 
     def test_get_username(self):
         mock_api = get_mock_api()
         um = make_user_manager(mock_api)
         um.fetch_users()
         assert um.get_username('uid1') == 'User1'
-        assert um.get_username('uid3') == None
+        assert um.get_username('uid0') == None
 
     def test_current_winners(self):
         mock_api = get_mock_api()

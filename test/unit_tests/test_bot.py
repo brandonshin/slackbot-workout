@@ -36,7 +36,7 @@ def get_sample_config():
                 "units": "minutes"
             },
             "num_people": 1,
-            "group_callout_chance": 0.1
+            "group_callout_chance": 0
         },
 
         "user_exercise_limit": 3,

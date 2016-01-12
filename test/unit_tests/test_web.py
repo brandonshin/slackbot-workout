@@ -9,7 +9,7 @@ from slackbot_workout.web import FlexbotWebServer
 
 exercises = [
     Exercise('exercise1', 30, 40, 'reps', 'exercise1 info'),
-    Exercise('exercise2', 30, 40, 'reps', 'exercise2 info'),
+    Exercise('exercise2', 30, 40, 'reps', 'exercise2 info')
 ]
 
 def get_sample_config(enable_acknowledgment):
@@ -92,6 +92,24 @@ class TestWeb(object):
         ack_handler, server = test_server['ack_handler'], test_server['server']
         server.flex(user_id='UREALUSER', text='testbot done realuser')
         ack_handler.acknowledge_winner.assert_never_called()
+
+    def test_flex_handler_todo_no_winners(self):
+        test_server = get_server()
+        um = test_server['user_manager']
+        server = test_server['server']
+        um.get_current_winners.return_value = []
+        response = server.flex(user_id='UREALUSER', text='testbot todo')
+        assert 'No pending exercises' in response['text']
+
+    def test_flex_handler_todo_winner(self):
+        test_server = get_server()
+        um = test_server['user_manager']
+        server = test_server['server']
+        um.get_current_winners.return_value = [('uid', Exercise('pushups', 30, 40, 'reps', ''), 35)]
+        um.get_username.return_value = 'Username'
+        response = server.flex(user_id='UREALUSER', text='testbot todo')
+        assert 'Username' in response['text']
+        assert '35 reps pushups' in response['text']
 
     def test_flex_handler_bad_message(self):
         server = get_server()['server']

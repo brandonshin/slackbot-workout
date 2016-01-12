@@ -77,3 +77,9 @@ class UserManager(object):
             return self.users[user_id].firstname
         except KeyError:
             return None
+
+    def get_username(self, user_id):
+        try:
+            return self.users[user_id].username
+        except KeyError:
+            return None

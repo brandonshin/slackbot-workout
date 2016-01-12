@@ -26,3 +26,8 @@ class InvalidLoggerTypeException(Exception):
 
     def __str__(self):
         return "{} is not a valid logger type".format(self.logger_type)
+
+class NoEligibleUsersException(Exception):
+    def __str__(self):
+        return "No available users at this time"
+

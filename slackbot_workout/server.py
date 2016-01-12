@@ -4,7 +4,6 @@ import threading
 
 from api import SlackbotApi
 from bot import Bot, NoEligibleUsersException
-from constants import Constants
 from logger_factory import LoggerFactory
 from manager import UserManager
 import util
@@ -19,7 +18,6 @@ class Server(object):
             self.workout_logger = logger_factory.get_logger()
         else:
             self.workout_logger = workout_logger
-        self.current_winners = []
 
         if 'slack_api' in kwargs:
             self.slack_api = kwargs['slack_api']
@@ -39,7 +37,7 @@ class Server(object):
         if 'web_server' in kwargs:
             self.web_server = kwargs['web_server']
         else:
-            self.web_server = FlexbotWebServer(self.user_manager, self, configuration)
+            self.web_server = FlexbotWebServer(self.user_manager, self.bot, configuration)
 
     def start(self):
         self.logger.debug('Starting workout loop')
@@ -86,9 +84,7 @@ class Server(object):
             util.sleep(minutes=mins_to_exercise)
 
             # Assign the exercise to someone
-            self.current_winners = self.bot.assign_exercise(exercise, reps)
-            self.current_exercise = exercise
-            self.current_reps = reps
+            self.bot.assign_exercise(exercise, reps)
         else:
             # Show some stats if the final workout has just passed
             if was_office_hours:
@@ -101,19 +97,3 @@ class Server(object):
                 # If debugging, check again in 5 seconds
                 util.sleep(seconds=5)
 
-    def acknowledge_winner(self, user_id):
-        if self.configuration.enable_acknowledgment():
-            try:
-                user = filter(lambda u: u.id == user_id, self.current_winners)[0]
-                exercise = self.current_exercise
-
-                # Log the exercise, update the local user's information as well, and remove the user
-                # from the list of current winners
-                self.workout_logger.log_exercise(user.id, exercise, self.current_reps)
-                self.user_manager.users[user.id].add_exercise(exercise.name, self.current_reps)
-                self.current_winners.remove(user)
-                return Constants.ACKNOWLEDGE_SUCCEEDED
-            except IndexError: # user not actually in the list of current winners
-                return Constants.ACKNOWLEDGE_FAILED
-        else:
-            return Constants.ACKNOWLEDGE_DISABLED

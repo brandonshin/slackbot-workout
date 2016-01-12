@@ -2,10 +2,8 @@ import datetime
 import logging
 import random
 
-class NoEligibleUsersException(Exception):
-    def __str__(self):
-        return "No available users at this time"
-
+from constants import Constants
+from util import NoEligibleUsersException
 
 # Configuration values to be set in setConfiguration
 class Bot(object):
@@ -18,7 +16,7 @@ class Bot(object):
 
         # round robin store
         self.user_queue = []
-
+        self.current_winners = []
 
     def update_user_queue(self):
         """
@@ -40,8 +38,12 @@ class Bot(object):
         """
         self.update_user_queue()
 
-        eligible_users = filter(lambda u: u.total_exercises() < self.config.user_exercise_limit(),
-                self.user_queue)
+        winners = map(lambda u: u[0], self.current_winners)
+        eligible_users = []
+        for user in self.user_queue:
+            if user not in winners and user.total_exercises() < self.config.user_exercise_limit():
+                eligible_users.append(user)
+
         if len(eligible_users) == 0:
             raise NoEligibleUsersException()
 
@@ -175,7 +177,9 @@ class Bot(object):
                     winner_announcement += ", "
 
         for user in winners:
-            if not self.config.enable_acknowledgment():
+            if self.config.enable_acknowledgment():
+                self.current_winners.append((user, exercise, exercise_reps))
+            else:
                 user.add_exercise(exercise.name, exercise_reps)
                 self.workout_logger.log_exercise(user.id, exercise, exercise_reps)
 
@@ -184,8 +188,26 @@ class Bot(object):
 
         return winners
 
+
     def num_people_in_current_callout(self):
         return min(self.config.num_people_per_callout(), len(self.user_queue))
+
+
+    def acknowledge_winner(self, user_id):
+        if self.config.enable_acknowledgment():
+            try:
+                user, exercise, reps = filter(lambda u: u[0].id == user_id, self.current_winners)[0]
+
+                # Log the exercise, update the local user's information as well, and remove the user
+                # from the list of current winners
+                self.workout_logger.log_exercise(user.id, exercise, reps)
+                self.user_manager.users[user.id].add_exercise(exercise.name, reps)
+                self.current_winners = filter(lambda u: u[0].id != user_id, self.current_winners)
+                return Constants.ACKNOWLEDGE_SUCCEEDED
+            except IndexError: # user not actually in the list of current winners
+                return Constants.ACKNOWLEDGE_FAILED
+        else:
+            return Constants.ACKNOWLEDGE_DISABLED
 
 
     def is_office_hours(self):

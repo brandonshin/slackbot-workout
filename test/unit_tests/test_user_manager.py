@@ -83,6 +83,13 @@ class TestUserManager(object):
         assert um.get_firstname('uid1') == 'User'
         assert um.get_firstname('uid3') == None
 
+    def test_get_username(self):
+        mock_api = get_mock_api()
+        um = make_user_manager(mock_api)
+        um.fetch_users()
+        assert um.get_username('uid1') == 'User1'
+        assert um.get_username('uid3') == None
+
     def test_current_winners(self):
         mock_api = get_mock_api()
         um = make_user_manager(mock_api)
@@ -91,3 +98,4 @@ class TestUserManager(object):
         assert len(um.get_current_winners()) == 1
         um.remove_from_current_winners('uid1')
         assert len(um.get_current_winners()) == 0
+

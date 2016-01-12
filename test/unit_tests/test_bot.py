@@ -56,10 +56,6 @@ def get_sample_bot():
     }
 
 class TestBot(object):
-    def test_init(self):
-        bot = get_sample_bot()['bot']
-        assert bot.user_queue == []
-
     def test_select_next_time_interval(self):
         bot = get_sample_bot()['bot']
         interval = bot.select_next_time_interval(active_users())
@@ -118,3 +114,16 @@ class TestBot(object):
 
         um.remove_from_current_winners.assert_called_once_with('slackid1')
         logger.log_exercise.assert_called_once_with('slackid1', winner1[1], winner1[2])
+
+    def test_get_lottery_list(self):
+        def make_mock_user(user_id, total_exercises):
+            u = Mock(spec=User)
+            u.total_exercises.return_value = total_exercises
+            u.id = user_id
+            return u
+        ulist = [make_mock_user(uid, exercises) for (uid, exercises) in [('uid1', 2), ('uid2', 1)]]
+        bot_and_mocks = get_sample_bot()
+        bot = bot_and_mocks['bot']
+        lottery_list = bot.get_lottery_list(ulist)
+        assert len(filter(lambda u: u.id == 'uid1', lottery_list)) == 1
+        assert len(filter(lambda u: u.id == 'uid2', lottery_list)) == 2

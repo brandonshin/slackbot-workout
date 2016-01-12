@@ -14,32 +14,17 @@ class Bot(object):
         self.user_manager = user_manager
         self.logger = logging.getLogger(__name__)
 
-        # round robin store
-        self.user_queue = []
-
-    def update_user_queue(self):
-        """
-        Update our internal user queue from the user user_manager
-        """
-        active_users = self.user_manager.fetch_active_users()
-
-        # Add all active users not already in the user queue
-        # Shuffles to randomly add new active users
-        random.shuffle(active_users)
-        new_users = set(active_users) - set(self.user_queue)
-        self.user_queue.extend(list(new_users))
-
 
     def get_eligible_users(self):
         """
         Get the current eligible users; throws NoEligibleUsersException if there are none. These are
         users who are online and have not yet completed their maximum daily limit of exercises.
         """
-        self.update_user_queue()
+        active_users = self.user_manager.fetch_active_users()
 
         winners = map(lambda u: u[0], self.user_manager.get_current_winners())
         eligible_users = []
-        for user in self.user_queue:
+        for user in active_users:
             if user.id not in winners and user.total_exercises() < self.config.user_exercise_limit():
                 self.logger.info("Adding %s to eligible_users list", user.username)
                 eligible_users.append(user)
@@ -48,26 +33,6 @@ class Bot(object):
             raise NoEligibleUsersException()
 
         return eligible_users
-
-
-    def select_user(self, exercise):
-        """
-        Selects an active user from a list of users
-        """
-        eligible_users = self.get_eligible_users()
-        num_eligible_users = len(eligible_users)
-
-        # find a user to draw, priority going to first in
-        for i in range(num_eligible_users):
-            user = self.user_queue[i]
-
-            # User should be active and not have done exercise yet
-            if user in eligible_users and not user.has_done_exercise(exercise.name):
-                self.user_queue.remove(user)
-                return user
-
-        # Everyone has done this exercise, so pick an eligible user at random
-        return eligible_users[random.randint(0, num_eligible_users - 1)]
 
 
     def select_exercise_and_start_time(self):
@@ -161,7 +126,7 @@ class Bot(object):
             people_in_callout = self.num_people_in_current_callout(eligible_users)
             for i in range(people_in_callout):
                 try:
-                    winners.append(self.select_user(exercise))
+                    winners.append(self.select_user(eligible_users, exercise))
                 except:
                     break
 
@@ -188,6 +153,35 @@ class Bot(object):
         self.api.post_flex_message(winner_announcement)
 
         return winners
+
+
+    def select_user(self, eligible_users, exercise):
+        """
+        Selects an active user from the list of online users to complete the provided exercise
+        """
+        prime_users = filter(lambda u: u.has_done_exercise(exercise.name), eligible_users)
+        # If there are users which haven't done the current exercise, assign the exercise to one of
+        # them. Otherwise, assign it to any user.
+        if len(prime_users) > 0:
+            return self._select_user(exercise, prime_users)
+        else:
+            return self._select_user(exercise, eligible_users)
+
+
+    def _select_user(self, exercise, user_list):
+        """
+        Chooses a user from the current list of eligible users.
+        """
+        lottery_list = self.get_lottery_list(user_list)
+        return lottery_list[random.randint(0, len(lottery_list) - 1)]
+
+
+    def get_lottery_list(self, user_list):
+        lottery_list = []
+        for user in user_list:
+            exercises_remaining = self.config.user_exercise_limit() - user.total_exercises()
+            lottery_list.extend([user] * exercises_remaining)
+        return lottery_list
 
 
     def num_people_in_current_callout(self, active_users):

@@ -65,6 +65,18 @@ class TestWeb(object):
         assert len(filter(lambda u: result['text'] == StatementRenderer(u).render_statement('Real'),
             server.SUCCESS_STATEMENTS)) == 1
 
+    def test_flex_handler_done_empty_name(self):
+        test_server = get_server()
+        ack_handler = test_server['ack_handler']
+        um = test_server['user_manager']
+        server = test_server['server']
+        ack_handler.acknowledge_winner.return_value = Constants.ACKNOWLEDGE_SUCCEEDED
+        um.get_firstname.return_value = ''
+        um.get_username.return_value = 'realuser'
+        result = server.flex(user_id='UREALUSER', text='testbot done')
+        assert len(filter(lambda u: result['text'] == StatementRenderer(u).render_statement('realuser'),
+            server.SUCCESS_STATEMENTS)) == 1
+
     def test_flex_handler_done_with_bang(self):
         test_server = get_server()
         ack_handler = test_server['ack_handler']

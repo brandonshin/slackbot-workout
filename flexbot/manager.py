@@ -20,7 +20,8 @@ class UserManager(object):
         exercises = self.configuration.exercises()
         for exercise in exercises:
             s += exercise.name + "  "
-        s += "\n---------------------------------------------------------------\n"
+        s += "Total\n"
+        s += "---------------------------------------------------------------\n"
 
         user_ids = user_id_list if len(user_id_list) > 0 else self.users.keys()
         for user_id in user_ids:
@@ -28,6 +29,7 @@ class UserManager(object):
             s += user.username.ljust(15)
             for exercise in exercises:
                 s += str(user.get_exercise_count(exercise.name)).ljust(len(exercise.name) + 2)
+            s += str(user.total_exercises())
             s += "\n"
 
         s += "```"

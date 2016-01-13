@@ -1,14 +1,14 @@
 from mock import Mock, patch
 
-from slackbot_workout.api import SlackbotApi
-from slackbot_workout.bot import Bot
-from slackbot_workout.configurators import InMemoryConfigurationProvider
-from slackbot_workout.exercise import Exercise
-from slackbot_workout.loggers import BaseLogger
-from slackbot_workout.manager import UserManager
-from slackbot_workout.server import Server
-from slackbot_workout.user import User
-from slackbot_workout.web import FlexbotWebServer
+from flexbot.api import FlexbotApiClient
+from flexbot.bot import Bot
+from flexbot.configurators import InMemoryConfigurationProvider
+from flexbot.exercise import Exercise
+from flexbot.loggers import BaseLogger
+from flexbot.manager import UserManager
+from flexbot.server import Server
+from flexbot.user import User
+from flexbot.web import FlexbotWebServer
 
 def sample_config():
     return InMemoryConfigurationProvider({
@@ -26,7 +26,7 @@ sample_users = [
 def get_server_and_mocks():
     logger = Mock(spec=BaseLogger)
     config = sample_config()
-    api = Mock(spec=SlackbotApi)
+    api = Mock(spec=FlexbotApiClient)
     um = Mock(spec=UserManager)
     bot = Mock(spec=Bot)
     web = Mock(spec=FlexbotWebServer)
@@ -42,7 +42,7 @@ def get_server_and_mocks():
     }
 
 class TestServer(object):
-    @patch('slackbot_workout.util.time')
+    @patch('flexbot.util.time')
     def test_is_first_office_hours(self, mock_time):
         server_and_mocks = get_server_and_mocks()
         server = server_and_mocks['server']
@@ -57,7 +57,7 @@ class TestServer(object):
         bot.select_exercise_and_start_time.assert_called_once_with()
         mock_time.sleep.assert_called_once_with(300)
 
-    @patch('slackbot_workout.util.time')
+    @patch('flexbot.util.time')
     def test_first_not_office_hours(self, mock_time):
         server_and_mocks = get_server_and_mocks()
         server = server_and_mocks['server']

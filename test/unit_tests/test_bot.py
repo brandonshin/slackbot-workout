@@ -1,12 +1,12 @@
 from mock import Mock
 
-from slackbot_workout.api import SlackbotApi
-from slackbot_workout.bot import Bot
-from slackbot_workout.configurators import InMemoryConfigurationProvider
-from slackbot_workout.exercise import Exercise
-from slackbot_workout.loggers import BaseLogger
-from slackbot_workout.manager import UserManager
-from slackbot_workout.user import User
+from flexbot.api import FlexbotApiClient
+from flexbot.bot import Bot
+from flexbot.configurators import InMemoryConfigurationProvider
+from flexbot.exercise import Exercise
+from flexbot.loggers import BaseLogger
+from flexbot.manager import UserManager
+from flexbot.user import User
 
 exercises = [
     Exercise("pushups", 15, 20, "reps", ''),
@@ -44,7 +44,7 @@ def get_sample_config():
     }, exercises)
 
 def get_sample_bot():
-    api = Mock(spec=SlackbotApi)
+    api = Mock(spec=FlexbotApiClient)
     logger = Mock(spec=BaseLogger)
     config = get_sample_config()
     um = Mock(spec=UserManager)

@@ -4,8 +4,8 @@ import logging
 import logging.config
 import yaml
 
-from slackbot_workout.configurators import JsonFileConfigurationProvider, YamlFileConfigurationProvider
-from slackbot_workout.server import Server
+from flexbot.configurators import JsonFileConfigurationProvider, YamlFileConfigurationProvider
+from flexbot.server import Server
 
 def main():
     parser = argparse.ArgumentParser()

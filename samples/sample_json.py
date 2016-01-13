@@ -2,8 +2,8 @@ import logging
 import logging.config
 import os
 
-from slackbot_workout.configurators import JsonFileConfigurationProvider
-from slackbot_workout.server import Server
+from flexbot.configurators import JsonFileConfigurationProvider
+from flexbot.server import Server
 
 def main():
     logging.config.fileConfig('logging.conf')

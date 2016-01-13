@@ -1,7 +1,7 @@
 import mock
 
-from slackbot_workout.manager import UserManager
-from slackbot_workout.configurators import InMemoryConfigurationProvider
+from flexbot.manager import UserManager
+from flexbot.configurators import InMemoryConfigurationProvider
 
 def get_sample_config():
     return InMemoryConfigurationProvider({

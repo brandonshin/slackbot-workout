@@ -1,9 +1,9 @@
 import mock
 
-from slackbot_workout.configurators import ConfigurationProvider
-from slackbot_workout.constants import Constants
-from slackbot_workout.logger_factory import LoggerFactory
-from slackbot_workout import loggers
+from flexbot.configurators import ConfigurationProvider
+from flexbot.constants import Constants
+from flexbot.logger_factory import LoggerFactory
+from flexbot import loggers
 
 def get_mock_config(logger_type=Constants.IN_MEMORY_LOGGER, settings={}):
     mock_config = mock.Mock(spec=ConfigurationProvider)
@@ -24,7 +24,7 @@ class TestLoggerFactory(object):
         logger = logger_factory.get_logger()
         assert type(logger) == loggers.CsvLogger
 
-    @mock.patch('slackbot_workout.loggers.psycopg2')
+    @mock.patch('flexbot.loggers.psycopg2')
     def test_postgres(self, fake_db_api):
         settings = [
             { 'dbname': 'flexecution' },

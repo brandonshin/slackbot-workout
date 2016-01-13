@@ -2,8 +2,8 @@ import logging
 import logging.config
 import yaml
 
-from slackbot_workout.configurators import YamlFileConfigurationProvider
-from slackbot_workout.server import Server
+from flexbot.configurators import YamlFileConfigurationProvider
+from flexbot.server import Server
 
 import os
 

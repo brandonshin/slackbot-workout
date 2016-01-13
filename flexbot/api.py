@@ -2,9 +2,9 @@ import logging
 
 from slacker import Slacker
 
-class SlackbotApi(Slacker):
+class FlexbotApiClient(Slacker):
     def __init__(self, configuration, **kwargs):
-        super(SlackbotApi, self).__init__(**kwargs)
+        super(FlexbotApiClient, self).__init__(**kwargs)
         self.logger = logging.getLogger(__name__)
         self.configuration = configuration
         self.current_channel_name = None

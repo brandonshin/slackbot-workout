@@ -1,11 +1,11 @@
 import mock
 
-from slackbot_workout.configurators import InMemoryConfigurationProvider
-from slackbot_workout.constants import Constants
-from slackbot_workout.exercise import Exercise
-from slackbot_workout.manager import UserManager
-from slackbot_workout.util import StatementRenderer
-from slackbot_workout.web import FlexbotWebServer
+from flexbot.configurators import InMemoryConfigurationProvider
+from flexbot.constants import Constants
+from flexbot.exercise import Exercise
+from flexbot.manager import UserManager
+from flexbot.util import StatementRenderer
+from flexbot.web import FlexbotWebServer
 
 exercises = [
     Exercise('exercise1', 30, 40, 'reps', 'exercise1 info'),

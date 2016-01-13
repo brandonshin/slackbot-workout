@@ -2,7 +2,7 @@ import cherrypy
 import logging
 import threading
 
-from api import SlackbotApi
+from api import FlexbotApiClient
 from bot import Bot, NoEligibleUsersException
 from logger_factory import LoggerFactory
 from manager import UserManager
@@ -22,7 +22,7 @@ class Server(object):
         if 'slack_api' in kwargs:
             self.slack_api = kwargs['slack_api']
         else:
-            self.slack_api = SlackbotApi(configuration, token=self.configuration.slack_token())
+            self.slack_api = FlexbotApiClient(configuration, token=self.configuration.slack_token())
 
         if 'user_manager' in kwargs:
             self.user_manager = kwargs['user_manager']

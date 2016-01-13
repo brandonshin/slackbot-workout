@@ -1,5 +1,5 @@
-from slackbot_workout.exercise import Exercise
-from slackbot_workout.loggers import PostgresDatabaseLogger, PostgresConnector
+from flexbot.exercise import Exercise
+from flexbot.loggers import PostgresDatabaseLogger, PostgresConnector
 
 exercises = [
     Exercise('pushups', 30, 40, 'reps', ''),

@@ -1,7 +1,7 @@
 import os
 
-from slackbot_workout.exercise import Exercise
-from slackbot_workout.loggers import CsvLogger
+from flexbot.exercise import Exercise
+from flexbot.loggers import CsvLogger
 
 exercises = [
     Exercise('pushups', 30, 40, 'reps', ''),

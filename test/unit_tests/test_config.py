@@ -1,6 +1,6 @@
 from nose.tools import assert_raises
 
-from slackbot_workout.configurators import InMemoryConfigurationProvider
+from flexbot.configurators import InMemoryConfigurationProvider
 
 class TestConfig(object):
     def test_options_with_default(self):

@@ -1,4 +1,4 @@
-from slackbot_workout.user import User
+from flexbot.user import User
 
 class TestUser(object):
     def test_init(self):

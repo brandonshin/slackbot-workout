@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
-    name = "slackbot-workout",
-    version = "0.3",
+    name = "flexbot",
+    version = "0.1",
     packages = find_packages(),
 
     install_requires = [

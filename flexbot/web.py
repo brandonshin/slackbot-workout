@@ -157,14 +157,20 @@ A little primer on how I work: after I call you out for an exercise, I will only
             response = 'No pending exercises. Keep on working out!'
         else:
             # Write to the command console today's breakdown
-            response = "```\n"
+            response = "Current pending exercises:\n"
+            response += "```\n"
             #s += "Username\tAssigned\tComplete\tPercent
             response += "Username".ljust(15)
             response += "Exercise"
             response += "\n---------------------------------------------------------------\n"
-            for user_id, exercise, reps in current_winners:
+            for user_id in current_winners:
+                pending_exercises = current_winners[user_id]
+                exercise_strings = []
+                for exercise, reps in pending_exercises:
+                    exercise_string = "{} {} {}".format(reps, exercise.units, exercise.name)
+                    exercise_strings.append(exercise_string)
                 response += self.user_manager.get_username(user_id).ljust(15)
-                response += "{} {} {}".format(reps, exercise.units, exercise.name)
+                response += ", ".join(exercise_strings)
                 response += "\n"
 
             response += "```"

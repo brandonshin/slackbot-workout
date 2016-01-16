@@ -4,7 +4,6 @@ from flexbot.api import FlexbotApiClient
 from flexbot.bot import Bot
 from flexbot.configurators import InMemoryConfigurationProvider
 from flexbot.exercise import Exercise
-from flexbot.loggers import BaseLogger
 from flexbot.manager import UserManager
 from flexbot.user import User
 
@@ -45,20 +44,22 @@ def get_sample_config():
 
 def get_sample_bot():
     api = Mock(spec=FlexbotApiClient)
-    logger = Mock(spec=BaseLogger)
     config = get_sample_config()
     um = Mock(spec=UserManager)
-    bot = Bot(api, logger, config, um)
+    bot = Bot(api, config, um)
     return {
         'user_manager': um,
-        'logger': logger,
         'bot': bot
     }
 
 class TestBot(object):
     def test_select_next_time_interval(self):
-        bot = get_sample_bot()['bot']
-        interval = bot.select_next_time_interval(active_users())
+        bot_and_mocks = get_sample_bot()
+        bot = bot_and_mocks['bot']
+        um = bot_and_mocks['user_manager']
+        um.total_exercises_for_user.return_value = 0
+        users = map(lambda u: u.id, active_users())
+        interval = bot.select_next_time_interval(users)
         assert isinstance(interval, int) or (isinstance(interval, float) and interval.is_integer())
 
     def test_select_exercise_and_start_time(self):
@@ -66,8 +67,12 @@ class TestBot(object):
         exercises = config.exercises()
         min_time = config.min_time_between_callouts()
         max_time = config.max_time_between_callouts()
-        bot = get_sample_bot()['bot']
-        exercise, reps, mins_to_exercise = bot._select_exercise_and_start_time(active_users())
+        bot_and_mocks = get_sample_bot()
+        bot = bot_and_mocks['bot']
+        um = bot_and_mocks['user_manager']
+        um.total_exercises_for_user.return_value = 0
+        users = map(lambda u: u.id, active_users())
+        exercise, reps, mins_to_exercise = bot._select_exercise_and_start_time(users)
         assert exercise.name in map(lambda e: e.name, exercises)
         assert min_time <= mins_to_exercise <= max_time
 
@@ -75,55 +80,34 @@ class TestBot(object):
         bot_and_mocks = get_sample_bot()
         bot = bot_and_mocks['bot']
         um = bot_and_mocks['user_manager']
-        logger = bot_and_mocks['logger']
         users = active_users()
-        um.fetch_active_users.return_value = users
-        um.get_current_winners.return_value = [(users[0], exercises[0], 10)]
+        um.get_eligible_users.return_value = map(lambda u: u.id, users)
+        um.user_has_done_exercise.return_value = False
+        um.total_exercises_for_user.return_value = 0
 
-        winners = bot.assign_exercise(exercises[0], 30)
+        bot.assign_exercise(exercises[0], 30)
 
-        assert um.add_to_current_winners.call_count == 1
-        assert winners[0].total_exercises() == 0
-        assert logger.log_exercise.assert_never_called()
-
-    def test_get_eligible_users(self):
-        bot_and_mocks = get_sample_bot()
-        bot = bot_and_mocks['bot']
-        um = bot_and_mocks['user_manager']
-        users = active_users()
-        um.fetch_active_users.return_value = users
-        um.get_current_winners.return_value = [(users[0].id, exercises[0], 10)]
-        eligible_users = bot.get_eligible_users()
-        assert eligible_users[0].id == 'slackid2'
-
-    def test_acknowledge_winner(self):
-        bot_and_mocks = get_sample_bot()
-        bot = bot_and_mocks['bot']
-        logger = bot_and_mocks['logger']
-        um = bot_and_mocks['user_manager']
-        umap = {}
-        users = active_users()
-        for u in users:
-            umap[u.id] = u
-        um.users = umap
-        winner1 = (users[0].id, exercises[0], 10)
-        winner2 = (users[1].id, exercises[1], 20)
-        um.get_current_winners.return_value = [winner1, winner2]
-
-        bot.acknowledge_winner('slackid1')
-
-        um.remove_from_current_winners.assert_called_once_with('slackid1')
-        logger.log_exercise.assert_called_once_with('slackid1', winner1[1], winner1[2])
+        assert um.mark_winner.call_count == 1
 
     def test_get_lottery_list(self):
-        def make_mock_user(user_id, total_exercises):
+        exercise_list = []
+        def make_mock_user(user_id, exercise_count):
             u = Mock(spec=User)
-            u.total_exercises.return_value = total_exercises
             u.id = user_id
+            exercise_list.append((user_id, exercise_count))
             return u
         ulist = [make_mock_user(uid, exercises) for (uid, exercises) in [('uid1', 2), ('uid2', 1)]]
+        uidlist = map(lambda u: u.id, ulist)
+        def total_exercises(user_id):
+            try:
+                filtered = filter(lambda u: u[0] == user_id, exercise_list)
+                return filtered[0][1]
+            except:
+                return 0
         bot_and_mocks = get_sample_bot()
         bot = bot_and_mocks['bot']
-        lottery_list = bot.get_lottery_list(ulist)
-        assert len(filter(lambda u: u.id == 'uid1', lottery_list)) == 1
-        assert len(filter(lambda u: u.id == 'uid2', lottery_list)) == 2
+        um = bot_and_mocks['user_manager']
+        um.total_exercises_for_user = total_exercises
+        lottery_list = bot.get_lottery_list(uidlist)
+        assert len(filter(lambda u: u == 'uid1', lottery_list)) == 1
+        assert len(filter(lambda u: u == 'uid2', lottery_list)) == 2

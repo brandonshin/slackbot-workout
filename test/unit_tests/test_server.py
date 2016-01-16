@@ -68,6 +68,6 @@ class TestServer(object):
 
         um.stats.assert_called_once_with()
         mock_time.sleep.assert_called_once_with(300)
-        bot.assign_exercise.assert_never_called()
-        bot.select_exercise_and_start_time.assert_never_called()
+        bot.assign_exercise.assert_not_called()
+        bot.select_exercise_and_start_time.assert_not_called()
 

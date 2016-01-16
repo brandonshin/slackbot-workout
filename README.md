@@ -37,6 +37,22 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
     Run the script to start the workouts and hit ctrl+\ to stop the script. Hope you have fun with it!
 
+# Docker usage
+
+If you don't want to build from source, my [Docker hub page for flexbot](https://hub.docker.com/r/yucht/flexbot/) is linked to the current version of the build on my hackathon branch. So, the setup this way is much easier:
+
+1. Run `docker pull yucht/flexbot:latest` to get the most recent version from the registry.
+2. Run 
+
+   ```
+   docker run -v <config_file>:/flexbot/configuration/config.yaml \
+     -v <logging_config_file>:/flexbot/configuration/config.yaml
+     -t yucht/flexbot:latest
+   ```
+
+   where <config_file> is your flexbot configuration and <logging_config_file> is your logging
+   configuration to start running flexbot.
+
 # Usage
 
 Currently, you can specify two configuration files, one which controls the behavior of slackbot, and the other which controls the behavior of the loggers in slackbot. The `samples.flexbot` module currently defaults to using `config.yaml` and `logging.yaml` in the current working directory, but you can specify alternate configuration files by using `--config` and `--logging-config` respectively. Slackbot can read both YAML and JSON files for the configuration files and exercise files.

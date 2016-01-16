@@ -100,10 +100,10 @@ class TestWeb(object):
             server.FAILURE_STATEMENTS)) == 1
 
     def test_flex_handler_done_disabled(self):
-        test_server = get_server()
+        test_server = get_server(enable_acknowledgment=False)
         ack_handler, server = test_server['ack_handler'], test_server['server']
         server.flex(user_id='UREALUSER', text='testbot done realuser')
-        ack_handler.acknowledge_winner.assert_never_called()
+        ack_handler.acknowledge_winner.assert_not_called()
 
     def test_flex_handler_todo_no_winners(self):
         test_server = get_server()
@@ -117,7 +117,9 @@ class TestWeb(object):
         test_server = get_server()
         um = test_server['user_manager']
         server = test_server['server']
-        um.get_current_winners.return_value = [('uid', Exercise('pushups', 30, 40, 'reps', ''), 35)]
+        um.get_current_winners.return_value = {
+            'uid': [(Exercise('pushups', 30, 40, 'reps', ''), 35)]
+        }
         um.get_username.return_value = 'Username'
         response = server.flex(user_id='UREALUSER', text='testbot todo')
         assert 'Username' in response['text']

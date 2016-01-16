@@ -27,17 +27,17 @@ class Server(object):
         if 'user_manager' in kwargs:
             self.user_manager = kwargs['user_manager']
         else:
-            self.user_manager = UserManager(self.slack_api, self.configuration)
+            self.user_manager = UserManager(self.slack_api, self.configuration, self.workout_logger)
 
         if 'bot' in kwargs:
             self.bot = kwargs['bot']
         else:
-            self.bot = Bot(self.slack_api, self.workout_logger, self.configuration, self.user_manager)
+            self.bot = Bot(self.slack_api, self.configuration, self.user_manager)
 
         if 'web_server' in kwargs:
             self.web_server = kwargs['web_server']
         else:
-            self.web_server = FlexbotWebServer(self.user_manager, self.bot, configuration)
+            self.web_server = FlexbotWebServer(self.user_manager, self.user_manager, configuration)
 
     def start(self):
         self.logger.debug('Starting workout loop')

@@ -16,6 +16,7 @@ COPY requirements.txt /flexbot
 RUN pip install -r /flexbot/requirements.txt
 
 COPY flexbot /flexbot/flexbot
+COPY exercises /flexbot/exercises
 COPY samples /flexbot/samples
 
 WORKDIR /flexbot

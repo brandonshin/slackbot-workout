@@ -8,18 +8,13 @@ from flexbot.configurators import InMemoryConfigurationProvider
 
 def get_sample_exercises():
     return [
-        Exercise('name1', 30, 40, 'reps', ''),
-        Exercise('name2', 30, 40, 'reps', '')
+        Exercise('pushups', 30, 40, 'reps', ''),
+        Exercise('situps', 30, 40, 'reps', '')
     ]
 
 def get_sample_config(enable_acknowledgment):
     return InMemoryConfigurationProvider({
-        "enable_acknowledgment": enable_acknowledgment,
-        'exercises': [{
-            'name': 'exercise 1'
-        }, {
-            'name': 'exercise 2'
-        }]
+        "enable_acknowledgment": enable_acknowledgment
     })
 
 def make_user_manager(enable_acknowledgment=True):
@@ -204,9 +199,10 @@ class TestUserManager(object):
                 'reps': 30
             }]
         }
-        assert um.exercise_count_for_user('uid1', 'pushups') == 1
-        assert um.exercise_count_for_user('uid1', 'situps') == 0
-        assert um.exercise_count_for_user('uid3', 'pushups') == 0
+        sample_exercises = get_sample_exercises()
+        assert um.exercise_count_for_user('uid1', sample_exercises[0]) == 1
+        assert um.exercise_count_for_user('uid1', sample_exercises[1]) == 0
+        assert um.exercise_count_for_user('uid3', sample_exercises[0]) == 0
 
     def test_user_has_done_exercise(self):
         um_and_mocks = make_user_manager(enable_acknowledgment=False)
@@ -218,6 +214,7 @@ class TestUserManager(object):
                 'reps': 30
             }]
         }
-        assert um.user_has_done_exercise('uid1', 'pushups')
-        assert not um.user_has_done_exercise('uid1', 'situps')
-        assert not um.user_has_done_exercise('uid3', 'pushups')
+        sample_exercises = get_sample_exercises()
+        assert um.user_has_done_exercise('uid1', sample_exercises[0])
+        assert not um.user_has_done_exercise('uid1', sample_exercises[1])
+        assert not um.user_has_done_exercise('uid3', sample_exercises[0])

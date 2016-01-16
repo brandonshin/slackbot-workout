@@ -167,7 +167,7 @@ class UserManager(object):
     def exercise_count_for_user(self, user_id, exercise):
         exercises = self.workout_logger.get_todays_exercises()
         try:
-            filtered_exercises = filter(lambda e: e['exercise'] == exercise, exercises[user_id])
+            filtered_exercises = filter(lambda e: e['exercise'] == exercise.name, exercises[user_id])
             return len(filtered_exercises)
         except KeyError:
             return 0

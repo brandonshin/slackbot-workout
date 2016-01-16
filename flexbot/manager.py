@@ -20,12 +20,13 @@ class UserManager(object):
         s = "Today's stats:\n"
         s += "```\n"
         #s += "Username\tAssigned\tComplete\tPercent
-        s += "Username".ljust(15)
+        headerline = "Username".ljust(15)
         exercises = self.configuration.exercises()
         for exercise in exercises:
-            s += exercise.name + "  "
-        s += "Total\n"
-        s += "---------------------------------------------------------------\n"
+            headerline += exercise.name + "  "
+        headerline += "Total\n"
+        s += headerline
+        s += "-" * len(headerline) + "\n"
 
         user_ids = user_id_list if len(user_id_list) > 0 else self.users.keys()
         for user_id in user_ids:

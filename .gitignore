@@ -1,6 +1,13 @@
 config.json
+config.yaml
 *.pyc
 
 log*.csv
 log*.csv_DEBUG
 user_cache.save
+*.log
+
+build/
+dist/
+
+.DS_STORE

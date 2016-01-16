@@ -1,0 +1,12 @@
+language: python
+python:
+  - "2.7"
+branches:
+  only:
+    - hackathon
+addons:
+  postgresql: "9.4"
+install: "pip install -r requirements.txt"
+before_script:
+  - psql -c 'CREATE DATABASE travis_ci_test;' -U postgres
+script: nosetests -sv

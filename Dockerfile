@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
 EXPOSE 80
 EXPOSE 8080
 
-COPY requirements.txt /flexbot
+COPY requirements.txt /flexbot/
 RUN pip install -r /flexbot/requirements.txt
 
 COPY flexbot /flexbot/flexbot

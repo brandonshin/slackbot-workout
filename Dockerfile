@@ -1,5 +1,7 @@
 FROM ubuntu:15.04
 
+EXPOSE 80
+
 RUN apt-get update && apt-get install -y \
     python-pip \
     postgresql-common \
@@ -7,18 +9,11 @@ RUN apt-get update && apt-get install -y \
     python-dev \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
-
-RUN mkdir /flexbot
-COPY requirements.txt /flexbot
-RUN pip install -r /flexbot/requirements.txt
-
-FROM yucht/flexbot_base:latest
+ && mkdir /flexbot /flexbot/configuration
 
 COPY . /flexbot
+RUN pip install -r /flexbot/requirements.txt
+
 WORKDIR /flexbot
-
-EXPOSE 80
-EXPOSE 8080
-
-CMD ["python", "-m", "samples.run_flexbot", "--config", "samples/config.yaml", "--logging-config", "logging.yaml"]
+CMD ["python", "-m", "samples.run_flexbot", "--config", "configuration/config.yaml", "--logging-config", "configuration/logging.yaml"]
 

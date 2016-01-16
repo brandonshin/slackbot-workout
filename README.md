@@ -39,19 +39,21 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
 # Docker usage
 
-If you don't want to build from source, my [Docker hub page for flexbot](https://hub.docker.com/r/yucht/flexbot/) is linked to the current version of the build on my hackathon branch. So, the setup this way is much easier:
+Alternatively to running the source directly, my [Docker hub page for flexbot](https://hub.docker.com/r/yucht/flexbot/) is linked to the current version on the `hackathon` branch. This should simplify the setup substantially. In order to run this docker container, you need to bind mount the configuration and logging configuration into the `/flexbot/configuration` directory in the container. Additionally, you'll need to set up the port mapping for whatever port you have specified the web server to run on.
 
 1. Run `docker pull yucht/flexbot:latest` to get the most recent version from the registry.
 2. Run 
 
    ```
    docker run -v <config_file>:/flexbot/configuration/config.yaml \
-     -v <logging_config_file>:/flexbot/configuration/config.yaml
-     -t yucht/flexbot:latest
+       -v <logging_config_file>:/flexbot/configuration/logging.yaml \
+       -d -p 80:80 -t yucht/flexbot:latest
    ```
 
    where <config_file> is your flexbot configuration and <logging_config_file> is your logging
    configuration to start running flexbot.
+
+To ease development, this docker container also exposes port 8080, so if you want to run a development version for testing and a production version simultaneously, you can simply bring up your webserver on port 8080 and run a production container and a development one simultaneously.
 
 # Usage
 

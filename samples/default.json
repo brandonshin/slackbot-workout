@@ -1,0 +1,31 @@
+{
+  "channel_name": "general",
+  "bot_name": "yourBotName",
+  "slack_token": "xoxp-notarealtoken",
+  "webserver_port": 8080,
+
+  "office_hours": {
+    "on": false,
+    "begin": 9,
+    "end": 17
+   },
+
+  "debug": false,
+
+  "callouts": {
+    "time_between": {
+      "min_time": 17,
+      "max_time": 23,
+      "units": "minutes"
+    },
+    "num_people": 3,
+    "group_callout_chance": 0.05
+  },
+
+  "exercise_directory": "exercises",
+
+  "user_exercise_limit": 3,
+  "enable_acknowledgment": true,
+
+  "workout_logger_type": "InMemoryLogger"
+}

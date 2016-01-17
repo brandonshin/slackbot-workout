@@ -1,14 +1,15 @@
 # slackbot-workout
+[![Build Status](https://travis-ci.org/mgyucht/slackbot-workout.svg?branch=hackathon)](https://travis-ci.org/mgyucht/slackbot-workout)
+
 A fun hack that gets Slackbot to force your teammates to work out!
 
 <img src = "https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_10_at_5_57_55_PM-1433984292189.png" width = 500>
-
 
 # Instructions
 
 1. Clone the repo and navigate into the directory in your terminal.
 
-    `$ git clone git@github.com:brandonshin/slackbot-workout.git`
+    `$ git clone git@github.com:mgyucht/slackbot-workout.git`
 
 2. Go to your slack home page [https://{yourgroup}.slack.com/home](http://my.slack.com/home) & click on **Integrations** on the left sidebar.
 
@@ -22,33 +23,38 @@ A fun hack that gets Slackbot to force your teammates to work out!
 
     <img src="https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_05_at_7_00_24_PM-1433557433415.png" width = 500>
 
-5. In the **Slackbot** (Remote control page). Register an integration & you should see this. __Make sure you grab just the token out of the url__, e.g. `AizJbQ24l38ai4DlQD9yFELb`
+5. Set up channel and customize configurations
 
-    <img src="https://ctrlla-blog.s3.amazonaws.com/2015/Jun/Screen_Shot_2015_06_03_at_8_44_00_AM-1433557565175.png" width = 500>
+    Copy `default.yaml` or `default.json` and configure to your heart's desire. There are a handful of sample configurations located in the `samples/` directory.
 
-6. Save your SLACK_USER_TOKEN_STRING and SLACK_URL_TOKEN_STRING as environmental variables in your terminal.
+6. While in the project directory, run
 
-    `$ export SLACK_USER_TOKEN_STRING=YOURUSERTOKEN`
-    
-    `$ export SLACK_URL_TOKEN_STRING=YOURURLTOKEN`
-    
-    If you need help with this, try adapting the first 5 steps of the guide to [edit your .bash_profile](http://natelandau.com/my-mac-osx-bash_profile/)
-    
-7. Set up channel and customize configurations
+    ```
+    $ sudo ./install-dependencies.sh
+    $ sudo pip install -r requirements.txt
+    $ python -m samples.flexbot
+    ```
 
-    Open `default.json` and set `teamDomain` (ex: ctrlla) `channelName` (ex: general) and `channelId` (ex: B22D35YMS). Save the file as `config.json` in the same directory. Set any other configurations as you like.
+    Run the script to start the workouts and hit ctrl+\ to stop the script. Hope you have fun with it!
 
-    If you don't know the channel Id, fetch it using
+# Docker usage
 
-    `$ python fetchChannelId.py channelname`
+Alternatively to running the source directly, my [Docker hub page for flexbot](https://hub.docker.com/r/yucht/flexbot/) is linked to the current version on the `hackathon` branch. This should simplify the setup substantially. In order to run this docker container, you need to bind mount the configuration and logging configuration into the `/flexbot/configuration` directory in the container. Additionally, you'll need to set up the port mapping for whatever port you have specified the web server to run on.
 
-8. If you haven't set up pip for python, go in your terminal and run.
-`$ sudo easy_install pip`
+1. Run `docker pull yucht/flexbot:latest` to get the most recent version from the registry.
+2. Run 
 
-9. While in the project directory, run
+   ```
+   docker run -v <config_file>:/flexbot/configuration/config.yaml \
+       -v <logging_config_file>:/flexbot/configuration/logging.yaml \
+       -d -p 80:80 -t yucht/flexbot:latest
+   ```
 
-    `$ sudo pip install -r requirements.txt`
+   where <config_file> is your flexbot configuration and <logging_config_file> is your logging
+   configuration to start running flexbot.
 
-    `$ python slackbotExercise.py`
+To ease development, this docker container also exposes port 8080, so if you want to run a development version for testing and a production version simultaneously, you can simply bring up your webserver on port 8080 and run a production container and a development one simultaneously.
 
-Run the script to start the workouts and hit ctrl+c to stop the script. Hope you have fun with it!
+# Usage
+
+Currently, you can specify two configuration files, one which controls the behavior of slackbot, and the other which controls the behavior of the loggers in slackbot. The `samples.flexbot` module currently defaults to using `config.yaml` and `logging.yaml` in the current working directory, but you can specify alternate configuration files by using `--config` and `--logging-config` respectively. Slackbot can read both YAML and JSON files for the configuration files and exercise files.

@@ -26,5 +26,6 @@ workout_logger_type: PostgresDatabaseLogger
 # To provide settings to the logger configuration, use workout_logger_settings, such as
 # follows:
 workout_logger_settings:
- - tablename: flexecution
- - dbname: flexecution
+ tablename: flexecution
+ winners_table: winners
+ dbname: flexecution

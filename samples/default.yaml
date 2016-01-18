@@ -26,9 +26,10 @@ workout_logger_type: InMemoryLogger
 # To provide settings to the logger configuration, use workout_logger_settings, such as
 # follows:
 # workout_logger_settings:
-#  - tablename: flexecution
-#  - dbname: flexecution
-#  - host: dbhostname
-#  - port: 5432
-#  - user: username
-#  - password: password
+#  tablename: flexecution
+#  dbname: flexecution
+#  winners_table: winners
+#  host: dbhostname
+#  port: 5432
+#  user: username
+#  password: password

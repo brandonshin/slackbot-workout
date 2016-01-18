@@ -20,12 +20,12 @@ class LoggerFactory(object):
         return loggers.InMemoryLogger()
 
     def get_csv_logger(self):
-        return loggers.CsvLogger(debug=self.configuration.debug())
+        return loggers.CsvLogger()
 
     def get_postgres_database_logger(self):
-        dbsettings = {}
-        for setting in self.configuration.workout_logger_settings():
-            dbsettings.update(setting)
+        dbsettings = self.configuration.workout_logger_settings()
         tablename = dbsettings['tablename']
+        winners_table = dbsettings['winners_table']
         del dbsettings['tablename']
-        return loggers.PostgresDatabaseLogger(tablename, **dbsettings)
+        del dbsettings['winners_table']
+        return loggers.PostgresDatabaseLogger(tablename, winners_table, **dbsettings)

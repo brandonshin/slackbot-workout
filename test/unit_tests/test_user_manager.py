@@ -1,10 +1,11 @@
 import mock
 
 from flexbot.api import FlexbotApiClient
+from flexbot.configurators import InMemoryConfigurationProvider
+from flexbot.constants import Constants
 from flexbot.exercise import Exercise
 from flexbot.loggers import BaseLogger
 from flexbot.manager import UserManager
-from flexbot.configurators import InMemoryConfigurationProvider
 
 def get_sample_exercises():
     return [
@@ -15,7 +16,7 @@ def get_sample_exercises():
 def get_sample_config(enable_acknowledgment):
     return InMemoryConfigurationProvider({
         "enable_acknowledgment": enable_acknowledgment
-    })
+    }, exercises=get_sample_exercises())
 
 def make_user_manager(enable_acknowledgment=True):
     mock_api = get_mock_api()
@@ -111,11 +112,9 @@ class TestUserManager(object):
     def test_current_winners(self):
         um_and_mocks = make_user_manager()
         um = um_and_mocks['user_manager']
-        assert len(um.get_current_winners()) == 0
-        um.add_to_current_winners('uid1', mock.Mock(), 30)
-        assert len(um.get_current_winners()) == 1
-        um.remove_from_current_winners('uid1')
-        assert len(um.get_current_winners()) == 0
+        logger = um_and_mocks['logger']
+        um.get_current_winners()
+        logger.get_current_winners.assert_called_once_with()
 
     def test_get_eligible_users(self):
         um_and_mocks = make_user_manager()
@@ -127,46 +126,53 @@ class TestUserManager(object):
                 'reps': 30
             }]
         }
+        logger.get_current_winners.return_value = {}
         eligible_users = um.get_eligible_users()
         assert len(eligible_users) == 1
         assert eligible_users[0] == 'uid1'
 
-    def test_acknowledge_winner(self):
+    def test_acknowledge_winner_failure(self):
         um_and_mocks = make_user_manager()
         um = um_and_mocks['user_manager']
         logger = um_and_mocks['logger']
-        exercises = get_sample_exercises()
+        logger.finish_exercise.return_value = None
 
-        um.mark_winner('uid1', exercises[0], 10)
-        um.mark_winner('uid2', exercises[1], 20)
+        result = um.acknowledge_winner('uid1')
 
-        current_winners = um.get_current_winners()
-        assert current_winners['uid1'] == [(exercises[0], 10)]
-        assert current_winners['uid2'] == [(exercises[1], 20)]
+        assert result == Constants.ACKNOWLEDGE_FAILED
+        logger.log_exercise.assert_not_called()
 
-        um.acknowledge_winner('uid1')
+    def test_acknowledge_winner_success(self):
+        um_and_mocks = make_user_manager()
+        um = um_and_mocks['user_manager']
+        logger = um_and_mocks['logger']
+        logger.finish_exercise.return_value = {
+            'exercise': 'pushups',
+            'reps': 30
+        }
 
-        current_winners = um.get_current_winners()
-        assert 'uid1' not in current_winners
-        assert len(current_winners['uid2']) == 1
+        result = um.acknowledge_winner('uid1')
 
+        assert result == Constants.ACKNOWLEDGE_SUCCEEDED
         assert logger.log_exercise.call_count == 1
 
     def test_mark_winner_ack_enabled(self):
         um_and_mocks = make_user_manager()
         um = um_and_mocks['user_manager']
         logger = um_and_mocks['logger']
-        um.mark_winner('uid1', mock.Mock(), 30)
-        assert len(um.get_current_winners()['uid1']) == 1
+        exercise = get_sample_exercises()[0]
+        um.mark_winner('uid1', exercise, 30)
+        logger.add_exercise.assert_called_once_with('uid1', exercise, 30)
         logger.log_exercise.assert_not_called()
 
     def test_mark_winner_ack_disabled(self):
         um_and_mocks = make_user_manager(enable_acknowledgment=False)
         um = um_and_mocks['user_manager']
         logger = um_and_mocks['logger']
-        um.mark_winner('uid1', mock.Mock(), 30)
-        assert 'uid1' not in um.get_current_winners()
-        assert logger.log_exercise.call_count == 1
+        exercise = get_sample_exercises()[0]
+        um.mark_winner('uid1', exercise, 30)
+        logger.add_exercise.assert_not_called()
+        logger.log_exercise.assert_called_once_with('uid1', exercise, 30)
 
     def test_add_exercise_for_user(self):
         um_and_mocks = make_user_manager(enable_acknowledgment=False)

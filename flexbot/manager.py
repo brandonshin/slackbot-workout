@@ -74,41 +74,27 @@ class UserManager(object):
         self.users = {}
 
     # --------------------------------------
-    # Current winners
+    # Acknowledgment mode methods
     # --------------------------------------
 
-    def add_to_current_winners(self, user_id, exercise, reps):
-        try:
-            self.current_winners[user_id].append((exercise, reps))
-        except:
-            self.current_winners[user_id] = [(exercise, reps)]
-
     def get_current_winners(self):
-        return self.current_winners
-
-    def remove_from_current_winners(self, user_id):
-        self.current_winners[user_id].pop(0)
-        if len(self.current_winners[user_id]) == 0:
-            del self.current_winners[user_id]
+        return self.workout_logger.get_current_winners()
 
     def mark_winner(self, user_id, exercise, exercise_reps):
         if self.configuration.enable_acknowledgment():
-            self.add_to_current_winners(user_id, exercise, exercise_reps)
+            self.workout_logger.add_exercise(user_id, exercise, exercise_reps)
         else:
             self.add_exercise_for_user(user_id, exercise, exercise_reps)
 
     def acknowledge_winner(self, user_id):
         if self.configuration.enable_acknowledgment():
-            try:
-                exercise, reps = self.current_winners[user_id][0]
-
-                # Log the exercise, update the local user's information as well, and remove the user
-                # from the list of current winners
-                self.add_exercise_for_user(user_id, exercise, reps)
-                self.remove_from_current_winners(user_id)
-                return Constants.ACKNOWLEDGE_SUCCEEDED
-            except IndexError: # user not actually in the list of current winners
+            exercise_data = self.workout_logger.finish_exercise(user_id)
+            if exercise_data == None:
                 return Constants.ACKNOWLEDGE_FAILED
+            else:
+                exercise = self.get_exercise_by_name(exercise_data['exercise'])
+                self.add_exercise_for_user(user_id, exercise, exercise_data['reps'])
+                return Constants.ACKNOWLEDGE_SUCCEEDED
         else:
             return Constants.ACKNOWLEDGE_DISABLED
 
@@ -133,6 +119,17 @@ class UserManager(object):
             return self.users[user_id].get_mention()
         except:
             return None
+
+    # --------------------------------------
+    # Exercise utility methods
+    # --------------------------------------
+
+    def get_exercise_by_name(self, exercise_name):
+        exercises = self.configuration.exercises()
+        for exercise in exercises:
+            if exercise.name == exercise_name:
+                return exercise
+        return None
 
     # --------------------------------------
     # Exercise management
@@ -177,5 +174,7 @@ class UserManager(object):
         return self.exercise_count_for_user(user_id, exercise) > 0
 
     def add_exercise_for_user(self, user_id, exercise, exercise_reps):
+        self.logger.debug("User {} completed {} {} of {}".format(user_id, exercise_reps, exercise.units,
+            exercise.name))
         self.workout_logger.log_exercise(user_id, exercise, exercise_reps)
 

@@ -26,9 +26,10 @@ workout_logger_type: PostgresDatabaseLogger
 # To provide settings to the logger configuration, use workout_logger_settings, such as
 # follows:
 workout_logger_settings:
- - tablename: flexecution
- - dbname: flexecution
- - host: flexecution-postgres.chlee7xx28jo.us-west-2.rds.amazonaws.com
- - port: 5432
- - user: flexecution
- - password: DcHqIxAE^IbgX52K9!5R
+ tablename: flexecution
+ winners_table: winners
+ dbname: flexecution
+ host: hostname
+ port: 5432
+ user: flexecution
+ password: password

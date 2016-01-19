@@ -153,7 +153,6 @@ A little primer on how I work: after I call you out for an exercise, I will only
     def print_assignments(self):
         response = ''
         current_winners = self.user_manager.get_current_winners()
-        print current_winners
         if len(current_winners) == 0:
             response = 'No pending exercises. Keep on working out!'
         else:

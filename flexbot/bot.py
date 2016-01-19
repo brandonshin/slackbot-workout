@@ -18,7 +18,6 @@ class Bot(object):
         Selects and announces to the channel an exercise and start time.
         """
         eligible_users = self.user_manager.get_eligible_users()
-        print eligible_users
         return self._select_exercise_and_start_time(eligible_users)
 
 

@@ -245,8 +245,21 @@ class PostgresDatabaseLogger(BaseLogger, PostgresConnector):
 
     def finish_exercise(self, winner_id):
         def finish_exercise_command(cursor):
+            # Get the current exercise for the user
+            cursor.execute("""
+                SELECT exercise, reps FROM {} WHERE winner_id = %s ORDER BY time ASC LIMIT 1
+            """.format(self.winners_table), (winner_id,))
+            if cursor.rowcount == 0:
+                return None
+
+            row = cursor.fetchone()
+            exercise_data = {
+                'exercise': row[0],
+                'reps': row[1]
+            }
             cursor.execute("""
                 DELETE FROM {} WHERE winner_id = %s AND time IN
                     (SELECT time FROM {} WHERE winner_id = %s ORDER BY time ASC LIMIT 1)
             """.format(self.winners_table, self.winners_table), (winner_id, winner_id))
+            return exercise_data
         return self.with_connection(finish_exercise_command)

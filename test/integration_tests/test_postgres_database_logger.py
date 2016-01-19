@@ -63,15 +63,18 @@ class TestPostgresDatabaseLogger(PostgresConnector):
         assert winners['uid2'][1]['reps'] == 40
         assert 'uid3' not in winners
 
-    def test_finishe_exercise(self):
+    def test_finish_exercise(self):
         logger = self.get_logger()
 
         logger.add_exercise('uid1', exercises[0], 30)
         logger.add_exercise('uid2', exercises[1], 35)
-        logger.finish_exercise('uid1')
+        exercise = logger.finish_exercise('uid1')
         winners = logger.get_current_winners()
 
         assert 'uid1' not in winners
         assert len(winners['uid2']) == 1
         assert winners['uid2'][0]['exercise'] == exercises[1].name
         assert winners['uid2'][0]['reps'] == 35
+        assert exercise != None
+        assert exercise['exercise'] == 'pushups'
+        assert exercise['reps'] == 30

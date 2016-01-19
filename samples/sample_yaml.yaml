@@ -1,0 +1,35 @@
+channel_name: general
+bot_name: Flexbot
+slack_token: xoxp-notarealtoken
+webserver_port: 8080
+
+office_hours:
+ "on": No
+ begin: 9
+ end: 17
+
+debug: No
+
+callouts:
+ time_between:
+  min_time: 17
+  max_time: 23
+ num_people: 3
+ group_callout_chance: 0.05
+
+exercise_directory: exercises
+
+user_exercise_limit: 3
+enable_acknowledgment: Yes
+
+workout_logger_type: InMemoryLogger
+# To provide settings to the logger configuration, use workout_logger_settings, such as
+# follows:
+# workout_logger_settings:
+#  tablename: flexecution
+#  winners_table: winners
+#  dbname: flexecution
+#  host: dbhostname
+#  port: 5432
+#  user: username
+#  password: password

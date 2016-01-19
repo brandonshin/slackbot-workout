@@ -77,6 +77,7 @@ class Server(object):
         if is_office_hours:
             # Clear the previous day's history if this is the first workout of the day
             if not was_office_hours:
+                self.logger.debug("Clearing users")
                 self.user_manager.clear_users()
 
             # Get an exercise to do

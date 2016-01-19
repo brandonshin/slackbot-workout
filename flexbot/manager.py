@@ -142,7 +142,9 @@ class UserManager(object):
         """
         active_users = self.fetch_active_users()
 
+        self.logger.debug("About to get current winners")
         winner_ids = self.get_current_winners().keys()
+        self.logger.debug("Current winners: {}", winner_ids)
         eligible_users = []
         for user_id in active_users:
             total_exercises = self.total_exercises_for_user(user_id)

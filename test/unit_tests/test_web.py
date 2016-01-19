@@ -118,9 +118,13 @@ class TestWeb(object):
         um = test_server['user_manager']
         server = test_server['server']
         um.get_current_winners.return_value = {
-            'uid': [(Exercise('pushups', 30, 40, 'reps', ''), 35)]
+            'uid': [{
+                'exercise': 'pushups',
+                'reps': 35
+            }]
         }
         um.get_username.return_value = 'Username'
+        um.get_exercise_by_name.return_value = Exercise('pushups', 35, 40, 'reps', '')
         response = server.flex(user_id='UREALUSER', text='testbot todo')
         assert 'Username' in response['text']
         assert '35 reps pushups' in response['text']

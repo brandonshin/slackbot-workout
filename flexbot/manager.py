@@ -89,6 +89,7 @@ class UserManager(object):
     def acknowledge_winner(self, user_id):
         if self.configuration.enable_acknowledgment():
             exercise_data = self.workout_logger.finish_exercise(user_id)
+            print exercise_data
             if exercise_data == None:
                 return Constants.ACKNOWLEDGE_FAILED
             else:

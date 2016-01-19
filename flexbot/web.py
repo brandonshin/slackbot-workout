@@ -166,7 +166,9 @@ A little primer on how I work: after I call you out for an exercise, I will only
             for user_id in current_winners:
                 pending_exercises = current_winners[user_id]
                 exercise_strings = []
-                for exercise, reps in pending_exercises:
+                for entry in pending_exercises:
+                    exercise = self.user_manager.get_exercise_by_name(entry['exercise'])
+                    reps = entry['reps']
                     exercise_string = "{} {} {}".format(reps, exercise.units, exercise.name)
                     exercise_strings.append(exercise_string)
                 response += self.user_manager.get_username(user_id).ljust(15)

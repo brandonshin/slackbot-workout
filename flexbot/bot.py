@@ -23,9 +23,11 @@ class Bot(object):
 
     def _select_exercise_and_start_time(self, eligible_users):
         minute_interval = self.select_next_time_interval(eligible_users)
+        self.logger.debug("Selected minute interval: %d", minute_interval)
         exercise = self.select_exercise()
+        self.logger.debug("Selected exercise: %s", exercise.name)
         exercise_reps = random.randrange(exercise.min_reps, exercise.max_reps+1)
-
+        self.logger.debug("Selected exercise reps: %s", exercise_reps)
 
         # Announcement String of next lottery time
         lottery_announcement = "NEXT LOTTERY FOR " + exercise.name.upper() + " IS IN " + str(minute_interval) + (" MINUTES" if minute_interval != 1 else " MINUTE")
@@ -49,6 +51,14 @@ class Bot(object):
         """
         Selects the next time interval
         """
+        if self.config.office_hours_on():
+            return self.select_next_time_interval_office_hours(eligible_users)
+        else:
+            return random.randint(self.config.min_time_between_callouts(),
+                self.config.max_time_between_callouts())
+
+
+    def select_next_time_interval_office_hours(self, eligible_users):
         # How much time is there left in the day
         time_left = datetime.datetime.now().replace(hour=self.config.office_hours_end(), minute=0,
                 second=0, microsecond=0) - datetime.datetime.now()
@@ -170,7 +180,7 @@ class Bot(object):
         Does the current time frame fall with the configured office hours?
         """
         if not self.config.office_hours_on():
-            self.logger.debug("not office hours")
+            self.logger.debug("office hours disabled")
             return True
         now = datetime.datetime.now()
         now_time = now.time()

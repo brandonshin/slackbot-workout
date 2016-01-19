@@ -14,7 +14,7 @@ handlers:
     class: logging.FileHandler
     level: DEBUG
     formatter: simple
-    filename: slackbot.log
+    filename: /flexbot/logs/slackbot.log
 
 root:
   level: DEBUG

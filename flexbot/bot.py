@@ -24,11 +24,11 @@ class Bot(object):
 
     def _select_exercise_and_start_time(self, eligible_users):
         minute_interval = self.select_next_time_interval(eligible_users)
-        self.logger.debug("Selected minute interval {}", minute_interval)
+        self.logger.debug("Selected minute interval: %d", minute_interval)
         exercise = self.select_exercise()
-        self.logger.debug("Selected exercise {}", exercise.name)
+        self.logger.debug("Selected exercise: %s", exercise.name)
         exercise_reps = random.randrange(exercise.min_reps, exercise.max_reps+1)
-        self.logger.debug("Selected exercise reps {}", exercise_reps)
+        self.logger.debug("Selected exercise reps: %s", exercise_reps)
 
         # Announcement String of next lottery time
         lottery_announcement = "NEXT LOTTERY FOR " + exercise.name.upper() + " IS IN " + str(minute_interval) + (" MINUTES" if minute_interval != 1 else " MINUTE")

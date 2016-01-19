@@ -70,6 +70,7 @@ class Server(object):
         try:
             self._workout_step(was_office_hours, is_office_hours)
         except NoEligibleUsersException:
+            self.logger.info("No eligible users currently, waiting 5 minutes")
             util.sleep(minutes=5)
         return is_office_hours
 

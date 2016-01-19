@@ -167,6 +167,7 @@ A little primer on how I work: after I call you out for an exercise, I will only
                 pending_exercises = current_winners[user_id]
                 exercise_strings = []
                 for exercise_name, reps in pending_exercises:
+                    self.logger.debug("Exercise: %s", exercise_name)
                     exercise = self.user_manager.get_exercise_by_name(exercise_name)
                     exercise_string = "{} {} {}".format(reps, exercise.units, exercise.name)
                     exercise_strings.append(exercise_string)

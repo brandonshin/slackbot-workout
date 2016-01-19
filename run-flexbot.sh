@@ -5,7 +5,7 @@ if [[ $# -ne 2 ]]; then
 fi
 
 IMAGE_NAME=yucht/flexbot
-LOG_FILE=slackbot.log
+LOG_FILE=$(pwd)/slackbot.log
 case $1 in
   dev)
     CONTAINER_NAME=flexbot_dev

@@ -17,7 +17,7 @@
       "maxTime": 25,
       "units": "minutes"
     },
-    "numPeople": 1,
+    "numPeople": 2,
     "slidingWindowSize": 8,
     "groupCalloutChance": 0.05
   },
@@ -57,6 +57,13 @@
       "minReps": 15,
       "maxReps": 30,
       "units": "rep"
-    }
+    },
+    {
+      "id": 5,
+      "name": "lunges (each side)",
+      "minReps": 8,
+      "maxReps": 15,
+      "units": "rep"
+    }"
   ]
 }

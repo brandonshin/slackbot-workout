@@ -13,11 +13,11 @@
 
   "callouts": {
     "timeBetween": {
-      "minTime": 15,
-      "maxTime": 25,
+      "minTime": 10,
+      "maxTime": 22,
       "units": "minutes"
     },
-    "numPeople": 2,
+    "numPeople": 3,
     "slidingWindowSize": 8,
     "groupCalloutChance": 0.05
   },

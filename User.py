@@ -27,7 +27,7 @@ class User:
         # A record of past runs
         self.past_workouts = {}
 
-        print "New user: " + self.real_name + " (" + self.username + ")"
+        print("New user: " + self.real_name + " (" + self.username + ")")
 
 
     def storeSession(self, run_name):
@@ -69,7 +69,7 @@ class User:
 
             return status == "active"
         except requests.exceptions.ConnectionError:
-            print "Error fetching online status for " + self.getUserHandle()
+            print("Error fetching online status for " + self.getUserHandle())
             return False
 
     def addExercise(self, exercise, reps):

@@ -17,7 +17,15 @@
       "maxTime": 22,
       "units": "minutes"
     },
-    "numPeople": 3,
+    "restTime": {
+      "minTime": 60,
+      "maxTime": 240,
+    },
+    "pickOdds": {
+      "minOdds": 0.05,
+      "maxOdds": 0.8,
+    },
+    "numPeople": 8,
     "slidingWindowSize": 8,
     "groupCalloutChance": 0.05
   },

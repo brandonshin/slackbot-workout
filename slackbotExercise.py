@@ -58,6 +58,10 @@ class Bot:
             self.min_countdown = settings["callouts"]["timeBetween"]["minTime"]
             self.max_countdown = settings["callouts"]["timeBetween"]["maxTime"]
             self.num_people_per_callout = settings["callouts"]["numPeople"]
+            self.min_rest_time = settings["callouts"]["restTime"]["minTime"]
+            self.max_rest_time = settings["callouts"]["restTime"]["maxTime"]
+            self.min_pick_odds = settings["callouts"]["pickOdds"]["minOdds"]
+            self.max_pick_odds = settings["callouts"]["pickOdds"]["maxOdds"]
             self.sliding_window_size = settings["callouts"]["slidingWindowSize"]
             self.group_callout_chance = settings["callouts"]["groupCalloutChance"]
             self.channel_id = settings["channelId"]
@@ -73,11 +77,49 @@ class Bot:
 
 ################################################################################
 '''
+Selects a list of users to exercise based on their last exercise time
+'''
+def selectUsers(bot, exercise):
+    active_users = fetchActiveUsers(bot)
+    min_rest_cutoff = datetime.datetime.now() - datetime.timedelta(minutes = self.min_rest_time)
+    max_rest_cutoff = datetime.datetime.now() - datetime.timedelta(minutes = self.max_rest_time)
+    
+    def userOdds(user):
+        if user.last_workout > min_rest_cutoff:
+            return bot.min_pick_odds
+        if user.last_workout < max_rest_cutoff:
+            return bot.max_pick_odds
+        return (user.last_workout - max_rest_cutoff) /
+            (min_rest_cutoff - max_rest_cutoff) * (bot.max_pick_odds - bot.min_pick_odds)
+            + bot.min_pick_odds
+    
+    user_list = []
+    max_odds = 0
+    
+    for user in active_users:
+        r = random.random()
+        odds = userOdds(user)
+        if r < odds:
+            user_list.append(user)
+        if odds > max_odds:
+            max_odds = odds
+            max_user = user
+    
+    if len(user_list) > 0:
+        if len(user_list) <= bot.num_people_per_callout:
+            return user_list
+        else:
+            return random.sample(user_list, bot.num_people_per_callout)
+    
+    return [user]
+    
+################################################################################
+'''
 Selects an active user from a list of users
 '''
+
 def selectUser(bot, exercise):
     active_users = fetchActiveUsers(bot)
-
     # Add all active users not already in the user queue
     # Shuffles to randomly add new active users
     shuffle(active_users)
@@ -200,23 +242,25 @@ def assignExercise(bot, exercise):
 
         for user_id in bot.user_cache:
             user = bot.user_cache[user_id]
-            user.addExercise(exercise, exercise_reps)
+            user.addExercise(exercise, exercise_reps, True)
 
         logExercise(bot,"@channel",exercise["name"],exercise_reps,exercise["units"])
 
     else:
-        winners = [selectUser(bot, exercise) for i in range(bot.num_people_per_callout)]
+        winners = selectUsers(bot, exercise)
+        # winners = [selectUser(bot, exercise) for i in range(bot.num_people_per_callout)]
+        n = len(winners)
 
-        for i in range(bot.num_people_per_callout):
+        for i in range(n):
             winner_announcement += str(winners[i].getUserHandle())
-            if i == bot.num_people_per_callout - 2:
+            if i == n - 2:
                 winner_announcement += ", and "
-            elif i == bot.num_people_per_callout - 1:
+            elif i == n - 1:
                 winner_announcement += "!"
             else:
                 winner_announcement += ", "
 
-            winners[i].addExercise(exercise, exercise_reps)
+            winners[i].addExercise(exercise, exercise_reps, False)
             logExercise(bot,winners[i].getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
 
     # Announce the user

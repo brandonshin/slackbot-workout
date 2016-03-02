@@ -78,7 +78,7 @@ class User:
         self.exercise_counts[exercise["id"]] = self.exercise_counts.get(exercise["id"], 0) + 1
 
         # Add to exercise history record
-        self.exercise_history.append([datetime.datetime.now().isoformat(),exercise["id"],exercise["name"],reps,exercise["units"]])
+        self.exercise_history.append([str(datetime.datetime.now()),exercise["id"],exercise["name"],reps,exercise["units"]])
 
     def hasDoneExercise(self, exercise):
         return exercise["id"] in self.exercise_counts

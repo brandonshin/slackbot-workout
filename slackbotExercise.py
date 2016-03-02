@@ -232,7 +232,7 @@ def logExercise(bot,username,exercise,reps,units):
 
         writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,bot.debug])
 
-def saveUsers(bot):
+def saveUsers(bot, dateOfExercise):
     # Write to the command console today's breakdown
     s = "```\n"
     #s += "Username\tAssigned\tComplete\tPercent
@@ -246,6 +246,7 @@ def saveUsers(bot):
         s += user.username.ljust(15)
         for exercise in bot.exercises:
             if exercise["id"] in user.exercises:
+                exerciseUnitCount = countExercisesUnitsForDay(bot, exercise["id"], dateOfExercise, user);
                 s += str(user.exercises[exercise["id"]]).ljust(len(exercise["name"]) + 2)
             else:
                 s += str(0).ljust(len(exercise["name"]) + 2)
@@ -263,6 +264,24 @@ def saveUsers(bot):
     # write to file
     with open('user_cache.save','wb') as f:
         pickle.dump(bot.user_cache,f)
+
+def countExercisesUnitsForDay(bot, exerciseID, dayOfExerciseString, user):
+    if bot.debug and dayOfExerciseString is not None:
+        print "username " + user.username + " exercise ID " + str(exerciseID) + " Day " + str(dayOfExerciseString)
+                                                            
+    count = 0
+
+    #count for all time if no day is sent
+    if dayOfExerciseString is None:
+        count = user.exercises[exerciseID]
+    else:
+        #loop through the history for matching days and exercise ID
+        for exercise_history in user.exercise_history:
+            if bot.debug:
+                print str(exercise_history[0]) + "-" + str(exercise_history[1]) + "-" + exercise_history[2]+ "-" + str(exercise_history[3])
+            if exercise_history[0][:10] == dayOfExerciseString[:10] and exercise_history[1] == exerciseID:
+                count += exercise_history[3]
+    return count
 
 def isOfficeHours(bot):
     if not bot.office_hours_on:
@@ -282,10 +301,17 @@ def isOfficeHours(bot):
 
 def main():
     bot = Bot()
-
+    isNewDay = False
     try:
         while True:
             if isOfficeHours(bot):
+
+                #set new day based on the first time we entered office hours
+                if not isNewDay:
+                    isNewDay = True
+                    if bot.debug:
+                        print "it's a new day"
+                        
                 # Re-fetch config file if settings have changed
                 bot.setConfiguration()
 
@@ -296,6 +322,11 @@ def main():
                 assignExercise(bot, exercise)
 
             else:
+                #write out the leaderboard the first time of the day we hit non-working hours
+                if isNewDay:
+                    saveUsers(bot, str(datetime.datetime.now()))
+                    isNewDay = False
+                    
                 # Sleep the script and check again for office hours
                 if not bot.debug:
                     time.sleep(5*60) # Sleep 5 minutes
@@ -304,7 +335,7 @@ def main():
                     time.sleep(5)
 
     except KeyboardInterrupt:
-        saveUsers(bot)
+        saveUsers(bot, str(datetime.datetime.now()))
 
 
 main()

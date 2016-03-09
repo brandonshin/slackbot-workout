@@ -1,15 +1,16 @@
 {
   "teamDomain": "hudl",
-  "channelName": "",
-  "channelId": "",
+  "channelName": "testslackbot-workout",
+  "channelId": "C0JUCEHBL",
+  "userId": "U0RHGDAJ1",
 
   "officeHours": {
-    "on": false,
+    "on": true,
     "begin": 9,
     "end": 17
    },
 
-  "debug": false,
+  "debug": true,
 
   "callouts": {
     "timeBetween": {
@@ -17,7 +18,7 @@
       "maxTime": 2,
       "units": "minutes"
     },
-    "numPeople": 3,
+    "numPeople": 2,
     "slidingWindowSize": 8,
     "groupCalloutChance": 0.05
   },
@@ -92,6 +93,6 @@
       "minReps": 5,
       "maxReps": 20,
       "units": "rep"
-    },
+    }
   ]
 }

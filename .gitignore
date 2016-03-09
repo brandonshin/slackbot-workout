@@ -1,6 +1,17 @@
-config.json
 *.pyc
 
 log*.csv
 log*.csv_DEBUG
 user_cache.save
+
+.idea/.name
+
+.idea/misc.xml
+
+.idea/modules.xml
+
+.idea/slackbot-workout.iml
+
+.idea/vcs.xml
+
+.idea/workspace.xml

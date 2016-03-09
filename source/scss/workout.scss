@@ -1,0 +1,63 @@
+// --------------------------------------------
+// --------------------------------------------
+//
+// Workout CSS
+//
+// --------------------------------------------
+// --------------------------------------------
+
+
+
+
+// Imports
+// --------------------------------------------
+// Importing Kickoff-css NPM package files
+// npm install hudl-kickoff-css@0.0.1-prerelease.46 --registry http://npm.thorhudl.com --save
+
+@import   '../../node_modules/hudl-kickoff-css/source/scss/variables/var.all';
+@import   '../../node_modules/hudl-kickoff-css/source/scss/mixins/mix.all';
+@import   '../../node_modules/hudl-kickoff-css/source/scss/functions/func.all';
+
+
+
+// Header
+// --------------------------------------------
+.hdr {
+  padding: 8rem 0;
+  background-color: $ui-dark;
+  text-align: center;
+  margin-bottom: $spacer-xxlarge;
+}
+
+
+// Layout
+// --------------------------------------------
+.l-content {
+  padding: 0 1rem;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+
+
+
+// Table
+// --------------------------------------------
+.wrk-table__th {
+  font-size: $body-size-xsmall;
+  font-weight: normal;
+
+}
+
+
+
+
+
+body { }
+
+
+
+
+

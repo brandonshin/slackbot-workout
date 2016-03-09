@@ -4,7 +4,6 @@
   "channelId": "",
   "botUserId": "",
 
-
   "officeHours": {
     "on": false,
     "begin": 9,
@@ -94,7 +93,6 @@
       "minReps": 5,
       "maxReps": 20,
       "units": "rep"
-    },
+    }
   ]
 }
-

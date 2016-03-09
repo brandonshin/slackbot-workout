@@ -69,7 +69,7 @@ class Bot:
 
             self.debug = settings["debug"]
 
-        self.post_message_URL = "https://slack.com/api/chat.postMessage?token=" + USER_TOKEN_STRING + "&channel=" + self.channel_id + "&as_user=true"
+        self.post_message_URL = "https://slack.com/api/chat.postMessage?token=" + USER_TOKEN_STRING + "&channel=" + self.channel_id + "&as_user=true&link_names=1"
 
 ################################################################################
 '''
@@ -223,7 +223,11 @@ def assignExercise(bot, exercise):
 
     # Announce the user
     if not bot.debug:
-        requests.post(bot.post_message_URL + "&text=" + winner_announcement)
+        response = requests.post(bot.post_message_URL + "&text=" + winner_announcement)
+        last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
+        requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+        requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+
     print winner_announcement
 
 

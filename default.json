@@ -2,6 +2,7 @@
   "teamDomain": "hudl",
   "channelName": "",
   "channelId": "",
+  "botUserId": "",
 
   "officeHours": {
     "on": false,

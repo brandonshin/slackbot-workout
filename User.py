@@ -8,13 +8,16 @@ USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
 
 class User:
 
-    def __init__(self, user_id):
+    def __init__(self, user_id, all_employees):
         # The Slack ID of the user
         self.id = user_id
 
         # The username (@username) and real name
         self.username, self.real_name = self.fetchNames()
 
+        #The location from Bamboo's HR information
+        self.location = self.fetchLocation(all_employees)
+        
         # A list of all exercises done by user
         self.exercise_history = []
 
@@ -56,7 +59,14 @@ class User:
     def getUserHandle(self):
         return ("@" + self.username).encode('utf-8')
 
-
+    #parse through all of the employee list to find a matching name
+    def fetchLocation(self, all_employees):
+        location = ""
+        for employee in all_employees:
+            if employee["displayName"] == self.real_name or ((employee["nickname"] is not None and employee["nickname"] + " " + employee["lastName"]) == self.real_name):
+                location = employee["location"]
+                break
+        return location
     '''
     Returns true if a user is currently "active", else false
     '''

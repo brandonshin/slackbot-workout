@@ -75,8 +75,8 @@ class Bot:
 '''
 Selects an active user from a list of users
 '''
-def selectUser(bot, exercise):
-    active_users = fetchActiveUsers(bot)
+def selectUser(bot, exercise, all_employees):
+    active_users = fetchActiveUsers(bot, all_employees)
 
     # Add all active users not already in the user queue
     # Shuffles to randomly add new active users
@@ -137,7 +137,7 @@ def fetchAllEmployeesFromBamboo(bot):
 '''
 Fetches a list of all active users in the channel
 '''
-def fetchActiveUsers(bot):
+def fetchActiveUsers(bot, all_employees):
     # Check for new members
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
     response = requests.get("https://slack.com/api/channels.info", params=params)
@@ -150,7 +150,7 @@ def fetchActiveUsers(bot):
         if user_id != bot.user_id:
             # Add user to the cache if not already
             if user_id not in bot.user_cache:
-                bot.user_cache[user_id] = User(user_id)
+                bot.user_cache[user_id] = User(user_id, all_employees)
                 if not bot.first_run:
                     # Push our new users near the front of the queue!
                     bot.user_queue.insert(2,bot.user_cache[user_id])
@@ -208,7 +208,7 @@ def selectNextTimeInterval(bot):
 '''
 Selects a person to do the already-selected exercise
 '''
-def assignExercise(bot, exercise):
+def assignExercise(bot, exercise, all_employees):
     # Select number of reps
     exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
 
@@ -225,7 +225,7 @@ def assignExercise(bot, exercise):
         logExercise(bot,"@channel",exercise["name"],exercise_reps,exercise["units"])
 
     else:
-        winners = [selectUser(bot, exercise) for i in range(bot.num_people_per_callout)]
+        winners = [selectUser(bot, exercise, all_employees) for i in range(bot.num_people_per_callout)]
 
         for i in range(bot.num_people_per_callout):
             winner_announcement += str(winners[i].getUserHandle())
@@ -315,7 +315,7 @@ def main():
                 exercise = selectExerciseAndStartTime(bot)
 
                 # Assign the exercise to someone
-                assignExercise(bot, exercise)
+                assignExercise(bot, exercise, all_employees)
 
             else:
                 # Sleep the script and check again for office hours

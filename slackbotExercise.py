@@ -14,6 +14,7 @@ from User import User
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
 URL_TOKEN_STRING =  os.environ['SLACK_URL_TOKEN_STRING']
+BAMBOO_API_KEY =  os.environ['BAMBOO_API_KEY']
 
 HASH = "%23"
 
@@ -33,6 +34,7 @@ class Bot:
         # round robin store
         self.user_queue = []
 
+        self.fetchAllEmployeesFromBamboo()
 
     def loadUserCache(self):
         if os.path.isfile('user_cache.save'):
@@ -115,6 +117,20 @@ def selectUser(bot, exercise):
     print "Selecting user at random (queue length was " + str(len(bot.user_queue)) + ")"
     return active_users[random.randrange(0, len(active_users))]
 
+
+'''
+Fetches all of the employees from Bamboohr
+'''
+def fetchAllEmployeesFromBamboo(bot):
+    headers = {'Authorization': 'Basic %s' % BAMBOO_API_KEY, 'Accept':'application/json'}
+    response = requests.get("https://api.bamboohr.com/api/gateway.php/hudl/v1/employees/directory", headers=headers)
+    all_employees = []
+    if response.ok:
+        if bot.debug:
+            print "called bamboo successfully"
+        users = json.loads(response.text, encoding='utf-8')["channel"]["members"]
+        print "number of users " + str(len(users))
+    return all_employees
 
 '''
 Fetches a list of all active users in the channel

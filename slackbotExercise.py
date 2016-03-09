@@ -65,7 +65,7 @@ class Bot:
             self.office_hours_on = settings["officeHours"]["on"]
             self.office_hours_begin = settings["officeHours"]["begin"]
             self.office_hours_end = settings["officeHours"]["end"]
-            self.user_id = settings["userId"]
+            self.user_id = settings["botUserId"]
 
             self.debug = settings["debug"]
 

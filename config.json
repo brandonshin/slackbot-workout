@@ -2,7 +2,7 @@
   "teamDomain": "hudl",
   "channelName": "testslackbot-workout",
   "channelId": "C0JUCEHBL",
-  "userId": "U0RHGDAJ1",
+  "botUserId": "U0RHGDAJ1",
 
   "officeHours": {
     "on": true,

@@ -8,7 +8,7 @@ from random import shuffle
 import pickle
 import os.path
 import datetime
-
+from pprint import pprint
 from User import User
 
 # Environment variables must be set with your tokens
@@ -33,8 +33,6 @@ class Bot:
 
         # round robin store
         self.user_queue = []
-
-        self.fetchAllEmployeesFromBamboo()
 
     def loadUserCache(self):
         if os.path.isfile('user_cache.save'):
@@ -128,8 +126,12 @@ def fetchAllEmployeesFromBamboo(bot):
     if response.ok:
         if bot.debug:
             print "called bamboo successfully"
-        users = json.loads(response.text, encoding='utf-8')["channel"]["members"]
-        print "number of users " + str(len(users))
+        all_employees = json.loads(response.text)["employees"]
+
+        if bot.debug:
+            print "number of users " + str(len(all_employees))
+    else:
+        response.raise_for_status()
     return all_employees
 
 '''
@@ -300,7 +302,9 @@ def isOfficeHours(bot):
 
 def main():
     bot = Bot()
-
+    #load all employees. This should probably move to happen once a day
+    all_employees = fetchAllEmployeesFromBamboo(bot)
+    
     try:
         while True:
             if isOfficeHours(bot):

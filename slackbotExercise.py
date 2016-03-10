@@ -406,8 +406,6 @@ def findExerciseInText(bot, text):
             if listen_name in text:
                 found_exercise = exercise
                 break
-        if found_exercise:
-            break
 
     return found_exercise
 

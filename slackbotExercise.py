@@ -428,6 +428,8 @@ def main():
                     remindPeopleForIncompleteExercises()
                     alreadyRemindedAtEoD = True
 
+                time.sleep(5)
+
             else:
                 # write out the leaderboard the first time of the day we hit non-working hours
                 if isNewDay:

@@ -32,10 +32,12 @@
 
     <!-- Header + Nav -->
     <!-- ==================================== -->
-    <header class="hdr" role="header">
-      <h1 class="hdr__h">
-        <a class="hdr__link" href="/">The Workout Slackbot</a>
-      </h1>
+    <header class="hero" role="header">
+      <figure class="ko-avatar--lg wrk-avatar">
+        <img src="/source/img/hudl-workout.png" alt="">
+      </figure> <!-- /ko-avatar--sm -->
+      <h1 class="hero__h">Hudl_workout</h1>
+      <h3 class="ko-text hero__h--sub">The drill sergeant you love to hate</h3>
     </header>
 
 
@@ -43,104 +45,245 @@
     <!-- CONTENT -->
     <!-- ==================================== -->
 
-    <div class="l-content" role="main">
+    <div id="main" role="main">
 
 
 
     <!-- Leaderboard -->
-    <div class="ko-table__container">
-      <h3 class="ko-display--h4 ko-spacer--sm--btm">Leaderboard</h3>
-      <table class="ko-table ko-table--bordered ko-table--striped ko-table--hoverable ko-table--rwd js-table--rwd">
-        <thead class="ko-table__thead">
-          <tr class="ko-table__tr--thead">
-            <th class="ko-table__th wrk-table__th">User</th>
-            <th class="ko-table__th wrk-table__th">Pushup</th>
-            <th class="ko-table__th wrk-table__th">Plank</th>
-            <th class="ko-table__th wrk-table__th">Wall Sit</th>
-            <th class="ko-table__th wrk-table__th">Chair Dip</th>
-            <th class="ko-table__th wrk-table__th">Calf Raise</th>
-            <th class="ko-table__th wrk-table__th">Jumping Jacks</th>
-            <th class="ko-table__th wrk-table__th">Jog</th>
-            <th class="ko-table__th wrk-table__th">Sit Ups</th>
-            <th class="ko-table__th wrk-table__th">Lunges</th>
-            <th class="ko-table__th wrk-table__th">Burpees</th>
-          </tr> <!-- /ko-table__tr--thead -->
-        </thead> <!-- /ko-table__thead -->
+    <!-- ==================================== -->
+    <section class="wrk-section">
+      <div class="l-content">
+        <div class="ko-table__container">
+          <h3 class="ko-display--h4 ko-spacer--sm--btm">Leaders</h3>
+          <table class="ko-table ko-table--bordered ko-table--striped ko-table--hoverable ko-table--rwd js-table--rwd">
+            <colgroup>
+              <col>
+            </colgroup>
+            <colgroup>
+              <col>
+              <col>
+              <col>
+              <col>
+              <col>
+              <col>
+              <col>
+              <col>
+              <col>
+              <col>
+            </colgroup>
+            <colgroup>
+              <col class="ko-table__col--bdr-left ko-table__col--bg">
+            </colgroup>
+            <thead class="ko-table__thead">
+              <tr class="ko-table__tr--thead">
+                <th class="wrk-table__th wrk-table__th--text">User</th>
+                <th class="wrk-table__th">Pushup</th>
+                <th class="wrk-table__th">Plank</th>
+                <th class="wrk-table__th">Wall Sit</th>
+                <th class="wrk-table__th">Chair Dip</th>
+                <th class="wrk-table__th">Calf Raise</th>
+                <th class="wrk-table__th">Jump Jacks</th>
+                <th class="wrk-table__th">Jog</th>
+                <th class="wrk-table__th">Sit Ups</th>
+                <th class="wrk-table__th">Lunges</th>
+                <th class="wrk-table__th">Burpees</th>
+                <th class="wrk-table__th wrk-table__th--total">Comp. Avg.</th>
+              </tr> <!-- /ko-table__tr--thead -->
+            </thead> <!-- /ko-table__thead -->
 
-        <tbody class="ko-table__tbody">
-          <tr class="ko-table__tr">
-            <td class="ko-table__td">George Washington</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-          </tr> <!-- /ko-table__tr -->
+            <tbody class="ko-table__tbody">
+              <tr class="ko-table__tr">
+                <td class="wrk-table__td wrk-table__td--text">George Washington</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td wrk-table__td--total">25.7%</td>
+              </tr> <!-- /ko-table__tr -->
 
-          <tr class="ko-table__tr">
-            <td class="ko-table__td">Abraham Lincoln</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-          </tr> <!-- /ko-table__tr -->
+              <tr class="ko-table__tr">
+                <td class="wrk-table__td wrk-table__td--text">Abraham Lincoln</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td wrk-table__td--total">100%</td>
+              </tr> <!-- /ko-table__tr -->
 
-          <tr class="ko-table__tr">
-            <td class="ko-table__td">Donald Trump</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-          </tr> <!-- /ko-table__tr -->
+              <tr class="ko-table__tr">
+                <td class="wrk-table__td wrk-table__td--text">Donald Trump</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td wrk-table__td--total">99.8%</td>
+              </tr> <!-- /ko-table__tr -->
 
-          <tr class="ko-table__tr">
-            <td class="ko-table__td">Nomar Garciaparra</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-            <td class="ko-table__td">0</td>
-          </tr> <!-- /ko-table__tr -->
-
-
-        </tbody> <!-- /ko-table__tbody -->
-
-      </table> <!-- /ko-table -->
-
-    </div> <!-- /ko-table__container -->
+              <tr class="ko-table__tr">
+                <td class="wrk-table__td wrk-table__td--text">Nomar Garciaparra</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td">0</td>
+                <td class="wrk-table__td wrk-table__td--total">00.7%</td>
+              </tr> <!-- /ko-table__tr -->
 
 
+            </tbody> <!-- /ko-table__tbody -->
+
+          </table> <!-- /ko-table -->
+
+        </div> <!-- /ko-table__container -->
+      </div> <!-- /l-content -->
+    </section> <!-- wrk-section -->
 
 
-    </div> <!-- /l-content -->
+
+    <!-- Superstar + Video list -->
+    <!-- ==================================== -->
+    <section class="wrk-section wrk-section--bg">
+      <div class="l-content l-grid-1-3">
+        <div class="l-grid__item">
+          <h3 class="ko-display--h5 ko-spacer--sm--btm">Boston Superstar</h3>
+          <div class="card card--star">
+            <figure class="ko-avatar--med wrk-avatar wrk-avatar--star">
+              <img src="/source/img/hudl-workout.png" alt="">
+            </figure> <!-- /ko-avatar--sm -->
+            <div class="card__content--star">
+              <h3 class="card__name">@peteryasi</h3>
+
+              <div class="card__mod">
+                <h3 class="card__stat--large">99.5%</h3>
+                <h4 class="card__label">Best Completion Rate</h4>
+              </div> <!-- /card__mod -->
+
+            </div> <!-- card__content -->
+          </div> <!-- /card--star -->
+
+
+          <div class="card card--star card--goat">
+            <figure class="ko-avatar--med wrk-avatar wrk-avatar--star">
+              <img src="/source/img/hudl-workout.png" alt="">
+            </figure> <!-- /ko-avatar--sm -->
+            <div class="card__content--star">
+              <h3 class="card__name">@peteryasi</h3>
+
+              <div class="card__mod">
+                <h3 class="card__stat--large">99.5%</h3>
+                <h4 class="card__label">Worst Completion Rate</h4>
+              </div> <!-- /card__mod -->
+
+            </div> <!-- card__content -->
+          </div> <!-- /card--star -->
+
+        </div> <!-- /l-grid__item -->
+
+        <div class="l-grid__item">
+          <h3 class="ko-display--h5 ko-spacer--sm--btm">Video Guides</h3>
+          <ul class="ko-list__items--numbered">
+
+            <li class="card card--video wrk-video js-video__trigger" data-video="URaA5gzyXu0" data-text="Wall Sit. The thigh killer">
+              <span class="card__h--small">Wall Sit:</span> The Thigh Killer
+            </li>
+
+            <li class="card card--video wrk-video js-video__trigger">
+              <span class="card__h--small">Wall Sit:</span> The Thigh Killer
+            </li>
+
+            <li class="card card--video wrk-video js-video__trigger">
+              <span class="card__h--small">Wall Sit:</span> The Thigh Killer
+            </li>
+
+            <li class="card card--video wrk-video js-video__trigger">
+              <span class="card__h--small">Wall Sit:</span> The Thigh Killer
+            </li>
+
+            <li class="card card--video wrk-video js-video__trigger">
+              <span class="card__h--small">Wall Sit:</span> The Thigh Killer
+            </li>
+
+            <li class="card card--video wrk-video js-video__trigger">
+              <span class="card__h--small">Wall Sit:</span> The Thigh Killer
+            </li>
+
+          </ul>
+        </div> <!-- /l-grid__item -->
+      </div> <!-- /content -->
+    </section> <!-- /wrk-section -->
+
+
+
+    <footer>
+      <p class="body-size--lg">
+        <span class="footer__h">A 2016 Skunkworks Jam</span>
+        by @iceman, @peteryasi, @bravobrand, @g and @grant.staublin</p>
+    </footer>
+
+
+
+
+    </div> <!-- #main -->
+
+
+
+<!-- Video Modal -->
+<!-- ============================= -->
+<div class="modal modal--video">
+  <div class="modal__content js-modal__content">
+    <h3 class="modal__h">Now Watching: <span id="js-video__text"></span></h3>
+    <div class="modal__close">
+      <a  class="modal__btn" id="js-video__close">x</a>
+    </div> <!-- /modal__close -->
+    <!-- <video src="" id="js-video__element" class="modal__media" controls autoplay></video> -->
+    <div class="js-video__container intrinsic-container intrinsic-container-16x9">
+      <iframe id="js-video__element" src="" frameborder="0" allowfullscreen></iframe>
+      <!-- <iframe id="js-video__element" width="853" height="480" src="" frameborder="0" allowfullscreen></iframe> -->
+    </div> <!-- js-video__container -->
+  </div> <!-- modal__content -->
+</div> <!-- /modal--video -->
+
+
+
 
 
     <!-- Scripts -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fitvids/1.1.0/jquery.fitvids.js"></script>
+
     <script src="/source/js/main.js"></script>
 
   </body>
 
 </html>
+
+
+
+
+
+
+

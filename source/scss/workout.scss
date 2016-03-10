@@ -18,27 +18,111 @@
 @import   '../../node_modules/hudl-kickoff-css/source/scss/mixins/mix.all';
 @import   '../../node_modules/hudl-kickoff-css/source/scss/functions/func.all';
 
+$background-color: $ui-blue-100;
+
+%background {
+  @include backgrounder($background-color);
+  text-align: center;
+  color: $ui-gray-20;
+}
 
 
 // Header
 // --------------------------------------------
-.hdr {
-  padding: 8rem 0;
-  background-color: $ui-dark;
-  text-align: center;
+.hero {
+  @extend %background;
   margin-bottom: $spacer-xxlarge;
+  padding: 2rem 0;
+
+  &__h {
+    font-weight: $font-weight-bold;
+  }
+
+  &__h--sub {
+    color: $ui-blue-70;
+  }
+
+}
+
+.wrk-avatar {
+  display: inline-block;
+  background-color: rgba($ui-dark, 0.3);
+  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+  border: 1px solid $ui-blue-100;
+  transition: transform 0.3s linear;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+
+  &--star {
+    background-color: $ui-blue-100;
+    margin-top: -100px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  // Scales avatar in the hero
+  .hero:hover & { transform: scale(1.25); }
+
+}
+
+.img--rwd {
+  max-width: 100%;
 }
 
 
 // Layout
 // --------------------------------------------
 .l-content {
-  padding: 0 1rem;
+  padding: 0 $spacer-large;
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
   overflow: hidden;
 }
+
+.l-grid-1-3 {
+  @include clearfix;
+
+  > .l-grid__item {
+    &:first-of-type { width: 30%; float: left; }
+    &:last-of-type { width: 60%; float: right; }
+  }
+}
+
+
+
+// Section
+// --------------------------------------------
+.wrk-section {
+  & + & {
+    margin-top: $spacer-xxlarge;
+  }
+}
+
+
+// %border {
+//   position: relative;
+//   &:after {
+//     position: absolute;
+//     content: '';
+//     width: 1px;
+//     top: $spacer-xxlarge;
+//     bottom: $spacer-xxlarge;
+//     left: 38.5%;
+//     background-color: $ui-gray-20;
+//   }
+// }
+
+.wrk-section--bg {
+  // @extend %border;
+  background-color: $ui-gray-light;
+  padding-top: $spacer-xxlarge;
+  padding-bottom: $spacer-xxlarge;
+  border-top: 1px solid $ui-gray-medium;
+  border-bottom: 1px solid $ui-gray-medium;
+}
+
+
 
 
 
@@ -46,18 +130,340 @@
 // Table
 // --------------------------------------------
 .wrk-table__th {
-  font-size: $body-size-xsmall;
+  font-size: 0.625rem;
   font-weight: normal;
+  text-transform: uppercase;
+  text-align: center !important;
 
+  &--text { text-align: left !important; }
+}
+
+.wrk-table__td {
+  text-align: center;
+
+  &--text { text-align: left; }
+}
+
+
+.wrk-table__th {
+  height: 52px;
+}
+
+.wrk-table__th--total {
+  font-weight: $font-weight-bold;
+}
+
+.wrk-table__td--total {
+  color: $ui-blue-70;
+  // font-weight: $font-weight-bold;
 }
 
 
 
 
 
-body { }
+
+// Video
+// --------------------------------------------
+.wrk-video {
+  width: 100%;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+
+  & + & { margin-top: 0.85rem; }
+
+  &:before,
+  &:after {
+    position: absolute;
+    content: '';
+  }
+  &:before {
+    background-color: rgba($ui-blue-80, 0.6);
+    width: 35px;
+    height: 100%;
+    top: 0;
+    left: 0;
+
+  }
+
+  &:after {
+    left: 11px;
+    top: 50%;
+    margin-top: -8px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-left: 16px solid rgba(255, 255, 255, 0.3);
+    border-bottom: 8px solid transparent;
+    transition: border-color 0.3s ease;
+  }
+
+  &:hover {
+    &:after { border-left-color: $ui-white; }
+  }
+}
 
 
 
+
+
+
+
+// Card
+// --------------------------------------------
+.card {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  background-color: #fff;
+}
+
+.card--video {
+  padding: $spacer-xsmall;
+  padding-left: 45px;
+}
+
+.card--star {
+  text-align: center;
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+  & + & { margin-top: $spacer-xxlarge; }
+}
+
+.card--goat {
+  // background-color: red;
+  // color: #fff;
+  .card__stat--large { color: red; }
+}
+
+.card__h--small {
+  position: relative;
+  border-right: 1px solid $ui-gray-medium;
+  padding-right: $spacer-small;
+  margin-right: $spacer-xsmall;
+  font-weight: $font-weight-bold;
+  &:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    margin-right: -3px;
+    margin-top: -3px;
+    width: 6px;
+    height: 6px;
+    background-color: $ui-gray-medium;
+    border-radius: 50%;
+  }
+}
+
+
+.card__content--star {
+  // border: 1px solid green;
+  max-width: 85%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.card__label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: $ui-text-light;
+}
+
+.card__name {
+  font-size: 16px;
+  font-weight: $font-weight-bold;
+}
+
+.card__mod {
+  margin-top: $spacer-small;
+}
+
+.card__stat--large {
+  font-size: 45px;
+}
+
+.card__group {
+  @include clearfix;
+  max-width: 75%;
+  margin-left: auto;
+  margin-right: auto;
+  border-top: 1px solid $ui-gray-medium;
+  padding-top: 1rem;
+  margin-top: 1rem;
+  > .card__mod--half {
+    &:first-of-type { float: left; }
+    &:last-of-type { float: right; }
+  }
+}
+
+
+
+
+
+
+// Modal
+// --------------------------------------------
+
+.modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &--video {
+    position: fixed;
+    z-index: 900;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    visibility: hidden;
+    opacity: 0.01;
+    background-color: transparent;
+    transition: opacity 0.8s ease;
+    // When video is playing
+    .video--is-playing & {
+      opacity: 1;
+      visibility: visible;
+      background-color: rgba(0, 0, 0, 0.95);
+    }
+  }
+
+  &__h {
+    font-size: 24px;
+    margin-bottom: 25px;
+    color: #fff;
+  }
+
+  &__content {
+    @include backgrounder($background-color);
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    padding: 40px 25px 25px;
+    // background-color: $ui-dark-100;
+    opacity: 0.01;
+    visibility: hidden;
+    transition: opacity 0.8s ease 0.3s, transform 0.3s ease 0.2s;
+    margin: 0 auto;
+    transform: scale(0.5);
+    box-shadow: 0 0 150px rgba(0, 0, 0, 0.3);
+    .video--is-playing & {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+    }
+  }
+
+  &__close {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+  }
+
+  &__btn {
+    cursor: pointer;
+    display: block;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    background-color: $ui-blue-100;
+    color: #fff;
+    transition: 0.4s background-color ease;
+    &:hover {
+      background-color: darken($ui-blue-100, 10%);
+    }
+  }
+
+  &__media { width: 100%; }
+
+}
+
+
+// .video-play__icon {
+//   position: relative;
+//   cursor: pointer;
+//   &:before,
+//   &:after {
+//     position: absolute;
+//     top: 50%;
+//   }
+//   &:before {
+//     position: absolute;
+//     content: 'Play';
+//     background-color: transparent;
+//     text-align: center;
+//     left: 5px;
+//     right: 0;
+//     z-index: 1;
+//     text-transform: uppercase;
+//     letter-spacing: 2px;
+//     margin-top: -5px;
+//   }
+//   &:after {
+//     // position: absolute;
+//     content: '';
+//     // top: 50%;
+//     left: 50%;
+//     margin-left: -50px;
+//     margin-top: -50px;
+//     width: 100px;
+//     height: 100px;
+//     background-color: rgba(red, 0.8);
+//     border-radius: 50%;
+//     transition: 0.4s background-color ease;
+//   }
+//   &:hover {
+//     &:after { background-color: green; }
+//   }
+// }
+
+
+
+// Footer
+// --------------------------------------------
+footer {
+  @extend %background;
+  padding: $spacer-large;
+}
+
+.footer__h {
+  font-weight: $font-weight-heavy;
+  font-family: $font-display;
+  color: $ui-blue-60;
+}
+
+
+body { position: relative; }
+
+
+
+
+
+// Intrinsic
+// --------------------------------------------
+.intrinsic-container {
+  position: relative;
+  height: 0;
+  overflow: hidden;
+}
+
+/* 16x9 Aspect Ratio */
+.intrinsic-container-16x9 {
+  padding-bottom: 56.25%;
+}
+
+/* 4x3 Aspect Ratio */
+.intrinsic-container-4x3 {
+  padding-bottom: 75%;
+}
+
+.intrinsic-container iframe {
+  position: absolute;
+  top:0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
 
 

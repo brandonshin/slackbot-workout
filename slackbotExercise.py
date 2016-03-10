@@ -412,7 +412,7 @@ def listenForCommands(bot):
 
             # Check for help command
             if 'help' in text:
-                help_message = 'Just send me a name of an exercies, and I will teach you how to do it.'
+                help_message = 'Just send me a name of an exercise, and I will teach you how to do it.'
                 for exercise in bot.exercises:
                     help_message += '\n ' + exercise['name']
                 requests.post(bot.post_message_URL + "&text=" + help_message)

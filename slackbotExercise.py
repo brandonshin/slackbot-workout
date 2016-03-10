@@ -395,6 +395,7 @@ def main():
 
                 # set new day based on the first time we entered office hours
                 if not isNewDay:
+                    EXERCISES_FOR_DAY = []
                     isNewDay = True
                     alreadyRemindedAtEoD = False
                     # load all employees at the beginning of the day. Only once a day so we don't bombard bamboo

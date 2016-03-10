@@ -14,9 +14,9 @@ from User import User
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
 URL_TOKEN_STRING =  os.environ['SLACK_URL_TOKEN_STRING']
+EXERCISES_FOR_DAY = []
 
 HASH = "%23"
-
 
 # Configuration values to be set in setConfiguration
 class Bot:
@@ -69,7 +69,23 @@ class Bot:
 
             self.debug = settings["debug"]
 
-        self.post_message_URL = "https://slack.com/api/chat.postMessage?token=" + USER_TOKEN_STRING + "&channel=" + self.channel_id + "&as_user=true"
+        self.post_message_URL = "https://slack.com/api/chat.postMessage?token=" + USER_TOKEN_STRING + "&channel=" + self.channel_id + "&as_user=true&link_names=1"
+
+class Exercises:
+
+    def __init__(self, exercise, users, timestamp):
+
+        self.exercise = exercise
+        self.users = users
+        self.timestamp = timestamp
+        self.count_of_acknowledged = 0
+
+    def __str__(self):
+        return "An instance of class Exercises with state: excercise=%s users=%s, timestamp=%s" % (self.exercise, self.users, self.timestamp)
+
+    def __repr__(self):
+        return 'Exercises("%s", "%s", "%s")' % (self.exercise, self.users, self.timestamp)
+
 
 ################################################################################
 '''
@@ -200,9 +216,11 @@ def assignExercise(bot, exercise):
     if random.random() < bot.group_callout_chance:
         winner_announcement += "@channel!"
 
+        winners = []
         for user_id in bot.user_cache:
             user = bot.user_cache[user_id]
             user.addExercise(exercise, exercise_reps)
+            winners.append(user)
 
         logExercise(bot,"@channel",exercise["name"],exercise_reps,exercise["units"])
 
@@ -223,7 +241,12 @@ def assignExercise(bot, exercise):
 
     # Announce the user
     if not bot.debug:
-        requests.post(bot.post_message_URL + "&text=" + winner_announcement)
+        response = requests.post(bot.post_message_URL + "&text=" + winner_announcement)
+        last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
+        requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+        requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+        EXERCISES_FOR_DAY.append(Exercises(exercise, winners, last_message_timestamp))
+
     print winner_announcement
 
 
@@ -282,6 +305,35 @@ def isOfficeHours(bot):
             print "out office hours"
         return False
 
+def listenForReactions(bot):
+
+    print "Number to loop: " + str(len(EXERCISES_FOR_DAY))
+
+    for exercise in EXERCISES_FOR_DAY:
+
+        timestamp = exercise.timestamp
+        response = requests.get("https://slack.com/api/reactions.get?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&full=1&timestamp=" + timestamp)
+        reactions = json.loads(response.text, encoding='utf-8')["message"]["reactions"]
+        for reaction in reactions:
+            if reaction["name"] == "yes":
+                users_who_have_reacted_with_yes = reaction["users"]
+            elif reaction["name"] == "no":
+                users_who_have_reacted_with_no = reaction["users"]
+
+        for user in exercise.users:
+            if user.id in users_who_have_reacted_with_yes:
+                exercise_name = exercise.exercise["name"]
+                print user.real_name + " has completed their " + exercise_name
+                exercise.count_of_acknowledged += 1
+            elif user.id in users_who_have_reacted_with_no:
+                exercise_name = exercise.exercise["name"]
+                print user.real_name + " refuses to complete their " + exercise_name
+                exercise.count_of_acknowledged += 1
+
+        if exercise.count_of_acknowledged == len(exercise.users):
+            EXERCISES_FOR_DAY.remove(exercise)
+            print "Removing Exercise"
+
 def main():
     bot = Bot()
 
@@ -296,6 +348,9 @@ def main():
 
                 # Assign the exercise to someone
                 assignExercise(bot, exercise)
+
+                # Look for reactions
+                listenForReactions(bot)
 
             else:
                 # Sleep the script and check again for office hours

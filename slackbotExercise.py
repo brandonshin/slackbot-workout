@@ -482,17 +482,10 @@ def listenForCommands(bot, all_employees):
                 initiateThrowdown(bot, all_employees, message)
                 break
 
-            # Check for messages specific to a workout
-            for exercise in bot.exercises:
-                found_exercise = False
-                listen_names = exercise['listenNames'].split(';')
-                for listen_name in listen_names:
-                    if listen_name in text:
-                        requests.post(bot.post_message_URL + "&text=" + exercise['tutorial'])
-                        found_exercise = True
-                        break
-                if found_exercise:
-                    break
+            exercise = findExerciseInText(bot, text)
+            if exercise != False:
+                requests.post(bot.post_message_URL + "&text=" + exercise['tutorial'])
+                break
 
             # Check for help command
             if 'help' in text:

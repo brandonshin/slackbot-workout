@@ -63,7 +63,8 @@ class Bot:
     def __init__(self):
         self.setConfiguration()
 
-        self.db = DB(self.channel_name.replace('-', ''))
+        if self.database:
+            self.db = DB(self.channel_name.replace('-', ''))
 
         self.csv_filename = "log" + time.strftime("%Y%m%d-%H%M") + ".csv"
         self.first_run = True
@@ -109,6 +110,7 @@ class Bot:
             self.user_id = settings["botUserId"]
 
             self.debug = settings["debug"]
+            self.database = settings["database"]
 
         self.post_message_URL = "https://slack.com/api/chat.postMessage?token=" + USER_TOKEN_STRING + "&channel=" + self.channel_id + "&as_user=true&link_names=1"
 
@@ -320,8 +322,9 @@ def logExercise(bot,username,exercise,reps,units):
         writer = csv.writer(f)
 
         writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,bot.debug])
-    d = dict(username=username, exercise=exercise, reps=reps, assigned_at=exercise.time_assigned)
-    bot.db.assign(d)
+    if bot.database:
+        d = dict(username=username, exercise=exercise, reps=reps, assigned_at=exercise.time_assigned)
+        bot.db.assign(d)
 
 def saveUsers(bot, dateOfExercise):
     # Write to the command console today's breakdown
@@ -412,8 +415,9 @@ def listenForReactions(bot):
                     print user.real_name + " has completed their " + exercise_name
                     exercise.count_of_acknowledged += 1
                     exercise.completed_users.append(user)
-                    query = dict(username=user.username, exercise=exercise.name, assigned_at=exercise.time_assigned)
-                    bot.db.complete(query)
+                    if bot.database:
+                        query = dict(username=user.username, exercise=exercise.name, assigned_at=exercise.time_assigned)
+                        bot.db.complete(query)
                 elif user.id in users_who_have_reacted_with_no:
                     exercise_name = exercise.exercise["name"]
                     print user.real_name + " refuses to complete their " + exercise_name

@@ -371,7 +371,7 @@ def listenForReactions(bot):
                 elif reaction["name"] == "sleeping":
                     # check if we've already added this reaction to our daily list. if not, add it
                     for userid in reaction["users"]:
-                        if not isReminderInReminderList(userid, timestamp):
+                        if not isReminderInReminderList(userid, exercise):
                             exercise.snoozed_users.append(Reminder(timestamp, datetime.datetime.now(), userid, exercise))
                             if bot.debug:
                                 print str(userid) + " is sleepy"
@@ -469,7 +469,7 @@ def main():
                 if not alreadyRemindedAtEoD and (datetime.datetime.now() + timedelta(minutes=bot.max_countdown) > endOfDay):
                     if bot.debug:
                         print "People need a reminder"
-                    remindPeopleForIncompleteExercisesAtEoD()
+                    remindPeopleForIncompleteExercisesAtEoD(bot)
                     alreadyRemindedAtEoD = True
 
                 time.sleep(5)

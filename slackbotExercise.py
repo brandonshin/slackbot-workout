@@ -408,16 +408,23 @@ def main(argv):
                 # Re-fetch config file if settings have changed
                 bot.setConfiguration(office_config_file)
 
-                # Select time interval
-                if datetime.datetime.now() > time_to_announce:
-                    # If there is an existing exercise, assign it
+                if not bot.debug:
+                    # Select time interval
+                    if datetime.datetime.now() > time_to_announce:
+                        # If there is an existing exercise, assign it
+                        if exercise is not None:
+                            assignExercise(bot, exercise, all_employees)
+
+                        time_interval = selectTimeInterval(bot)
+                        time_to_announce = datetime.datetime.now() + datetime.timedelta(0, time_interval * 60)
+
+                        # Get an exercise to do
+                        exercise = announceExercise(bot, time_interval)
+                else:
                     if exercise is not None:
                         assignExercise(bot, exercise, all_employees)
-
                     time_interval = selectTimeInterval(bot)
                     time_to_announce = datetime.datetime.now() + datetime.timedelta(0, time_interval * 60)
-
-                    # Get an exercise to do
                     exercise = announceExercise(bot, time_interval)
 
 

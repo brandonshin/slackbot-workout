@@ -13,6 +13,7 @@ import psycopg2
 from pprint import pprint
 from User import User
 from multiprocessing import Process
+from Database import DB
 
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
@@ -22,41 +23,6 @@ BAMBOO_API_KEY =  os.environ['BAMBOO_API_KEY']
 EXERCISES_FOR_DAY = []
 
 HASH = "%23"
-
-# Database
-class DB:
-    def __init__(self, table_name):
-        self.table_name = table_name
-        self.connect()
-
-    def __del__(self):
-        print "Closing connections"
-        self.cursor().close()
-        self.connection.close()
-
-    def connect(self):
-        self.connection = psycopg2.connect(database="slackbotworkout")
-
-    def cursor(self):
-        return self.connection.cursor()
-
-    def ensure_connected(self):
-        try:
-            self.connection.isolation_level
-        except OperationalError as oe:
-            self.connect()
-
-    def assign(self, values):
-        self.ensure_connected()
-        add_row = ("INSERT INTO " + self.table_name + "(username, exercise, reps, assigned_at) VALUES (%(username)s, %(exercise)s, %(reps)s, %(assigned_at)s)")
-        self.cursor().execute(add_row, values)
-        self.connection.commit()
-
-    def complete(self, query):
-        self.ensure_connected()
-        update_row = ("UPDATE " + self.table_name + " SET completed_at = now() WHERE username = %(username)s AND exercise = %(exercise)s and assigned_at = %(assigned_at)s")
-        self.cursor().execute(update_row, values)
-        self.connection.commit()
     
 
 # Configuration values to be set in setConfiguration
@@ -321,7 +287,7 @@ def logExercise(bot,username,exercise,reps,units):
 
         writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,bot.debug])
     if bot.database:
-        d = dict(username=username, exercise=exercise, reps=reps, assigned_at=exercise.time_assigned)
+        d = dict(username=username, exercise=exercise, reps=reps, assigned_at=str(datetime.datetime.now))
         bot.db.assign(d)
 
 def saveUsers(bot, dateOfExercise):

@@ -9,20 +9,61 @@ import pickle
 import os.path
 import datetime
 from datetime import timedelta
+import psycopg2
+from pprint import pprint
 from User import User
 
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
 URL_TOKEN_STRING =  os.environ['SLACK_URL_TOKEN_STRING']
 BAMBOO_API_KEY =  os.environ['BAMBOO_API_KEY']
+
 EXERCISES_FOR_DAY = []
 
 HASH = "%23"
+
+# Database
+class DB:
+    def __init__(self, table_name):
+        self.table_name = table_name
+        self.connect()
+
+    def __del__(self):
+        print "Closing connections"
+        self.cursor().close()
+        self.connection.close()
+
+    def connect(self):
+        self.connection = psycopg2.connect(database="slackbotworkout")
+
+    def cursor(self):
+        return self.connection.cursor()
+
+    def ensure_connected(self):
+        try:
+            self.connection.isolation_level
+        except OperationalError as oe:
+            self.connect()
+
+    def assign(self, values):
+        self.ensure_connected()
+        add_row = ("INSERT INTO " + self.table_name + "(username, exercise, reps, assigned_at) VALUES (%(username)s, %(exercise)s, %(reps)s, %(assigned_at)s)")
+        self.cursor().execute(add_row, values)
+        self.connection.commit()
+
+    def complete(self, query):
+        self.ensure_connected()
+        update_row = ("UPDATE " + self.table_name + " SET completed_at = now() WHERE username = %(username)s AND exercise = %(exercise)s and assigned_at = %(assigned_at)s")
+        self.cursor().execute(update_row, values)
+        self.connection.commit()
+    
 
 # Configuration values to be set in setConfiguration
 class Bot:
     def __init__(self):
         self.setConfiguration()
+
+        self.db = DB(self.channel_name.replace('-', ''))
 
         self.csv_filename = "log" + time.strftime("%Y%m%d-%H%M") + ".csv"
         self.first_run = True
@@ -279,6 +320,8 @@ def logExercise(bot,username,exercise,reps,units):
         writer = csv.writer(f)
 
         writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,bot.debug])
+    d = dict(username=username, exercise=exercise, reps=reps, assigned_at=exercise.time_assigned)
+    bot.db.assign(d)
 
 def saveUsers(bot, dateOfExercise):
     # Write to the command console today's breakdown
@@ -369,6 +412,8 @@ def listenForReactions(bot):
                     print user.real_name + " has completed their " + exercise_name
                     exercise.count_of_acknowledged += 1
                     exercise.completed_users.append(user)
+                    query = dict(username=user.username, exercise=exercise.name, assigned_at=exercise.time_assigned)
+                    bot.db.complete(query)
                 elif user.id in users_who_have_reacted_with_no:
                     exercise_name = exercise.exercise["name"]
                     print user.real_name + " refuses to complete their " + exercise_name

@@ -364,9 +364,9 @@ def initiateThrowdown(bot, all_employees, message):
             break
 
     exercise = findExerciseInText(bot, text)
-    reps = findIntInText(bot, words)
+    exercise_reps = findIntInText(bot, words)
 
-    if challenger is not None and exercise != False and reps != False:
+    if challenger is not None and exercise != False and exercise_reps != False:
         for user in active_users:
             for word in words:
                 if user.id.lower() in word:
@@ -374,8 +374,21 @@ def initiateThrowdown(bot, all_employees, message):
                     print "Found a challengee"
 
         if len(challengees) > 0:
-            challenge_text = "You hear that, " + challengees[0].real_name + "? " + challenger.real_name + " is challenging you, " + reps + " " + exercise + " now!"
-            requests.post(bot.post_message_URL + "&text=" + challenge_text)
+
+            for challengee in challengees:
+                challengee.addExercise(exercise, exercise_reps)
+                logExercise(bot,challengee.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
+
+            challenge_text = "You hear that, " + challengees[0].real_name + "? " + challenger.real_name + " is challenging you, " + str(exercise_reps) + " " + exercise['name'] + " now!"
+            response = requests.post(bot.post_message_URL + "&text=" + challenge_text)
+
+            last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
+            requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+            requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+
+            EXERCISES_FOR_DAY.append(Exercises(exercise, exercise_reps, challengees, last_message_timestamp))
+
+            print challenge_text
 
 def findExerciseInText(bot, text):
 
@@ -386,7 +399,7 @@ def findExerciseInText(bot, text):
         for listen_name in listen_names:
             if listen_name in text:
                 print "Found exercise in text"
-                found_exercise = exercise['name']
+                found_exercise = exercise
                 break
         if found_exercise:
             break

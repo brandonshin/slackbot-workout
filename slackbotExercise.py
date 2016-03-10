@@ -35,6 +35,8 @@ class Bot:
         # round robin store
         self.user_queue = []
 
+        self.last_listen_ts = '0'
+
     def loadUserCache(self):
         if os.path.isfile('user_cache.save'):
             with open('user_cache.save','rb') as f:
@@ -202,8 +204,9 @@ def announceExercise(bot, minute_interval):
     # Announce the exercise to the thread
     if not bot.debug:
         response = requests.post(bot.post_message_URL + "&text=" + lottery_announcement)
+        if bot.last_listen_ts == '0':
+            bot.last_listen_ts = json.loads(response.text, encoding='utf-8')["ts"]
     print lottery_announcement
-
     return exercise
 
 
@@ -381,6 +384,40 @@ def remindPeopleForIncompleteExercises():
             if user.id not in exercise.completed_users:
                 print user.username + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
 
+def listenForCommands(bot):
+    response = requests.get("https://slack.com/api/channels.history?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&oldest=" + bot.last_listen_ts)
+    response_json = json.loads(response.text, encoding='utf-8')
+    messages = response_json["messages"]
+    if not messages:
+        return
+
+    last_time = messages[-1]['ts']
+    bot.last_listen_ts = last_time
+    command_start = '<@'+bot.user_id.lower()+'>'
+    for message in messages:
+        text = message['text'].lower()
+        if text.startswith(command_start):
+
+            # Check for messages specific to a workout
+            for exercise in bot.exercises:
+                found_exercise = False
+                listen_names = exercise['listenNames'].split(';')
+                for listen_name in listen_names:
+                    if listen_name in text:
+                        requests.post(bot.post_message_URL + "&text=" + exercise['tutorial'])
+                        found_exercise = True
+                        break
+                if found_exercise:
+                    break
+
+            # Check for help command
+            if 'help' in text:
+                help_message = 'Just send me a name of an exercies, and I will teach you how to do it.'
+                for exercise in bot.exercises:
+                    help_message += '\n ' + exercise['name']
+                requests.post(bot.post_message_URL + "&text=" + help_message)
+                break
+
 def main():
     bot = Bot()
     isNewDay = False
@@ -388,6 +425,7 @@ def main():
 
     time_to_announce = datetime.datetime.min
     exercise = None
+
     try:
         while True:
             if isOfficeHours(bot):
@@ -419,6 +457,7 @@ def main():
 
 
                 listenForReactions(bot)
+                listenForCommands(bot)
 
                 # remind slackers to do their workouts at the EoD
                 endOfDay =  datetime.datetime.now().replace(hour=bot.office_hours_end)

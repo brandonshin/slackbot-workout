@@ -371,6 +371,11 @@ def initiateThrowdown(bot, all_employees, message):
         requests.post(bot.post_message_URL + "&text=" + already_challenged_text)
         return
 
+    if exercise_reps != False and exercise != False and exercise_reps > exercise['maxReps']:
+        too_many_reps_text = 'Please select a number under ' + str(exercise['maxReps']) + ' for that exercise, ' + challenger.real_name
+        requests.post(bot.post_message_URL + "&text=" + too_many_reps_text)
+        return
+
     if challenger is not None and exercise != False and exercise_reps != False:
         for user in active_users:
             for word in words:
@@ -404,8 +409,7 @@ def findExerciseInText(bot, text):
         listen_names = exercise['listenNames'].split(';')
         for listen_name in listen_names:
             if listen_name in text:
-                found_exercise = exercise
-                break
+                return exercise
 
     return found_exercise
 
@@ -515,6 +519,7 @@ def main(argv):
                 # set new day based on the first time we entered office hours
                 if not isNewDay:
                     EXERCISES_FOR_DAY = []
+                    resetChallenges(bot)
                     isNewDay = True
                     alreadyRemindedAtEoD = False
                     # load all employees at the beginning of the day. Only once a day so we don't bombard bamboo

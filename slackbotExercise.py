@@ -8,12 +8,13 @@ from random import shuffle
 import pickle
 import os.path
 import datetime
-
+from pprint import pprint
 from User import User
 
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
 URL_TOKEN_STRING =  os.environ['SLACK_URL_TOKEN_STRING']
+BAMBOO_API_KEY =  os.environ['BAMBOO_API_KEY']
 EXERCISES_FOR_DAY = []
 
 HASH = "%23"
@@ -32,7 +33,6 @@ class Bot:
 
         # round robin store
         self.user_queue = []
-
 
     def loadUserCache(self):
         if os.path.isfile('user_cache.save'):
@@ -91,8 +91,8 @@ class Exercises:
 '''
 Selects an active user from a list of users
 '''
-def selectUser(bot, exercise):
-    active_users = fetchActiveUsers(bot)
+def selectUser(bot, exercise, all_employees):
+    active_users = fetchActiveUsers(bot, all_employees)
 
     # Add all active users not already in the user queue
     # Shuffles to randomly add new active users
@@ -133,9 +133,27 @@ def selectUser(bot, exercise):
 
 
 '''
+Fetches all of the employees from Bamboohr
+'''
+def fetchAllEmployeesFromBamboo(bot):
+    headers = {'Authorization': 'Basic %s' % BAMBOO_API_KEY, 'Accept':'application/json'}
+    response = requests.get("https://api.bamboohr.com/api/gateway.php/hudl/v1/employees/directory", headers=headers)
+    all_employees = []
+    if response.ok:
+        if bot.debug:
+            print "called bamboo successfully"
+        all_employees = json.loads(response.text)["employees"]
+
+        if bot.debug:
+            print "number of users " + str(len(all_employees))
+    else:
+        response.raise_for_status()
+    return all_employees
+
+'''
 Fetches a list of all active users in the channel
 '''
-def fetchActiveUsers(bot):
+def fetchActiveUsers(bot, all_employees):
     # Check for new members
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
     response = requests.get("https://slack.com/api/channels.info", params=params)
@@ -148,7 +166,7 @@ def fetchActiveUsers(bot):
         if user_id != bot.user_id:
             # Add user to the cache if not already
             if user_id not in bot.user_cache:
-                bot.user_cache[user_id] = User(user_id)
+                bot.user_cache[user_id] = User(user_id, all_employees)
                 if not bot.first_run:
                     # Push our new users near the front of the queue!
                     bot.user_queue.insert(2,bot.user_cache[user_id])
@@ -206,7 +224,7 @@ def selectNextTimeInterval(bot):
 '''
 Selects a person to do the already-selected exercise
 '''
-def assignExercise(bot, exercise):
+def assignExercise(bot, exercise, all_employees):
     # Select number of reps
     exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
 
@@ -225,7 +243,7 @@ def assignExercise(bot, exercise):
         logExercise(bot,"@channel",exercise["name"],exercise_reps,exercise["units"])
 
     else:
-        winners = [selectUser(bot, exercise) for i in range(bot.num_people_per_callout)]
+        winners = [selectUser(bot, exercise, all_employees) for i in range(bot.num_people_per_callout)]
 
         for i in range(bot.num_people_per_callout):
             winner_announcement += str(winners[i].getUserHandle())
@@ -363,6 +381,8 @@ def main():
                 #set new day based on the first time we entered office hours
                 if not isNewDay:
                     isNewDay = True
+                    #load all employees at the beginning of the day. Only once a day so we don't bombard bamboo
+                    all_employees = fetchAllEmployeesFromBamboo(bot)
                     if bot.debug:
                         print "it's a new day"
                         
@@ -373,7 +393,7 @@ def main():
                 exercise = selectExerciseAndStartTime(bot)
 
                 # Assign the exercise to someone
-                assignExercise(bot, exercise)
+                assignExercise(bot, exercise, all_employees)
 
                 # Look for reactions
                 listenForReactions(bot)

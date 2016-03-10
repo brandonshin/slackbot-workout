@@ -364,8 +364,9 @@ def initiateThrowdown(bot, all_employees, message):
             break
 
     exercise = findExerciseInText(bot, text)
+    reps = findIntInText(bot, words)
 
-    if challenger is not None and exercise != False:
+    if challenger is not None and exercise != False and reps != False:
         for user in active_users:
             for word in words:
                 if user.id.lower() in word:
@@ -373,7 +374,7 @@ def initiateThrowdown(bot, all_employees, message):
                     print "Found a challengee"
 
         if len(challengees) > 0:
-            challenge_text = "You hear that, " + challengees[0].real_name + "? " + challenger.real_name + " is challenging you, " + exercise + " now!"
+            challenge_text = "You hear that, " + challengees[0].real_name + "? " + challenger.real_name + " is challenging you, " + reps + " " + exercise + " now!"
             requests.post(bot.post_message_URL + "&text=" + challenge_text)
 
 def findExerciseInText(bot, text):
@@ -391,6 +392,16 @@ def findExerciseInText(bot, text):
             break
 
     return found_exercise
+
+def findIntInText(bot, words):
+
+    for word in words:
+        if all(char.isdigit() for char in word):
+            return int(word)
+
+    return False
+
+
 
 def listenForReactions(bot):
 
@@ -465,6 +476,10 @@ def listenForCommands(bot, all_employees):
                     help_message += '\n ' + exercise['name']
                 requests.post(bot.post_message_URL + "&text=" + help_message)
                 break
+
+            else:
+                prompt_actual_command = "I'm sorry, I can't understand you"
+                requests.post(bot.post_message_URL + "&text=" + prompt_actual_command)
 
 
 def main(argv):

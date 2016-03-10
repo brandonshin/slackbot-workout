@@ -3,6 +3,7 @@ import time
 import requests
 import json
 import csv
+import sys
 import os
 from random import shuffle
 import pickle
@@ -22,8 +23,8 @@ HASH = "%23"
 
 # Configuration values to be set in setConfiguration
 class Bot:
-    def __init__(self):
-        self.setConfiguration()
+    def __init__(self, office_config_file):
+        self.setConfiguration(office_config_file)
 
         self.csv_filename = "log" + time.strftime("%Y%m%d-%H%M") + ".csv"
         self.first_run = True
@@ -49,9 +50,9 @@ class Bot:
 
     Runs after every callout so that settings can be changed realtime
     '''
-    def setConfiguration(self):
+    def setConfiguration(self, office_config_file):
         # Read variables fromt the configuration file
-        with open('config.json') as f:
+        with open(office_config_file) as f:
             settings = json.load(f)
 
             self.team_domain = settings["teamDomain"]
@@ -381,8 +382,10 @@ def remindPeopleForIncompleteExercises():
             if user.id not in exercise.completed_users:
                 print user.username + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
 
-def main():
-    bot = Bot()
+def main(argv):
+
+    office_config_file = sys.argv[1]
+    bot = Bot(office_config_file)
     isNewDay = False
     alreadyRemindedAtEoD = False
 
@@ -401,7 +404,7 @@ def main():
                         print "it's a new day"
 
                 # Re-fetch config file if settings have changed
-                bot.setConfiguration()
+                bot.setConfiguration(office_config_file)
 
                 # Select time interval
                 time_interval = selectTimeInterval(bot)
@@ -443,4 +446,4 @@ def main():
         saveUsers(bot, str(datetime.datetime.now()))
 
 
-main()
+main(sys.argv)

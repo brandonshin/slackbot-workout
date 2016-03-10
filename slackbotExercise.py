@@ -366,6 +366,11 @@ def initiateThrowdown(bot, all_employees, message):
     exercise = findExerciseInText(bot, text)
     exercise_reps = findIntInText(bot, words)
 
+    if challenger.has_challenged_today == True:
+        already_challenged_text = 'You can only give out a challenge once a day ' + challenger.real_name
+        requests.post(bot.post_message_URL + "&text=" + already_challenged_text)
+        return
+
     if challenger is not None and exercise != False and exercise_reps != False:
         for user in active_users:
             for word in words:
@@ -379,6 +384,7 @@ def initiateThrowdown(bot, all_employees, message):
                 challengee.addExercise(exercise, exercise_reps)
                 logExercise(bot,challengee.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
 
+            challenger.has_challenged_today = True
             challenge_text = "You hear that, " + challengees[0].real_name + "? " + challenger.real_name + " is challenging you, " + str(exercise_reps) + " " + exercise['name'] + " now!"
             response = requests.post(bot.post_message_URL + "&text=" + challenge_text)
 
@@ -414,6 +420,13 @@ def findIntInText(bot, words):
 
     return False
 
+def resetChallenges(bot):
+
+    for user_id in bot.user_cache:
+        user = bot.user_cache[user_id]
+        user.has_challenged_today = False
+
+    print "Reset users' challenges"
 
 
 def listenForReactions(bot):
@@ -553,12 +566,15 @@ def main(argv):
                     remindPeopleForIncompleteExercises()
                     alreadyRemindedAtEoD = True
 
-                time.sleep(5)
+                time.sleep(1)
 
             else:
                 # write out the leaderboard the first time of the day we hit non-working hours
                 if isNewDay:
                     saveUsers(bot, str(datetime.datetime.now()))
+
+                    # Reset all users to have challenges
+                    resetChallenges(bot)
                     isNewDay = False
 
                 # Sleep the script and check again for office hoursqa.hu

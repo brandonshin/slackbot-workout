@@ -191,7 +191,7 @@ def selectTimeInterval(bot):
     next_time_interval = selectNextTimeInterval(bot)
     return next_time_interval/60
 
-def selectExerciseAndStartTime(bot, minute_interval):
+def selectExercise(bot, minute_interval):
 
     exercise = selectExercise(bot)
 
@@ -260,7 +260,7 @@ def assignExercise(bot, exercise, all_employees):
     last_message_timestamp = str(datetime.datetime.now())
     # Announce the user
     if not bot.debug:
-        response = requests.post(bot.post_message_URL + "&text=test") #+ winner_announcement)
+        response = requests.post(bot.post_message_URL + "&text=" + winner_announcement)
         last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
         requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
         requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
@@ -384,8 +384,8 @@ def main():
     bot = Bot()
     isNewDay = False
     alreadyRemindedAtEoD = False
-    try:
 
+    try:
         while True:
             if isOfficeHours(bot):
 
@@ -407,7 +407,7 @@ def main():
                 time_to_assign = time.time() + (time_interval * 60)
 
                 # Get an exercise to do
-                exercise = selectExerciseAndStartTime(bot, time_interval)
+                exercise = selectExercise(bot, time_interval)
 
                 # Loop while listening until it is time to assign
                 while time.time() < time_to_assign:

@@ -12,6 +12,7 @@ from datetime import timedelta
 import psycopg2
 from pprint import pprint
 from User import User
+from multiprocessing import Process
 
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
@@ -123,8 +124,10 @@ class Exercises:
         self.users = users
         self.timestamp = timestamp
         self.count_of_acknowledged = 0
+        self.time_assigned = time.time()
 
         self.completed_users = []
+        self.refused_users = []
 
     def __str__(self):
         return "An instance of class Exercises with state: excercise=%s users=%s, timestamp=%s" % (self.exercise, self.users, self.timestamp)
@@ -226,12 +229,14 @@ def fetchActiveUsers(bot, all_employees):
     return active_users
 
 '''
-Selects an exercise and start time, and sleeps until the time
-period has past.
+Select time interval before next exercise
 '''
-def selectExerciseAndStartTime(bot):
+def selectTimeInterval(bot):
     next_time_interval = selectNextTimeInterval(bot)
-    minute_interval = next_time_interval/60
+    return next_time_interval/60
+
+def announceExercise(bot, minute_interval):
+
     exercise = selectExercise(bot)
 
     # Announcement String of next lottery time
@@ -241,13 +246,6 @@ def selectExerciseAndStartTime(bot):
     if not bot.debug:
         response = requests.post(bot.post_message_URL + "&text=" + lottery_announcement)
     print lottery_announcement
-
-    # Sleep the script until time is up
-    if not bot.debug:
-        time.sleep(next_time_interval)
-    else:
-        # If debugging, once every 5 seconds
-        time.sleep(5)
 
     return exercise
 
@@ -395,8 +393,6 @@ def isOfficeHours(bot):
 
 def listenForReactions(bot):
 
-    print "Number to loop: " + str(len(EXERCISES_FOR_DAY))
-
     if not bot.debug:
         for exercise in EXERCISES_FOR_DAY:
 
@@ -410,18 +406,18 @@ def listenForReactions(bot):
                     users_who_have_reacted_with_no = reaction["users"]
 
             for user in exercise.users:
-                if user.id in users_who_have_reacted_with_yes:
+                if user.id in users_who_have_reacted_with_yes and user not in exercise.completed_users:
                     exercise_name = exercise.exercise["name"]
-                    print user.real_name + " has completed their " + exercise_name
+                    print user.real_name + " has completed their " + exercise_name + " after " + str((time.time() - exercise.time_assigned)) + " seconds"
                     exercise.count_of_acknowledged += 1
                     exercise.completed_users.append(user)
-                    if bot.database:
-                        query = dict(username=user.username, exercise=exercise.name, assigned_at=exercise.time_assigned)
-                        bot.db.complete(query)
-                elif user.id in users_who_have_reacted_with_no:
+                elif user.id in users_who_have_reacted_with_no and user not in exercise.refused_users and user not in exercise.completed_users:
                     exercise_name = exercise.exercise["name"]
                     print user.real_name + " refuses to complete their " + exercise_name
                     exercise.count_of_acknowledged += 1
+                    if bot.database:
+                        query = dict(username=user.username, exercise=exercise.name, assigned_at=exercise.time_assigned)
+                        bot.db.complete(query)
 
             if exercise.count_of_acknowledged == len(exercise.users):
                 EXERCISES_FOR_DAY.remove(exercise)
@@ -438,6 +434,9 @@ def main():
     bot = Bot()
     isNewDay = False
     alreadyRemindedAtEoD = False
+
+    time_to_announce = datetime.datetime.min
+    exercise = None
     try:
         while True:
             if isOfficeHours(bot):
@@ -451,17 +450,23 @@ def main():
                     all_employees = fetchAllEmployeesFromBamboo(bot)
                     if bot.debug:
                         print "it's a new day"
-                        
+
                 # Re-fetch config file if settings have changed
                 bot.setConfiguration()
 
-                # Get an exercise to do
-                exercise = selectExerciseAndStartTime(bot)
+                # Select time interval
+                if datetime.datetime.now() > time_to_announce:
+                    # If there is an existing exercise, assign it
+                    if exercise is not None:
+                        assignExercise(bot, exercise, all_employees)
 
-                # Assign the exercise to someone
-                assignExercise(bot, exercise, all_employees)
+                    time_interval = selectTimeInterval(bot)
+                    time_to_announce = datetime.datetime.now() + datetime.timedelta(0, time_interval * 60)
 
-                # Look for reactions
+                    # Get an exercise to do
+                    exercise = announceExercise(bot, time_interval)
+
+
                 listenForReactions(bot)
 
                 # remind slackers to do their workouts at the EoD
@@ -472,13 +477,15 @@ def main():
                     remindPeopleForIncompleteExercises()
                     alreadyRemindedAtEoD = True
 
+                time.sleep(5)
+
             else:
                 # write out the leaderboard the first time of the day we hit non-working hours
                 if isNewDay:
                     saveUsers(bot, str(datetime.datetime.now()))
                     isNewDay = False
-                    
-                # Sleep the script and check again for office hours
+
+                # Sleep the script and check again for office hoursqa.hu
                 if not bot.debug:
                     time.sleep(5*60) # Sleep 5 minutes
                 else:

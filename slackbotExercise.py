@@ -348,6 +348,49 @@ def isOfficeHours(bot):
             print "out office hours"
         return False
 
+def initiateThrowdown(bot, all_employees, message):
+
+    text = message['text'].lower()
+    words = text.split()
+    challengerId = message['user']
+
+    active_users = fetchActiveUsers(bot, all_employees)
+    challengees = []
+
+    for user in active_users:
+        if user.id == challengerId:
+            challenger = user
+            break
+
+    exercise = findExerciseInText(bot, text)
+
+    if challenger is not None and exercise != False:
+        for user in active_users:
+            for word in words:
+                if user.id.lower() in word:
+                    challengees.append(user)
+                    print "Found a challengee"
+
+        if len(challengees) > 0:
+            challenge_text = "You hear that, " + challengees[0].real_name + "? " + challenger.real_name + " is challenging you, " + exercise + " now!"
+            requests.post(bot.post_message_URL + "&text=" + challenge_text)
+
+def findExerciseInText(bot, text):
+
+    # Check for messages specific to a workout
+    for exercise in bot.exercises:
+        found_exercise = False
+        listen_names = exercise['listenNames'].split(';')
+        for listen_name in listen_names:
+            if listen_name in text:
+                print "Found exercise in text"
+                found_exercise = exercise['name']
+                break
+        if found_exercise:
+            break
+
+    return found_exercise
+
 def listenForReactions(bot):
 
     if not bot.debug:
@@ -384,7 +427,7 @@ def remindPeopleForIncompleteExercises():
             if user.id not in exercise.completed_users:
                 print user.username + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
 
-def listenForCommands(bot):
+def listenForCommands(bot, all_employees):
     response = requests.get("https://slack.com/api/channels.history?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&oldest=" + bot.last_listen_ts)
     response_json = json.loads(response.text, encoding='utf-8')
     messages = response_json["messages"]
@@ -397,6 +440,10 @@ def listenForCommands(bot):
     for message in messages:
         text = message['text'].lower()
         if text.startswith(command_start):
+
+            if 'challenge' in text:
+                initiateThrowdown(bot, all_employees, message)
+                break
 
             # Check for messages specific to a workout
             for exercise in bot.exercises:
@@ -417,6 +464,8 @@ def listenForCommands(bot):
                     help_message += '\n ' + exercise['name']
                 requests.post(bot.post_message_URL + "&text=" + help_message)
                 break
+
+
 
 def main():
     bot = Bot()
@@ -457,7 +506,7 @@ def main():
 
 
                 listenForReactions(bot)
-                listenForCommands(bot)
+                listenForCommands(bot, all_employees)
 
                 # remind slackers to do their workouts at the EoD
                 endOfDay =  datetime.datetime.now().replace(hour=bot.office_hours_end)

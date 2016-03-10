@@ -81,6 +81,7 @@ class Exercises:
         self.users = users
         self.timestamp = timestamp
         self.count_of_acknowledged = 0
+        self.time_assigned = time.time()
 
         self.completed_users = []
         self.refused_users = []
@@ -191,7 +192,7 @@ def selectTimeInterval(bot):
     next_time_interval = selectNextTimeInterval(bot)
     return next_time_interval/60
 
-def selectExercise(bot, minute_interval):
+def announceExercise(bot, minute_interval):
 
     exercise = selectExercise(bot)
 
@@ -361,7 +362,7 @@ def listenForReactions(bot):
             for user in exercise.users:
                 if user.id in users_who_have_reacted_with_yes and user not in exercise.completed_users:
                     exercise_name = exercise.exercise["name"]
-                    print user.real_name + " has completed their " + exercise_name
+                    print user.real_name + " has completed their " + exercise_name + " after " + str((time.time() - exercise.time_assigned)) + " seconds"
                     exercise.count_of_acknowledged += 1
                     exercise.completed_users.append(user)
                 elif user.id in users_who_have_reacted_with_no and user not in exercise.refused_users and user not in exercise.completed_users:
@@ -407,7 +408,7 @@ def main():
                 time_to_assign = time.time() + (time_interval * 60)
 
                 # Get an exercise to do
-                exercise = selectExercise(bot, time_interval)
+                exercise = announceExercise(bot, time_interval)
 
                 # Loop while listening until it is time to assign
                 while time.time() < time_to_assign:
@@ -431,7 +432,7 @@ def main():
                     saveUsers(bot, str(datetime.datetime.now()))
                     isNewDay = False
 
-                # Sleep the script and check again for office hours
+                # Sleep the script and check again for office hoursqa.hu
                 if not bot.debug:
                     time.sleep(5*60) # Sleep 5 minutes
                 else:

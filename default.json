@@ -49,7 +49,7 @@
       "maxReps": 50,
       "units": "second",
       "tutorial": "Tutorial for wall sits here",
-      "listenNames": "wall sits;wall sit"
+      "listenNames": "wall sits;wall sit;wallsit;wallsits"
     },
     {
       "id": 3,

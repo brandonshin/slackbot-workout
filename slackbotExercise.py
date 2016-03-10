@@ -8,7 +8,7 @@ from random import shuffle
 import pickle
 import os.path
 import datetime
-from pprint import pprint
+from datetime import timedelta
 from User import User
 from multiprocessing import Process
 
@@ -74,12 +74,16 @@ class Bot:
 
 class Exercises:
 
-    def __init__(self, exercise, users, timestamp):
+    def __init__(self, exercise, exercise_reps, users, timestamp):
 
         self.exercise = exercise
+        self.exercise_reps = exercise_reps
         self.users = users
         self.timestamp = timestamp
         self.count_of_acknowledged = 0
+
+        self.completed_users = []
+        self.refused_users = []
 
     def __str__(self):
         return "An instance of class Exercises with state: excercise=%s users=%s, timestamp=%s" % (self.exercise, self.users, self.timestamp)
@@ -253,13 +257,15 @@ def assignExercise(bot, exercise, all_employees):
             winners[i].addExercise(exercise, exercise_reps)
             logExercise(bot,winners[i].getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
 
+    last_message_timestamp = str(datetime.datetime.now())
     # Announce the user
     if not bot.debug:
         response = requests.post(bot.post_message_URL + "&text=test") #+ winner_announcement)
         last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
         requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
         requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
-        EXERCISES_FOR_DAY.append(Exercises(exercise, winners, last_message_timestamp))
+
+    EXERCISES_FOR_DAY.append(Exercises(exercise, exercise_reps, winners, last_message_timestamp))
 
     print winner_announcement
 
@@ -340,43 +346,55 @@ def isOfficeHours(bot):
 
 def listenForReactions(bot):
 
+    if not bot.debug:
+        for exercise in EXERCISES_FOR_DAY:
+
+            timestamp = exercise.timestamp
+            response = requests.get("https://slack.com/api/reactions.get?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&full=1&timestamp=" + timestamp)
+            reactions = json.loads(response.text, encoding='utf-8')["message"]["reactions"]
+            for reaction in reactions:
+                if reaction["name"] == "yes":
+                    users_who_have_reacted_with_yes = reaction["users"]
+                elif reaction["name"] == "no":
+                    users_who_have_reacted_with_no = reaction["users"]
+
+            for user in exercise.users:
+                if user.id in users_who_have_reacted_with_yes and user not in exercise.completed_users:
+                    exercise_name = exercise.exercise["name"]
+                    print user.real_name + " has completed their " + exercise_name
+                    exercise.count_of_acknowledged += 1
+                    exercise.completed_users.append(user)
+                elif user.id in users_who_have_reacted_with_no and user not in exercise.refused_users and user not in exercise.completed_users:
+                    exercise_name = exercise.exercise["name"]
+                    print user.real_name + " refuses to complete their " + exercise_name
+                    exercise.count_of_acknowledged += 1
+
+            if exercise.count_of_acknowledged == len(exercise.users):
+                EXERCISES_FOR_DAY.remove(exercise)
+                print "Removing Exercise"
+
+def remindPeopleForIncompleteExercises():
+
     for exercise in EXERCISES_FOR_DAY:
-
-        timestamp = exercise.timestamp
-        response = requests.get("https://slack.com/api/reactions.get?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&full=1&timestamp=" + timestamp)
-        reactions = json.loads(response.text, encoding='utf-8')["message"]["reactions"]
-        for reaction in reactions:
-            if reaction["name"] == "yes":
-                users_who_have_reacted_with_yes = reaction["users"]
-            elif reaction["name"] == "no":
-                users_who_have_reacted_with_no = reaction["users"]
-
         for user in exercise.users:
-            if user.id in users_who_have_reacted_with_yes:
-                exercise_name = exercise.exercise["name"]
-                print user.real_name + " has completed their " + exercise_name
-                exercise.count_of_acknowledged += 1
-            elif user.id in users_who_have_reacted_with_no:
-                exercise_name = exercise.exercise["name"]
-                print user.real_name + " refuses to complete their " + exercise_name
-                exercise.count_of_acknowledged += 1
-
-        if exercise.count_of_acknowledged == len(exercise.users):
-            EXERCISES_FOR_DAY.remove(exercise)
-            print "Removing Exercise"
+            if user.id not in exercise.completed_users:
+                print user.username + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
 
 def main():
     bot = Bot()
     isNewDay = False
+    alreadyRemindedAtEoD = False
     try:
 
         while True:
             if isOfficeHours(bot):
 
-                #set new day based on the first time we entered office hours
+                # set new day based on the first time we entered office hours
                 if not isNewDay:
+                    EXERCISES_FOR_DAY = []
                     isNewDay = True
-                    #load all employees at the beginning of the day. Only once a day so we don't bombard bamboo
+                    alreadyRemindedAtEoD = False
+                    # load all employees at the beginning of the day. Only once a day so we don't bombard bamboo
                     all_employees = fetchAllEmployeesFromBamboo(bot)
                     if bot.debug:
                         print "it's a new day"
@@ -391,14 +409,24 @@ def main():
                 # Get an exercise to do
                 exercise = selectExerciseAndStartTime(bot, time_interval)
 
+                # Loop while listening until it is time to assign
                 while time.time() < time_to_assign:
                     listenForReactions(bot)
                     time.sleep(5)
 
+                # Assign exercise to users
                 assignExercise(bot, exercise, all_employees)
 
+                # remind slackers to do their workouts at the EoD
+                endOfDay =  datetime.datetime.now().replace(hour=bot.office_hours_end)
+                if not alreadyRemindedAtEoD and (datetime.datetime.now() + timedelta(minutes=bot.max_countdown) > endOfDay):
+                    if bot.debug:
+                        print "People need a reminder"
+                    remindPeopleForIncompleteExercises()
+                    alreadyRemindedAtEoD = True
+
             else:
-                #write out the leaderboard the first time of the day we hit non-working hours
+                # write out the leaderboard the first time of the day we hit non-working hours
                 if isNewDay:
                     saveUsers(bot, str(datetime.datetime.now()))
                     isNewDay = False

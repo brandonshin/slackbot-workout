@@ -10,6 +10,7 @@ import os.path
 import datetime
 from pprint import pprint
 from User import User
+from multiprocessing import Process
 
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
@@ -180,12 +181,14 @@ def fetchActiveUsers(bot, all_employees):
     return active_users
 
 '''
-Selects an exercise and start time, and sleeps until the time
-period has past.
+Select time interval before next exercise
 '''
-def selectExerciseAndStartTime(bot):
+def selectTimeInterval(bot):
     next_time_interval = selectNextTimeInterval(bot)
-    minute_interval = next_time_interval/60
+    return next_time_interval/60
+
+def selectExerciseAndStartTime(bot, minute_interval):
+
     exercise = selectExercise(bot)
 
     # Announcement String of next lottery time
@@ -195,13 +198,6 @@ def selectExerciseAndStartTime(bot):
     if not bot.debug:
         response = requests.post(bot.post_message_URL + "&text=" + lottery_announcement)
     print lottery_announcement
-
-    # Sleep the script until time is up
-    if not bot.debug:
-        time.sleep(next_time_interval)
-    else:
-        # If debugging, once every 5 seconds
-        time.sleep(5)
 
     return exercise
 
@@ -259,7 +255,7 @@ def assignExercise(bot, exercise, all_employees):
 
     # Announce the user
     if not bot.debug:
-        response = requests.post(bot.post_message_URL + "&text=" + winner_announcement)
+        response = requests.post(bot.post_message_URL + "&text=test") #+ winner_announcement)
         last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
         requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
         requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
@@ -344,8 +340,6 @@ def isOfficeHours(bot):
 
 def listenForReactions(bot):
 
-    print "Number to loop: " + str(len(EXERCISES_FOR_DAY))
-
     for exercise in EXERCISES_FOR_DAY:
 
         timestamp = exercise.timestamp
@@ -375,6 +369,7 @@ def main():
     bot = Bot()
     isNewDay = False
     try:
+
         while True:
             if isOfficeHours(bot):
 
@@ -385,25 +380,29 @@ def main():
                     all_employees = fetchAllEmployeesFromBamboo(bot)
                     if bot.debug:
                         print "it's a new day"
-                        
+
                 # Re-fetch config file if settings have changed
                 bot.setConfiguration()
 
+                # Select time interval
+                time_interval = selectTimeInterval(bot)
+                time_to_assign = time.time() + (time_interval * 60)
+
                 # Get an exercise to do
-                exercise = selectExerciseAndStartTime(bot)
+                exercise = selectExerciseAndStartTime(bot, time_interval)
 
-                # Assign the exercise to someone
+                while time.time() < time_to_assign:
+                    listenForReactions(bot)
+                    time.sleep(5)
+
                 assignExercise(bot, exercise, all_employees)
-
-                # Look for reactions
-                listenForReactions(bot)
 
             else:
                 #write out the leaderboard the first time of the day we hit non-working hours
                 if isNewDay:
                     saveUsers(bot, str(datetime.datetime.now()))
                     isNewDay = False
-                    
+
                 # Sleep the script and check again for office hours
                 if not bot.debug:
                     time.sleep(5*60) # Sleep 5 minutes

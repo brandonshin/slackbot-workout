@@ -386,6 +386,8 @@ def main():
     isNewDay = False
     alreadyRemindedAtEoD = False
 
+    time_to_announce = datetime.datetime.min
+    exercise = None
     try:
         while True:
             if isOfficeHours(bot):
@@ -404,19 +406,19 @@ def main():
                 bot.setConfiguration()
 
                 # Select time interval
-                time_interval = selectTimeInterval(bot)
-                time_to_assign = time.time() + (time_interval * 60)
+                if datetime.datetime.now() > time_to_announce:
+                    # If there is an existing exercise, assign it
+                    if exercise is not None:
+                        assignExercise(bot, exercise, all_employees)
 
-                # Get an exercise to do
-                exercise = announceExercise(bot, time_interval)
+                    time_interval = selectTimeInterval(bot)
+                    time_to_announce = datetime.datetime.now() + datetime.timedelta(0, time_interval * 60)
 
-                # Loop while listening until it is time to assign
-                while time.time() < time_to_assign:
-                    listenForReactions(bot)
-                    time.sleep(5)
+                    # Get an exercise to do
+                    exercise = announceExercise(bot, time_interval)
 
-                # Assign exercise to users
-                assignExercise(bot, exercise, all_employees)
+
+                listenForReactions(bot)
 
                 # remind slackers to do their workouts at the EoD
                 endOfDay =  datetime.datetime.now().replace(hour=bot.office_hours_end)

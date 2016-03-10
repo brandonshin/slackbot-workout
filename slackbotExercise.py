@@ -15,9 +15,9 @@ from User import User
 USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
 URL_TOKEN_STRING =  os.environ['SLACK_URL_TOKEN_STRING']
 BAMBOO_API_KEY =  os.environ['BAMBOO_API_KEY']
+EXERCISES_FOR_DAY = []
 
 HASH = "%23"
-
 
 # Configuration values to be set in setConfiguration
 class Bot:
@@ -69,7 +69,23 @@ class Bot:
 
             self.debug = settings["debug"]
 
-        self.post_message_URL = "https://slack.com/api/chat.postMessage?token=" + USER_TOKEN_STRING + "&channel=" + self.channel_id + "&as_user=true"
+        self.post_message_URL = "https://slack.com/api/chat.postMessage?token=" + USER_TOKEN_STRING + "&channel=" + self.channel_id + "&as_user=true&link_names=1"
+
+class Exercises:
+
+    def __init__(self, exercise, users, timestamp):
+
+        self.exercise = exercise
+        self.users = users
+        self.timestamp = timestamp
+        self.count_of_acknowledged = 0
+
+    def __str__(self):
+        return "An instance of class Exercises with state: excercise=%s users=%s, timestamp=%s" % (self.exercise, self.users, self.timestamp)
+
+    def __repr__(self):
+        return 'Exercises("%s", "%s", "%s")' % (self.exercise, self.users, self.timestamp)
+
 
 ################################################################################
 '''
@@ -218,9 +234,11 @@ def assignExercise(bot, exercise, all_employees):
     if random.random() < bot.group_callout_chance:
         winner_announcement += "@channel!"
 
+        winners = []
         for user_id in bot.user_cache:
             user = bot.user_cache[user_id]
             user.addExercise(exercise, exercise_reps)
+            winners.append(user)
 
         logExercise(bot,"@channel",exercise["name"],exercise_reps,exercise["units"])
 
@@ -241,7 +259,12 @@ def assignExercise(bot, exercise, all_employees):
 
     # Announce the user
     if not bot.debug:
-        requests.post(bot.post_message_URL + "&text=" + winner_announcement)
+        response = requests.post(bot.post_message_URL + "&text=" + winner_announcement)
+        last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
+        requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+        requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+        EXERCISES_FOR_DAY.append(Exercises(exercise, winners, last_message_timestamp))
+
     print winner_announcement
 
 
@@ -252,7 +275,7 @@ def logExercise(bot,username,exercise,reps,units):
 
         writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,bot.debug])
 
-def saveUsers(bot):
+def saveUsers(bot, dateOfExercise):
     # Write to the command console today's breakdown
     s = "```\n"
     #s += "Username\tAssigned\tComplete\tPercent
@@ -266,6 +289,7 @@ def saveUsers(bot):
         s += user.username.ljust(15)
         for exercise in bot.exercises:
             if exercise["id"] in user.exercises:
+                exerciseUnitCount = countExercisesUnitsForDay(bot, exercise["id"], dateOfExercise, user);
                 s += str(user.exercises[exercise["id"]]).ljust(len(exercise["name"]) + 2)
             else:
                 s += str(0).ljust(len(exercise["name"]) + 2)
@@ -284,6 +308,24 @@ def saveUsers(bot):
     with open('user_cache.save','wb') as f:
         pickle.dump(bot.user_cache,f)
 
+def countExercisesUnitsForDay(bot, exerciseID, dayOfExerciseString, user):
+    if bot.debug and dayOfExerciseString is not None:
+        print "username " + user.username + " exercise ID " + str(exerciseID) + " Day " + str(dayOfExerciseString)
+                                                            
+    count = 0
+
+    #count for all time if no day is sent
+    if dayOfExerciseString is None:
+        count = user.exercises[exerciseID]
+    else:
+        #loop through the history for matching days and exercise ID
+        for exercise_history in user.exercise_history:
+            if bot.debug:
+                print str(exercise_history[0]) + "-" + str(exercise_history[1]) + "-" + exercise_history[2]+ "-" + str(exercise_history[3])
+            if exercise_history[0][:10] == dayOfExerciseString[:10] and exercise_history[1] == exerciseID:
+                count += exercise_history[3]
+    return count
+
 def isOfficeHours(bot):
     if not bot.office_hours_on:
         if bot.debug:
@@ -300,14 +342,50 @@ def isOfficeHours(bot):
             print "out office hours"
         return False
 
+def listenForReactions(bot):
+
+    print "Number to loop: " + str(len(EXERCISES_FOR_DAY))
+
+    for exercise in EXERCISES_FOR_DAY:
+
+        timestamp = exercise.timestamp
+        response = requests.get("https://slack.com/api/reactions.get?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&full=1&timestamp=" + timestamp)
+        reactions = json.loads(response.text, encoding='utf-8')["message"]["reactions"]
+        for reaction in reactions:
+            if reaction["name"] == "yes":
+                users_who_have_reacted_with_yes = reaction["users"]
+            elif reaction["name"] == "no":
+                users_who_have_reacted_with_no = reaction["users"]
+
+        for user in exercise.users:
+            if user.id in users_who_have_reacted_with_yes:
+                exercise_name = exercise.exercise["name"]
+                print user.real_name + " has completed their " + exercise_name
+                exercise.count_of_acknowledged += 1
+            elif user.id in users_who_have_reacted_with_no:
+                exercise_name = exercise.exercise["name"]
+                print user.real_name + " refuses to complete their " + exercise_name
+                exercise.count_of_acknowledged += 1
+
+        if exercise.count_of_acknowledged == len(exercise.users):
+            EXERCISES_FOR_DAY.remove(exercise)
+            print "Removing Exercise"
+
 def main():
     bot = Bot()
-    #load all employees. This should probably move to happen once a day
-    all_employees = fetchAllEmployeesFromBamboo(bot)
-    
+    isNewDay = False
     try:
         while True:
             if isOfficeHours(bot):
+
+                #set new day based on the first time we entered office hours
+                if not isNewDay:
+                    isNewDay = True
+                    #load all employees at the beginning of the day. Only once a day so we don't bombard bamboo
+                    all_employees = fetchAllEmployeesFromBamboo(bot)
+                    if bot.debug:
+                        print "it's a new day"
+                        
                 # Re-fetch config file if settings have changed
                 bot.setConfiguration()
 
@@ -317,7 +395,15 @@ def main():
                 # Assign the exercise to someone
                 assignExercise(bot, exercise, all_employees)
 
+                # Look for reactions
+                listenForReactions(bot)
+
             else:
+                #write out the leaderboard the first time of the day we hit non-working hours
+                if isNewDay:
+                    saveUsers(bot, str(datetime.datetime.now()))
+                    isNewDay = False
+                    
                 # Sleep the script and check again for office hours
                 if not bot.debug:
                     time.sleep(5*60) # Sleep 5 minutes
@@ -326,7 +412,7 @@ def main():
                     time.sleep(5)
 
     except KeyboardInterrupt:
-        saveUsers(bot)
+        saveUsers(bot, str(datetime.datetime.now()))
 
 
 main()

@@ -484,7 +484,7 @@ def listenForReactions(bot):
                     print user.real_name + " refuses to complete their " + exercise_name
                     exercise.refused_users.append(user)
                     exercise.count_of_acknowledged += 1
-                elif user.id != bot.user_id and not isReminderInReminderList(user.id, exercise) and user.id in users_who_have_reacted_with_sleeping:
+                elif not isReminderInReminderList(user.id, exercise) and user.id in users_who_have_reacted_with_sleeping:
                     exercise.snoozed_users.append(Reminder(timestamp, datetime.datetime.now(), user.id, exercise))
 
 

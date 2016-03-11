@@ -60,8 +60,8 @@ class DB:
         print "complete assigned at: " + str(values['assigned_at'])
         update_row = (
             "UPDATE " + self.table_name + ""
-            " SET completed_at = now()"
-            "WHERE username = %(username)s AND exercise = %(exercise)s and assigned_at = '%(assigned_at)s'"
+            " SET completed_at = %(completed_at)s"
+            " WHERE username = %(username)s AND exercise = %(exercise)s and assigned_at = %(assigned_at)s"
         )
         self.cursor().execute(update_row, values)
         self.connection.commit()

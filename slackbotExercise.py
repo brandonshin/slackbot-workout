@@ -381,7 +381,7 @@ def listenForReactions(bot):
                     exercise.count_of_acknowledged += 1
                     exercise.completed_users.append(user)
                     if bot.database:
-                        query = dict(username=user.username, exercise=exercise_name, assigned_at=exercise.time_assigned)
+                        query = dict(username='@'+user.username, exercise=exercise_name, assigned_at=exercise.timestamp, completed_at=str(time.time()))
                         bot.db.complete(query)
                 elif user.id in users_who_have_reacted_with_no and user not in exercise.refused_users and user not in exercise.completed_users:
                     exercise_name = exercise.exercise["name"]

@@ -61,7 +61,7 @@ class DB:
         update_row = (
             "UPDATE " + self.table_name + ""
             " SET completed_at = %(completed_at)s"
-            " WHERE username = %(username)s AND exercise = %(exercise)s and assigned_at = %(assigned_at)s"
+            " WHERE username = %(username)s AND exercise = %(exercise)s and assigned_at = '%(assigned_at)s'"
         )
         self.cursor().execute(update_row, values)
         self.connection.commit()

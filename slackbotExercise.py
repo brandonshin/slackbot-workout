@@ -275,9 +275,10 @@ def assignExercise(bot, exercise, all_employees):
         requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
         requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
 
-    logExercise(bot,winners,exercise["name"],exercise_reps,exercise["units"],last_message_timestamp)
 
-    EXERCISES_FOR_DAY.append(Exercises(exercise, exercise_reps, winners, last_message_timestamp))
+    exercise_obj = Exercises(exercise, exercise_reps, winners, last_message_timestamp)
+    EXERCISES_FOR_DAY.append(exercise_obj)
+    logExercise(bot,winners,exercise["name"],exercise_reps,exercise["units"],exercise_obj.time_assigned)
 
     print winner_announcement
 
@@ -381,7 +382,7 @@ def listenForReactions(bot):
                     exercise.count_of_acknowledged += 1
                     exercise.completed_users.append(user)
                     if bot.database:
-                        query = dict(username='@'+user.username, exercise=exercise_name, assigned_at=exercise.timestamp, completed_at=str(time.time()))
+                        query = dict(username='@'+user.username, exercise=exercise_name, assigned_at=exercise.time_assigned, completed_at=time.time())
                         bot.db.complete(query)
                 elif user.id in users_who_have_reacted_with_no and user not in exercise.refused_users and user not in exercise.completed_users:
                     exercise_name = exercise.exercise["name"]

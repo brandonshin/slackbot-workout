@@ -409,7 +409,6 @@ def initiateThrowdown(bot, all_employees, message):
 
             for challengee in challengees:
                 challengee.addExercise(exercise, exercise_reps)
-                logExercise(bot,challengee.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
 
             challenger.has_challenged_today = True
             challenge_text = "You hear that, " + challengees[0].real_name + "? " + challenger.real_name + " is challenging you, " + str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise['name'] + " now!"
@@ -420,7 +419,9 @@ def initiateThrowdown(bot, all_employees, message):
             requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
             requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=sleeping&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
 
-            EXERCISES_FOR_DAY.append(Exercises(exercise, exercise_reps, challengees, last_message_timestamp))
+            exercise_obj = Exercises(exercise, exercise_reps, challengees, last_message_timestamp)
+            EXERCISES_FOR_DAY.append(exercise_obj)
+            logExercise(bot,challengees,exercise["name"],exercise_reps,exercise["units"],exercise_obj.time_assigned)
 
             print challenge_text
 

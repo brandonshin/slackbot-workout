@@ -253,9 +253,6 @@ def assignExercise(bot, exercise, all_employees):
             user = bot.user_cache[user_id]
             user.addExercise(exercise, exercise_reps)
             winners.append(user)
-
-        winners = ["@channel"]
-
     else:
         winners = [selectUser(bot, exercise, all_employees) for i in range(bot.num_people_per_callout)]
 
@@ -288,10 +285,7 @@ def assignExercise(bot, exercise, all_employees):
 def logExercise(bot,winners,exercise,reps,units,timestamp):
     filename = bot.csv_filename + "_DEBUG" if bot.debug else bot.csv_filename
     for winner in winners:
-        if type(winner) is str:
-            username = winner
-        else:
-            username = winner.getUserHandle()
+        username = winner.getUserHandle()
         with open(filename, 'a') as f:
             writer = csv.writer(f)
             writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,bot.debug])

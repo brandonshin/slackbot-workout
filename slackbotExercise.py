@@ -417,7 +417,7 @@ def initiateThrowdown(bot, all_employees, message):
                 logExercise(bot,challengee.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
 
             challenger.has_challenged_today = True
-            challenge_text = "You hear that, " + challengees[0].real_name + "? " + challenger.real_name + " is challenging you, " + str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise['name'] + " now!"
+            challenge_text = "You hear that, " + challengees[0].real_name + "? " + challenger.real_name + " is challenging you, " + str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise['name'] + " now! :doit:"
             response = requests.post(bot.post_message_URL + "&text=" + challenge_text)
 
             last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]

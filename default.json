@@ -106,15 +106,6 @@
       "units": "rep",
       "tutorial": "Tutorial for lunges here",
       "listenNames": "lunges;lunge"
-    },
-    {
-      "id": 9,
-      "name": "burpees",
-      "minReps": 5,
-      "maxReps": 20,
-      "units": "rep",
-      "tutorial": "Tutorial for burpees here",
-      "listenNames": "burpees;burpee"
     }
   ]
 }

@@ -556,6 +556,7 @@ def listenForCommands(bot, all_employees):
                 help_message = 'Just send me a name of an exercise, and I will teach you how to do it.'
                 for exercise in bot.exercises:
                     help_message += '\n ' + exercise['name']
+                help_message += '\n If you want to issue a challenge say `@hudl_workout I challenge @PERSON to 15 EXERCISE`'
                 requests.post(bot.post_message_URL + "&text=" + help_message)
                 break
 

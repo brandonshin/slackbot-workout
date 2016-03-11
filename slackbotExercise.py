@@ -380,13 +380,13 @@ def listenForReactions(bot):
                     print user.real_name + " has completed their " + exercise_name + " after " + str((time.time() - exercise.time_assigned)) + " seconds"
                     exercise.count_of_acknowledged += 1
                     exercise.completed_users.append(user)
+                    if bot.database:
+                        query = dict(username=user.username, exercise=exercise_name, assigned_at=exercise.time_assigned)
+                        bot.db.complete(query)
                 elif user.id in users_who_have_reacted_with_no and user not in exercise.refused_users and user not in exercise.completed_users:
                     exercise_name = exercise.exercise["name"]
                     print user.real_name + " refuses to complete their " + exercise_name
                     exercise.count_of_acknowledged += 1
-                    if bot.database:
-                        query = dict(username=user.username, exercise=exercise.name, assigned_at=exercise.time_assigned)
-                        bot.db.complete(query)
 
             if exercise.count_of_acknowledged == len(exercise.users):
                 EXERCISES_FOR_DAY.remove(exercise)

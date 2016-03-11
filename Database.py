@@ -28,8 +28,8 @@ class DB:
                 "    username varchar, "
                 "    exercise varchar, "
                 "    reps integer, "
-                "    assigned_at timestamp, "
-                "    completed_at timestamp"
+                "    assigned_at varchar, "
+                "    completed_at varchar"
                 ");"
                 )
             self.connection.commit()
@@ -46,6 +46,7 @@ class DB:
 
     def assign(self, values):
         self.ensure_connected()
+        print "assign assigned_at: " + str(values['assigned_at'])
         add_row = (
             "INSERT INTO " + self.table_name + ""
             "(username, exercise, reps, assigned_at)"
@@ -54,12 +55,13 @@ class DB:
         self.cursor().execute(add_row, values)
         self.connection.commit()
 
-    def complete(self, query):
+    def complete(self, values):
         self.ensure_connected()
+        print "complete assigned at: " + str(values['assigned_at'])
         update_row = (
             "UPDATE " + self.table_name + ""
             " SET completed_at = now()"
-            "WHERE username = %(username)s AND exercise = %(exercise)s and assigned_at = %(assigned_at)s"
+            "WHERE username = %(username)s AND exercise = %(exercise)s and assigned_at = '%(assigned_at)s'"
         )
         self.cursor().execute(update_row, values)
         self.connection.commit()

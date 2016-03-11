@@ -70,6 +70,7 @@ class Bot:
             self.office_hours_begin = settings["officeHours"]["begin"]
             self.office_hours_end = settings["officeHours"]["end"]
             self.user_id = settings["botUserId"]
+            self.default_snooze_length = settings["defaultSnoozeLength"]
 
             self.debug = settings["debug"]
 
@@ -88,6 +89,7 @@ class Exercises:
 
         self.completed_users = []
         self.refused_users = []
+        self.snoozed_users = []
 
     def __str__(self):
         return "An instance of class Exercises with state: excercise=%s users=%s, timestamp=%s" % (self.exercise, self.users, self.timestamp)
@@ -95,6 +97,13 @@ class Exercises:
     def __repr__(self):
         return 'Exercises("%s", "%s", "%s")' % (self.exercise, self.users, self.timestamp)
 
+class Reminder:
+    def __init__(self, exercise_timestamp_string, reminder_timestamp, userid, exercise):
+        self.exercise_timestamp_string = exercise_timestamp_string
+        self.reminder_timestamp = reminder_timestamp
+        self.userid = userid
+        self.has_been_processed = False
+        self.exercise = exercise
 
 ################################################################################
 '''
@@ -269,6 +278,7 @@ def assignExercise(bot, exercise, all_employees):
         last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
         requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
         requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+        requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=sleeping&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
 
     EXERCISES_FOR_DAY.append(Exercises(exercise, exercise_reps, winners, last_message_timestamp))
 
@@ -396,6 +406,7 @@ def initiateThrowdown(bot, all_employees, message):
             last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
             requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
             requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+            requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=sleeping&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
 
             EXERCISES_FOR_DAY.append(Exercises(exercise, exercise_reps, challengees, last_message_timestamp))
 
@@ -443,6 +454,13 @@ def listenForReactions(bot):
                     users_who_have_reacted_with_yes = reaction["users"]
                 elif reaction["name"] == "no":
                     users_who_have_reacted_with_no = reaction["users"]
+                elif reaction["name"] == "sleeping":
+                    # check if we've already added this reaction to our daily list. if not, add it
+                    for userid in reaction["users"]:
+                        if userid != bot.user_id and not isReminderInReminderList(userid, exercise):
+                            exercise.snoozed_users.append(Reminder(timestamp, datetime.datetime.now(), userid, exercise))
+                            if bot.debug:
+                                print str(userid) + " is sleepy"
 
             for user in exercise.users:
                 if user.id in users_who_have_reacted_with_yes and user not in exercise.completed_users:
@@ -459,12 +477,34 @@ def listenForReactions(bot):
                 EXERCISES_FOR_DAY.remove(exercise)
                 print "Removing Exercise"
 
-def remindPeopleForIncompleteExercises():
-
+def isReminderInReminderList(userid, exercise):
+    for reminder in exercise.snoozed_users:
+        if userid == reminder.userid and exercise.timestamp == reminder.exercise_timestamp_string:
+            return True
+    return False
+def remindPeopleForIncompleteExercisesAtEoD(bot):
     for exercise in EXERCISES_FOR_DAY:
-        for user in exercise.users:
+        for user in exercise.snoozed_users:
             if user.id not in exercise.completed_users:
-                print user.username + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
+                reminderMessage = user.getUserHandle() + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
+                if bot.debug:
+                    print reminderMessage
+                else:
+                    requests.post(bot.post_message_URL + "&text=" + reminderMessage)
+
+
+def remindTheSleepies(bot):
+    for exercise in EXERCISES_FOR_DAY:
+        for reminder in exercise.snoozed_users:
+            if not reminder.has_been_processed:
+                # if now is beyond the reminder timestamp plus the snooze length, then we should remind them
+                if datetime.datetime.now() >= reminder.reminder_timestamp + timedelta(minutes=bot.default_snooze_length):
+                    reminderMessage = bot.user_cache[reminder.userid].getUserHandle() + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
+                    if bot.debug:
+                        print reminderMessage
+                    else:
+                        requests.post(bot.post_message_URL + "&text=" + reminderMessage)
+                    reminder.has_been_processed = True
 
 def listenForCommands(bot, all_employees):
     response = requests.get("https://slack.com/api/channels.history?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&oldest=" + bot.last_listen_ts)
@@ -553,12 +593,14 @@ def main(argv):
                 listenForReactions(bot)
                 listenForCommands(bot, all_employees)
 
+                remindTheSleepies(bot)
+
                 # remind slackers to do their workouts at the EoD
                 endOfDay =  datetime.datetime.now().replace(hour=bot.office_hours_end)
                 if not alreadyRemindedAtEoD and (datetime.datetime.now() + timedelta(minutes=bot.max_countdown) > endOfDay):
                     if bot.debug:
                         print "People need a reminder"
-                    remindPeopleForIncompleteExercises()
+                    remindPeopleForIncompleteExercisesAtEoD(bot)
                     alreadyRemindedAtEoD = True
 
                 time.sleep(1)

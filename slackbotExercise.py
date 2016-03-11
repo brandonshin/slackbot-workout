@@ -468,12 +468,7 @@ def listenForReactions(bot):
                 elif reaction["name"] == "no":
                     users_who_have_reacted_with_no = reaction["users"]
                 elif reaction["name"] == "sleeping":
-                    # check if we've already added this reaction to our daily list. if not, add it
-                    for userid in reaction["users"]:
-                        if userid != bot.user_id and not isReminderInReminderList(userid, exercise):
-                            exercise.snoozed_users.append(Reminder(timestamp, datetime.datetime.now(), userid, exercise))
-                            if bot.debug:
-                                print str(userid) + " is sleepy"
+                    users_who_have_reacted_with_sleeping = reaction["users"]
 
             for user in exercise.users:
                 if user.id in users_who_have_reacted_with_yes and user not in exercise.completed_users:
@@ -489,6 +484,9 @@ def listenForReactions(bot):
                     print user.real_name + " refuses to complete their " + exercise_name
                     exercise.refused_users.append(user)
                     exercise.count_of_acknowledged += 1
+                elif user.id != bot.user_id and not isReminderInReminderList(user.id, exercise) and user.id in users_who_have_reacted_with_sleeping:
+                    exercise.snoozed_users.append(Reminder(timestamp, datetime.datetime.now(), user.id, exercise))
+
 
             if exercise.count_of_acknowledged == len(exercise.users):
                 EXERCISES_FOR_DAY.remove(exercise)
@@ -499,6 +497,7 @@ def isReminderInReminderList(userid, exercise):
         if userid == reminder.userid and exercise.timestamp == reminder.exercise_timestamp_string:
             return True
     return False
+
 def remindPeopleForIncompleteExercisesAtEoD(bot):
     for exercise in EXERCISES_FOR_DAY:
         for user in exercise.snoozed_users:
@@ -515,7 +514,8 @@ def remindTheSleepies(bot):
         for reminder in exercise.snoozed_users:
             if not reminder.has_been_processed:
                 # if now is beyond the reminder timestamp plus the snooze length, then we should remind them
-                if datetime.datetime.now() >= reminder.reminder_timestamp + timedelta(minutes=bot.default_snooze_length):
+                # also, don't remind them if they completed the exercise after they were added to the reminders
+                if datetime.datetime.now() >= reminder.reminder_timestamp + timedelta(minutes=bot.default_snooze_length) and reminder.userid not in exercise.completed_users:
                     reminderMessage = bot.user_cache[reminder.userid].getUserHandle() + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
                     if bot.debug:
                         print reminderMessage

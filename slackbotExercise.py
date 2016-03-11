@@ -405,7 +405,7 @@ def initiateThrowdown(bot, all_employees, message):
             last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
             requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
             requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
-            requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&sleeping=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+            requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=sleeping&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
 
             EXERCISES_FOR_DAY.append(Exercises(exercise, exercise_reps, challengees, last_message_timestamp))
 
@@ -481,7 +481,6 @@ def isReminderInReminderList(userid, exercise):
         if userid == reminder.userid and exercise.timestamp == reminder.exercise_timestamp:
             return True
     return False
-
 def remindPeopleForIncompleteExercisesAtEoD(bot):
     for exercise in EXERCISES_FOR_DAY:
         for user in exercise.snoozed_users:

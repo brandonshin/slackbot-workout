@@ -371,7 +371,7 @@ def listenForReactions(bot):
                 elif reaction["name"] == "sleeping":
                     # check if we've already added this reaction to our daily list. if not, add it
                     for userid in reaction["users"]:
-                        if not isReminderInReminderList(userid, exercise):
+                        if userid is not bot.user_id and not isReminderInReminderList(userid, exercise):
                             exercise.snoozed_users.append(Reminder(timestamp, datetime.datetime.now(), userid, exercise))
                             if bot.debug:
                                 print str(userid) + " is sleepy"
@@ -402,7 +402,7 @@ def remindPeopleForIncompleteExercisesAtEoD(bot):
     for exercise in EXERCISES_FOR_DAY:
         for user in exercise.snoozed_users:
             if user.id not in exercise.completed_users:
-                reminderMessage = user.username + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
+                reminderMessage = user.getUserHandle() + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
                 if bot.debug:
                     print reminderMessage
                 else:
@@ -416,7 +416,7 @@ def remindTheSleepies(bot):
             if not reminder.has_been_processed:
                 # if now is beyond the reminder timestamp plus the snooze length, then we should remind them
                 if datetime.datetime.now() >= reminder.reminder_timestamp + timedelta(minutes=bot.default_snooze_length):
-                    reminderMessage = bot.user_cache[reminder.userid].username + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
+                    reminderMessage = bot.user_cache[reminder.userid].getUserHandle() + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
                     if bot.debug:
                         print reminderMessage
                     else:

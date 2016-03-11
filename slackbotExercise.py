@@ -189,7 +189,7 @@ def fetchActiveUsers(bot, all_employees):
                     # Push our new users near the front of the queue!
                     bot.user_queue.insert(2,bot.user_cache[user_id])
 
-            if bot.user_cache[user_id].isAvailable():
+            if bot.user_cache[user_id].isActive():
                 active_users.append(bot.user_cache[user_id])
 
     if bot.first_run:

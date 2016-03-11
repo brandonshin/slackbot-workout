@@ -11,7 +11,7 @@ import os.path
 import datetime
 from datetime import timedelta
 import psycopg2
-from pprint import pprint
+import pprint
 from User import User
 from multiprocessing import Process
 from Database import DB
@@ -254,7 +254,7 @@ def assignExercise(bot, exercise, all_employees):
             user.addExercise(exercise, exercise_reps)
             winners.append(user)
 
-        logExercise(bot,"@channel",exercise["name"],exercise_reps,exercise["units"])
+        winners = ["@channel"]
 
     else:
         winners = [selectUser(bot, exercise, all_employees) for i in range(bot.num_people_per_callout)]
@@ -269,7 +269,6 @@ def assignExercise(bot, exercise, all_employees):
                 winner_announcement += ", "
 
             winners[i].addExercise(exercise, exercise_reps)
-            logExercise(bot,winners[i].getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
 
     last_message_timestamp = str(datetime.datetime.now())
     # Announce the user
@@ -279,20 +278,26 @@ def assignExercise(bot, exercise, all_employees):
         requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
         requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
 
+    logExercise(bot,winners,exercise["name"],exercise_reps,exercise["units"],last_message_timestamp)
+
     EXERCISES_FOR_DAY.append(Exercises(exercise, exercise_reps, winners, last_message_timestamp))
 
     print winner_announcement
 
 
-def logExercise(bot,username,exercise,reps,units):
+def logExercise(bot,winners,exercise,reps,units,timestamp):
     filename = bot.csv_filename + "_DEBUG" if bot.debug else bot.csv_filename
-    with open(filename, 'a') as f:
-        writer = csv.writer(f)
-
-        writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,bot.debug])
-    if bot.database:
-        d = dict(username=username, exercise=exercise, reps=reps, assigned_at=str(datetime.datetime.now))
-        bot.db.assign(d)
+    for winner in winners:
+        if type(winner) is str:
+            username = winner
+        else:
+            username = winner.getUserHandle()
+        with open(filename, 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,bot.debug])
+        if bot.database:
+            d = dict(username=username, exercise=exercise, reps=reps, assigned_at=timestamp)
+            bot.db.assign(d)
 
 def saveUsers(bot, dateOfExercise):
     # Write to the command console today's breakdown

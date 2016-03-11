@@ -486,6 +486,7 @@ def listenForReactions(bot):
                 elif user.id in users_who_have_reacted_with_no and user not in exercise.refused_users and user not in exercise.completed_users:
                     exercise_name = exercise.exercise["name"]
                     print user.real_name + " refuses to complete their " + exercise_name
+                    exercise.refused_users.append(user)
                     exercise.count_of_acknowledged += 1
 
             if exercise.count_of_acknowledged == len(exercise.users):

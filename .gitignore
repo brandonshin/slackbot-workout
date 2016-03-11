@@ -16,3 +16,5 @@ user_cache.save
 .idea/vcs.xml
 
 .idea/workspace.xml
+
+*.swp

@@ -3,6 +3,7 @@ import time
 import requests
 import json
 import csv
+import sys
 import os
 from random import shuffle
 import pickle
@@ -27,8 +28,8 @@ HASH = "%23"
 
 # Configuration values to be set in setConfiguration
 class Bot:
-    def __init__(self):
-        self.setConfiguration()
+    def __init__(self, office_config_file):
+        self.setConfiguration(office_config_file)
 
         if self.database:
             self.db = DB(self.channel_name.replace('-', ''))
@@ -42,6 +43,8 @@ class Bot:
 
         # round robin store
         self.user_queue = []
+
+        self.last_listen_ts = '0'
 
     def loadUserCache(self):
         if os.path.isfile('user_cache.save'):
@@ -57,9 +60,9 @@ class Bot:
 
     Runs after every callout so that settings can be changed realtime
     '''
-    def setConfiguration(self):
+    def setConfiguration(self, office_config_file):
         # Read variables fromt the configuration file
-        with open('config.json') as f:
+        with open(office_config_file) as f:
             settings = json.load(f)
 
             self.team_domain = settings["teamDomain"]
@@ -211,8 +214,9 @@ def announceExercise(bot, minute_interval):
     # Announce the exercise to the thread
     if not bot.debug:
         response = requests.post(bot.post_message_URL + "&text=" + lottery_announcement)
+        if bot.last_listen_ts == '0':
+            bot.last_listen_ts = json.loads(response.text, encoding='utf-8')["ts"]
     print lottery_announcement
-
     return exercise
 
 
@@ -396,13 +400,50 @@ def remindPeopleForIncompleteExercises():
             if user.id not in exercise.completed_users:
                 print user.username + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
 
-def main():
-    bot = Bot()
+def listenForCommands(bot):
+    response = requests.get("https://slack.com/api/channels.history?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&oldest=" + bot.last_listen_ts)
+    response_json = json.loads(response.text, encoding='utf-8')
+    messages = response_json["messages"]
+    if not messages:
+        return
+
+    last_time = messages[-1]['ts']
+    bot.last_listen_ts = last_time
+    command_start = '<@'+bot.user_id.lower()+'>'
+    for message in messages:
+        text = message['text'].lower()
+        if text.startswith(command_start):
+
+            # Check for messages specific to a workout
+            for exercise in bot.exercises:
+                found_exercise = False
+                listen_names = exercise['listenNames'].split(';')
+                for listen_name in listen_names:
+                    if listen_name in text:
+                        requests.post(bot.post_message_URL + "&text=" + exercise['tutorial'])
+                        found_exercise = True
+                        break
+                if found_exercise:
+                    break
+
+            # Check for help command
+            if 'help' in text:
+                help_message = 'Just send me a name of an exercise, and I will teach you how to do it.'
+                for exercise in bot.exercises:
+                    help_message += '\n ' + exercise['name']
+                requests.post(bot.post_message_URL + "&text=" + help_message)
+                break
+
+def main(argv):
+
+    office_config_file = sys.argv[1]
+    bot = Bot(office_config_file)
     isNewDay = False
     alreadyRemindedAtEoD = False
 
     time_to_announce = datetime.datetime.min
     exercise = None
+
     try:
         while True:
             if isOfficeHours(bot):
@@ -418,22 +459,30 @@ def main():
                         print "it's a new day"
 
                 # Re-fetch config file if settings have changed
-                bot.setConfiguration()
+                bot.setConfiguration(office_config_file)
 
-                # Select time interval
-                if datetime.datetime.now() > time_to_announce:
-                    # If there is an existing exercise, assign it
+                if not bot.debug:
+                    # Select time interval
+                    if datetime.datetime.now() > time_to_announce:
+                        # If there is an existing exercise, assign it
+                        if exercise is not None:
+                            assignExercise(bot, exercise, all_employees)
+
+                        time_interval = selectTimeInterval(bot)
+                        time_to_announce = datetime.datetime.now() + datetime.timedelta(0, time_interval * 60)
+
+                        # Get an exercise to do
+                        exercise = announceExercise(bot, time_interval)
+                else:
                     if exercise is not None:
                         assignExercise(bot, exercise, all_employees)
-
                     time_interval = selectTimeInterval(bot)
                     time_to_announce = datetime.datetime.now() + datetime.timedelta(0, time_interval * 60)
-
-                    # Get an exercise to do
                     exercise = announceExercise(bot, time_interval)
 
 
                 listenForReactions(bot)
+                listenForCommands(bot)
 
                 # remind slackers to do their workouts at the EoD
                 endOfDay =  datetime.datetime.now().replace(hour=bot.office_hours_end)
@@ -462,4 +511,4 @@ def main():
         saveUsers(bot, str(datetime.datetime.now()))
 
 
-main()
+main(sys.argv)

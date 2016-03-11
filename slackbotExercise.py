@@ -98,8 +98,8 @@ class Exercises:
         return 'Exercises("%s", "%s", "%s")' % (self.exercise, self.users, self.timestamp)
 
 class Reminder:
-    def __init__(self, exercise_timestamp, reminder_timestamp, userid, exercise):
-        self.exercise_timestamp = exercise_timestamp
+    def __init__(self, exercise_timestamp_string, reminder_timestamp, userid, exercise):
+        self.exercise_timestamp_string = exercise_timestamp_string
         self.reminder_timestamp = reminder_timestamp
         self.userid = userid
         self.has_been_processed = False
@@ -478,7 +478,7 @@ def listenForReactions(bot):
 
 def isReminderInReminderList(userid, exercise):
     for reminder in exercise.snoozed_users:
-        if userid == reminder.userid and exercise.timestamp == reminder.exercise_timestamp:
+        if userid == reminder.userid and exercise.timestamp == reminder.exercise_timestamp_string:
             return True
     return False
 def remindPeopleForIncompleteExercisesAtEoD(bot):

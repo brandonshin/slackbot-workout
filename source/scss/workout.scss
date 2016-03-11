@@ -61,7 +61,7 @@ $background-color: $ui-blue-100;
   }
 
   // Scales avatar in the hero
-  .hero:hover & { transform: scale(1.25); }
+  .hero:hover & { transform: scale(1.25) rotate(-5deg); }
 
 }
 

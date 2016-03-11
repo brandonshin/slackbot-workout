@@ -3,7 +3,7 @@
   "channelName": "",
   "channelId": "",
   "botUserId": "",
-  "defaultSnoozeLength": "30",
+  "defaultSnoozeLength": 30,
 
   "officeHours": {
     "on": false,

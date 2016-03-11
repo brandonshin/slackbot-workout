@@ -625,6 +625,8 @@ def main(argv):
             else:
                 # write out the leaderboard the first time of the day we hit non-working hours
                 if isNewDay:
+                    if bot.debug:
+                        print "it's the end of a day"
                     saveUsers(bot, str(datetime.datetime.now()))
 
                     # Reset all users to have challenges

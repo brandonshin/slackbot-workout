@@ -180,7 +180,7 @@ def fetchActiveUsers(bot, all_employees):
                     # Push our new users near the front of the queue!
                     bot.user_queue.insert(2,bot.user_cache[user_id])
 
-            if bot.user_cache[user_id].isActive():
+            if bot.user_cache[user_id].isAvailable():
                 active_users.append(bot.user_cache[user_id])
 
     if bot.first_run:
@@ -273,7 +273,6 @@ def assignExercise(bot, exercise, all_employees):
     EXERCISES_FOR_DAY.append(Exercises(exercise, exercise_reps, winners, last_message_timestamp))
 
     print winner_announcement
-
 
 def logExercise(bot,username,exercise,reps,units):
     filename = bot.csv_filename + "_DEBUG" if bot.debug else bot.csv_filename

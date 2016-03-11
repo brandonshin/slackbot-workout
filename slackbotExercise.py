@@ -514,8 +514,8 @@ def remindTheSleepies(bot):
         for reminder in exercise.snoozed_users:
             if not reminder.has_been_processed:
                 # if now is beyond the reminder timestamp plus the snooze length, then we should remind them
-                # also, don't remind them if they completed the exercise after they were added to the reminders
-                if datetime.datetime.now() >= reminder.reminder_timestamp + timedelta(minutes=bot.default_snooze_length) and reminder.userid not in exercise.completed_users:
+                # also, don't remind them if they completed/rejected the exercise after they were added to the reminders
+                if datetime.datetime.now() >= reminder.reminder_timestamp + timedelta(minutes=bot.default_snooze_length) and reminder.userid not in exercise.completed_users and reminder.userid not in exercise.refused_users:
                     reminderMessage = bot.user_cache[reminder.userid].getUserHandle() + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
                     if bot.debug:
                         print reminderMessage

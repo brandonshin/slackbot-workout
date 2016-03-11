@@ -118,11 +118,12 @@ class Reminder:
 '''
 Selects an active user from a list of users
 '''
-def selectUser(bot, exercise, all_employees, previous_winner):
+def selectUser(bot, exercise, all_employees, previous_winners):
     active_users = fetchActiveUsers(bot, all_employees)
 
-    if previous_winner is not None:
-        active_users.remove(previous_winner)
+    if len(previous_winners) > 0:
+        for previous_winner in previous_winners:
+            active_users.remove(previous_winner)
 
     # Add all active users not already in the user queue
     # Shuffles to randomly add new active users
@@ -266,10 +267,8 @@ def assignExercise(bot, exercise, all_employees):
             user.addExercise(exercise, exercise_reps)
             winners.append(user)
     else:
-        winner = None
         for i in range(bot.num_people_per_callout):
-            winner = selectUser(bot, exercise, all_employees, winner)
-            winners.append(winner)
+            winners.append(selectUser(bot, exercise, all_employees, winners))
 
         for i in range(bot.num_people_per_callout):
             winner_announcement += str(winners[i].getUserHandle())

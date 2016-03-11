@@ -455,7 +455,7 @@ def listenForReactions(bot):
                 elif reaction["name"] == "sleeping":
                     # check if we've already added this reaction to our daily list. if not, add it
                     for userid in reaction["users"]:
-                        if userid is not bot.user_id and not isReminderInReminderList(userid, exercise):
+                        if userid != bot.user_id and not isReminderInReminderList(userid, exercise):
                             exercise.snoozed_users.append(Reminder(timestamp, datetime.datetime.now(), userid, exercise))
                             if bot.debug:
                                 print str(userid) + " is sleepy"

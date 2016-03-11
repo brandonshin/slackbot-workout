@@ -12,6 +12,7 @@
    },
 
   "debug": false,
+  "database": false,
 
   "callouts": {
     "timeBetween": {

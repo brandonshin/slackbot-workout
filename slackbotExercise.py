@@ -10,21 +10,29 @@ import pickle
 import os.path
 import datetime
 from datetime import timedelta
+import psycopg2
+import pprint
 from User import User
 from multiprocessing import Process
+from Database import DB
 
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
 URL_TOKEN_STRING =  os.environ['SLACK_URL_TOKEN_STRING']
 BAMBOO_API_KEY =  os.environ['BAMBOO_API_KEY']
+
 EXERCISES_FOR_DAY = []
 
 HASH = "%23"
+    
 
 # Configuration values to be set in setConfiguration
 class Bot:
     def __init__(self, office_config_file):
         self.setConfiguration(office_config_file)
+
+        if self.database:
+            self.db = DB(self.channel_name.replace('-', ''))
 
         self.csv_filename = "log" + time.strftime("%Y%m%d-%H%M") + ".csv"
         self.first_run = True
@@ -73,6 +81,7 @@ class Bot:
             self.default_snooze_length = settings["defaultSnoozeLength"]
 
             self.debug = settings["debug"]
+            self.database = settings["database"]
 
         self.post_message_URL = "https://slack.com/api/chat.postMessage?token=" + USER_TOKEN_STRING + "&channel=" + self.channel_id + "&as_user=true&link_names=1"
 
@@ -253,9 +262,6 @@ def assignExercise(bot, exercise, all_employees):
             user = bot.user_cache[user_id]
             user.addExercise(exercise, exercise_reps)
             winners.append(user)
-
-        logExercise(bot,"@channel",exercise["name"],exercise_reps,exercise["units"])
-
     else:
         winners = [selectUser(bot, exercise, all_employees) for i in range(bot.num_people_per_callout)]
 
@@ -269,7 +275,6 @@ def assignExercise(bot, exercise, all_employees):
                 winner_announcement += ", "
 
             winners[i].addExercise(exercise, exercise_reps)
-            logExercise(bot,winners[i].getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
 
     last_message_timestamp = str(datetime.datetime.now())
     # Announce the user
@@ -280,17 +285,24 @@ def assignExercise(bot, exercise, all_employees):
         requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
         requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=sleeping&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
 
-    EXERCISES_FOR_DAY.append(Exercises(exercise, exercise_reps, winners, last_message_timestamp))
+
+    exercise_obj = Exercises(exercise, exercise_reps, winners, last_message_timestamp)
+    EXERCISES_FOR_DAY.append(exercise_obj)
+    logExercise(bot,winners,exercise["name"],exercise_reps,exercise["units"],exercise_obj.time_assigned)
 
     print winner_announcement
 
 
-def logExercise(bot,username,exercise,reps,units):
+def logExercise(bot,winners,exercise,reps,units,timestamp):
     filename = bot.csv_filename + "_DEBUG" if bot.debug else bot.csv_filename
-    with open(filename, 'a') as f:
-        writer = csv.writer(f)
-
-        writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,bot.debug])
+    for winner in winners:
+        username = winner.getUserHandle()
+        with open(filename, 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow([str(datetime.datetime.now()),username,exercise,reps,units,bot.debug])
+        if bot.database:
+            d = dict(username=username, exercise=exercise, reps=reps, assigned_at=timestamp)
+            bot.db.assign(d)
 
 def saveUsers(bot, dateOfExercise):
     # Write to the command console today's breakdown
@@ -468,6 +480,9 @@ def listenForReactions(bot):
                     print user.real_name + " has completed their " + exercise_name + " after " + str((time.time() - exercise.time_assigned)) + " seconds"
                     exercise.count_of_acknowledged += 1
                     exercise.completed_users.append(user)
+                    if bot.database:
+                        query = dict(username='@'+user.username, exercise=exercise_name, assigned_at=exercise.time_assigned, completed_at=time.time())
+                        bot.db.complete(query)
                 elif user.id in users_who_have_reacted_with_no and user not in exercise.refused_users and user not in exercise.completed_users:
                     exercise_name = exercise.exercise["name"]
                     print user.real_name + " refuses to complete their " + exercise_name

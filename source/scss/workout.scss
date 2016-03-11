@@ -84,11 +84,33 @@ $background-color: $ui-blue-100;
   @include clearfix;
 
   > .l-grid__item {
-    &:first-of-type { width: 30%; float: left; }
-    &:last-of-type { width: 60%; float: right; }
+    @include mq(31.25rem) {
+      &:first-of-type { width: 35%; float: left; }
+      &:last-of-type { width: 60%; float: right; }
+    }
   }
 }
 
+
+.l-grid--50 {
+  > .l-grid__item {
+    margin-top: 1rem;
+
+    @include mq(28.125rem, 31.25rem) {
+      margin-top: 0;
+      width: 47%;
+      &:first-of-type { float: left; }
+      &:last-of-type { float: right; }
+    }
+
+    @include mq(40.625rem) {
+      margin-top: 0;
+      width: 47%;
+      &:first-of-type { float: left; }
+      &:last-of-type { float: right; }
+    }
+  }
+}
 
 
 // Section
@@ -180,22 +202,24 @@ $background-color: $ui-blue-100;
   }
   &:before {
     background-color: rgba($ui-blue-80, 0.6);
-    width: 35px;
-    height: 100%;
-    top: 0;
-    left: 0;
+    width: 24px;
+    height: 24px;
+    top: 0.5rem;
+    // bottom: 0.5rem;
+    left: 0.5rem;
+    border-radius: 50%;
 
   }
 
   &:after {
-    left: 11px;
+    left: 17px;
     top: 50%;
-    margin-top: -8px;
+    margin-top: -5px;
     width: 0;
     height: 0;
-    border-top: 8px solid transparent;
-    border-left: 16px solid rgba(255, 255, 255, 0.3);
-    border-bottom: 8px solid transparent;
+    border-top: 5px solid transparent;
+    border-left: 8px solid rgba(255, 255, 255, 0.5);
+    border-bottom: 5px solid transparent;
     transition: border-color 0.3s ease;
   }
 
@@ -206,8 +230,13 @@ $background-color: $ui-blue-100;
 
 
 
-
-
+// Dashboard
+// --------------------------------------------
+.dashboard--office {
+  @include clearfix;
+  margin-top: $spacer-large;
+  margin-bottom: $spacer-xlarge;
+}
 
 
 // Card
@@ -219,7 +248,14 @@ $background-color: $ui-blue-100;
 
 .card--video {
   padding: $spacer-xsmall;
-  padding-left: 45px;
+  padding-left: 40px;
+  color: $ui-text-medium;
+}
+
+.card--dashboard {
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  padding: 0.75rem;
 }
 
 .card--star {
@@ -236,28 +272,19 @@ $background-color: $ui-blue-100;
 }
 
 .card__h--small {
-  position: relative;
   border-right: 1px solid $ui-gray-medium;
-  padding-right: $spacer-small;
-  margin-right: $spacer-xsmall;
+  margin-right: $spacer-xxsmall;
+  padding-right: $spacer-xxsmall;
   font-weight: $font-weight-bold;
-  &:after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: 0;
-    margin-right: -3px;
-    margin-top: -3px;
-    width: 6px;
-    height: 6px;
-    background-color: $ui-gray-medium;
-    border-radius: 50%;
-  }
+  color: $ui-text-dark;
+  font-family: $font-display;
+  font-weight: $font-weight-bold;
 }
 
 
 .card__content--star {
   // border: 1px solid green;
+  padding-top: $spacer-small;
   max-width: 85%;
   margin-left: auto;
   margin-right: auto;
@@ -275,11 +302,24 @@ $background-color: $ui-blue-100;
 }
 
 .card__mod {
-  margin-top: $spacer-small;
+  // margin-top: $spacer-small;
 }
 
 .card__stat--large {
   font-size: 45px;
+  letter-spacing: -2px;
+  font-family: $font-brand;
+}
+
+.card__stat--medium {
+  font-size: 30px;
+  letter-spacing: -2px;
+  font-family: $font-brand;
+}
+
+.card__percent {
+  font-size: 80%;
+  padding-left: 3px;
 }
 
 .card__group {
@@ -330,7 +370,8 @@ $background-color: $ui-blue-100;
 
   &__h {
     font-size: 24px;
-    margin-bottom: 25px;
+    margin-bottom: 0.5rem;
+    font-family: $font-display;
     color: #fff;
   }
 
@@ -339,7 +380,7 @@ $background-color: $ui-blue-100;
     position: relative;
     width: 100%;
     max-width: 800px;
-    padding: 40px 25px 25px;
+    padding: 30px 40px 40px;
     // background-color: $ui-dark-100;
     opacity: 0.01;
     visibility: hidden;
@@ -356,8 +397,8 @@ $background-color: $ui-blue-100;
 
   &__close {
     position: absolute;
-    top: 25px;
-    right: 25px;
+    top: 30px;
+    right: 40px;
   }
 
   &__btn {
@@ -367,11 +408,12 @@ $background-color: $ui-blue-100;
     height: 30px;
     line-height: 30px;
     text-align: center;
-    background-color: $ui-blue-100;
+    background-color: darken($ui-blue-100, 10%);
     color: #fff;
     transition: 0.4s background-color ease;
     &:hover {
-      background-color: darken($ui-blue-100, 10%);
+      background-color: darken($ui-blue-100, 5%);
+      text-decoration: none;
     }
   }
 

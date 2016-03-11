@@ -480,7 +480,6 @@ def isReminderInReminderList(userid, exercise):
     for reminder in exercise.snoozed_users:
         if userid == reminder.userid and exercise.timestamp == reminder.exercise_timestamp:
             return True
-
     return False
 
 def remindPeopleForIncompleteExercisesAtEoD(bot):
@@ -495,7 +494,6 @@ def remindPeopleForIncompleteExercisesAtEoD(bot):
 
 
 def remindTheSleepies(bot):
-
     for exercise in EXERCISES_FOR_DAY:
         for reminder in exercise.snoozed_users:
             if not reminder.has_been_processed:

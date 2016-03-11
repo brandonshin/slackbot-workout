@@ -348,6 +348,87 @@ def isOfficeHours(bot):
             print "out office hours"
         return False
 
+def initiateThrowdown(bot, all_employees, message):
+
+    text = message['text'].lower()
+    words = text.split()
+    challengerId = message['user']
+
+    active_users = fetchActiveUsers(bot, all_employees)
+    challengees = []
+
+    for user in active_users:
+        if user.id == challengerId:
+            challenger = user
+            break
+
+    exercise = findExerciseInText(bot, text)
+    exercise_reps = findIntInText(bot, words)
+
+    if challenger.has_challenged_today == True:
+        already_challenged_text = 'You can only give out a challenge once a day ' + challenger.real_name
+        requests.post(bot.post_message_URL + "&text=" + already_challenged_text)
+        return
+
+    if exercise_reps != False and exercise != False and exercise_reps > exercise['maxReps']:
+        too_many_reps_text = 'Please select a number under ' + str(exercise['maxReps']) + ' for that exercise, ' + challenger.real_name
+        requests.post(bot.post_message_URL + "&text=" + too_many_reps_text)
+        return
+
+    if challenger is not None and exercise != False and exercise_reps != False:
+        for user in active_users:
+            for word in words:
+                if user.id.lower() in word:
+                    challengees.append(user)
+                    print "Found a challengee"
+
+        if len(challengees) > 0:
+
+            for challengee in challengees:
+                challengee.addExercise(exercise, exercise_reps)
+                logExercise(bot,challengee.getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
+
+            challenger.has_challenged_today = True
+            challenge_text = "You hear that, " + challengees[0].real_name + "? " + challenger.real_name + " is challenging you, " + str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise['name'] + " now!"
+            response = requests.post(bot.post_message_URL + "&text=" + challenge_text)
+
+            last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
+            requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+            requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+
+            EXERCISES_FOR_DAY.append(Exercises(exercise, exercise_reps, challengees, last_message_timestamp))
+
+            print challenge_text
+
+def findExerciseInText(bot, text):
+
+    # Check for messages specific to a workout
+    for exercise in bot.exercises:
+        found_exercise = False
+        listen_names = exercise['listenNames'].split(';')
+        for listen_name in listen_names:
+            if listen_name in text:
+                return exercise
+
+    return found_exercise
+
+def findIntInText(bot, words):
+
+    for word in words:
+        if all(char.isdigit() for char in word):
+            return int(word)
+
+    return False
+
+def resetChallenges(bot):
+
+    for user_id in bot.user_cache:
+        user = bot.user_cache[user_id]
+        user.has_challenged_today = False
+
+    print "Reset users' challenges"
+
+
 def listenForReactions(bot):
 
     if not bot.debug:
@@ -384,7 +465,7 @@ def remindPeopleForIncompleteExercises():
             if user.id not in exercise.completed_users:
                 print user.username + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
 
-def listenForCommands(bot):
+def listenForCommands(bot, all_employees):
     response = requests.get("https://slack.com/api/channels.history?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&oldest=" + bot.last_listen_ts)
     response_json = json.loads(response.text, encoding='utf-8')
     messages = response_json["messages"]
@@ -398,17 +479,14 @@ def listenForCommands(bot):
         text = message['text'].lower()
         if text.startswith(command_start):
 
-            # Check for messages specific to a workout
-            for exercise in bot.exercises:
-                found_exercise = False
-                listen_names = exercise['listenNames'].split(';')
-                for listen_name in listen_names:
-                    if listen_name in text:
-                        requests.post(bot.post_message_URL + "&text=" + exercise['tutorial'])
-                        found_exercise = True
-                        break
-                if found_exercise:
-                    break
+            if 'challenge' in text:
+                initiateThrowdown(bot, all_employees, message)
+                break
+
+            exercise = findExerciseInText(bot, text)
+            if exercise != False:
+                requests.post(bot.post_message_URL + "&text=" + exercise['tutorial'])
+                break
 
             # Check for help command
             if 'help' in text:
@@ -417,6 +495,11 @@ def listenForCommands(bot):
                     help_message += '\n ' + exercise['name']
                 requests.post(bot.post_message_URL + "&text=" + help_message)
                 break
+
+            else:
+                prompt_actual_command = "I'm sorry, I can't understand you"
+                requests.post(bot.post_message_URL + "&text=" + prompt_actual_command)
+
 
 def main(argv):
 
@@ -435,6 +518,7 @@ def main(argv):
                 # set new day based on the first time we entered office hours
                 if not isNewDay:
                     EXERCISES_FOR_DAY = []
+                    resetChallenges(bot)
                     isNewDay = True
                     alreadyRemindedAtEoD = False
                     # load all employees at the beginning of the day. Only once a day so we don't bombard bamboo
@@ -466,7 +550,7 @@ def main(argv):
 
 
                 listenForReactions(bot)
-                listenForCommands(bot)
+                listenForCommands(bot, all_employees)
 
                 # remind slackers to do their workouts at the EoD
                 endOfDay =  datetime.datetime.now().replace(hour=bot.office_hours_end)
@@ -476,12 +560,15 @@ def main(argv):
                     remindPeopleForIncompleteExercises()
                     alreadyRemindedAtEoD = True
 
-                time.sleep(5)
+                time.sleep(1)
 
             else:
                 # write out the leaderboard the first time of the day we hit non-working hours
                 if isNewDay:
                     saveUsers(bot, str(datetime.datetime.now()))
+
+                    # Reset all users to have challenges
+                    resetChallenges(bot)
                     isNewDay = False
 
                 # Sleep the script and check again for office hoursqa.hu

@@ -31,6 +31,8 @@ class User:
         # A record of past runs
         self.past_workouts = {}
 
+        self.has_challenged_today = False
+
         print "New user: " + self.real_name + " (" + self.username + ")"
 
 

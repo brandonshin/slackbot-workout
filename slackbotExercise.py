@@ -169,6 +169,7 @@ Fetches all of the employees from Bamboohr
 def fetchAllEmployeesFromBamboo(bot):
     headers = {'Authorization': 'Basic %s' % BAMBOO_API_KEY, 'Accept':'application/json'}
     response = requests.get("https://api.bamboohr.com/api/gateway.php/hudl/v1/employees/directory", headers=headers)
+    print "fetchAllEmployees response: " + response.text
     all_employees = []
     if response.ok:
         if bot.debug:
@@ -188,6 +189,7 @@ def fetchActiveUsers(bot, all_employees):
     # Check for new members
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
     response = requests.get("https://slack.com/api/channels.info", params=params)
+    print "fetchActiveUsers response: " + response.text
     user_ids = json.loads(response.text, encoding='utf-8')["channel"]["members"]
 
     active_users = []
@@ -227,6 +229,7 @@ def announceExercise(bot, minute_interval):
     # Announce the exercise to the thread
     if not bot.debug:
         response = requests.post(bot.post_message_URL + "&text=" + lottery_announcement)
+        print "announceExercise response: " + response.text
         if bot.last_listen_ts == '0':
             bot.last_listen_ts = json.loads(response.text, encoding='utf-8')["ts"]
     print lottery_announcement
@@ -285,6 +288,7 @@ def assignExercise(bot, exercise, all_employees):
     # Announce the user
     if not bot.debug:
         response = requests.post(bot.post_message_URL + "&text=" + winner_announcement)
+        print "assignExercise response: " + response.text
         last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
         requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
         requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
@@ -418,6 +422,7 @@ def initiateThrowdown(bot, all_employees, message):
             challenger.has_challenged_today = True
             challenge_text = "You hear that, " + challengees[0].real_name + "? " + challenger.real_name + " is challenging you, " + str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise['name'] + " now!"
             response = requests.post(bot.post_message_URL + "&text=" + challenge_text)
+            print "initiateThrowdown response: " + response.text
 
             last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
             requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
@@ -466,6 +471,7 @@ def listenForReactions(bot):
 
             timestamp = exercise.timestamp
             response = requests.get("https://slack.com/api/reactions.get?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&full=1&timestamp=" + timestamp)
+            print "listenForReactions response: " + response.text
             reactions = json.loads(response.text, encoding='utf-8')["message"]["reactions"]
             for reaction in reactions:
                 if reaction["name"] == "yes":
@@ -530,6 +536,7 @@ def remindTheSleepies(bot):
 
 def listenForCommands(bot, all_employees):
     response = requests.get("https://slack.com/api/channels.history?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&oldest=" + bot.last_listen_ts)
+    print "listenForCommands response: " + response.text
     response_json = json.loads(response.text, encoding='utf-8')
     messages = response_json["messages"]
     if not messages:

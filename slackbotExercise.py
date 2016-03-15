@@ -422,7 +422,7 @@ def initiateThrowdown(bot, all_employees, message):
             challenger.has_challenged_today = True
             challenge_text = "You hear that, " + challengees[0].real_name + "? " + challenger.real_name + " is challenging you, " + str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise['name'] + " now!"
             response = requests.post(bot.post_message_URL + "&text=" + challenge_text)
-            print "initiateThrowdown response" + response.text
+            print "initiateThrowdown response: " + response.text
 
             last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
             requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
@@ -471,7 +471,7 @@ def listenForReactions(bot):
 
             timestamp = exercise.timestamp
             response = requests.get("https://slack.com/api/reactions.get?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&full=1&timestamp=" + timestamp)
-            print "listenForReactions response " + response.text
+            print "listenForReactions response: " + response.text
             reactions = json.loads(response.text, encoding='utf-8')["message"]["reactions"]
             for reaction in reactions:
                 if reaction["name"] == "yes":

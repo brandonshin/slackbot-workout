@@ -22,7 +22,21 @@ class DB:
             pg_connection.close()
             self.connection = psycopg2.connect(database=database_name)
             self.connection.set_isolation_level(1)
-            self.connection.cursor().execute("CREATE TABLE " + self.table_name + ""
+
+        try:
+            cursor = self.cursor()
+            cursor.execute("select 1 from " + self.table_name)
+            cursor.fetchone()
+            print "connected to " + self.table_name
+        except psycopg2.DatabaseError as de:
+            print "could not find table " + self.table_name + ", creating now"
+            self.connection.commit()
+            self.create_table()
+
+    def create_table(self):
+        try:
+            print "creating table " + self.table_name
+            self.cursor().execute("CREATE TABLE " + self.table_name + ""
                 " ( "
                 "    id serial PRIMARY KEY,"
                 "    username varchar, "
@@ -33,7 +47,9 @@ class DB:
                 ");"
                 )
             self.connection.commit()
-            
+        except psycopg2.Error as e:        
+            print "Could not create table, error: " + e.pgerror
+            exit(1) 
 
     def cursor(self):
         return self.connection.cursor()
@@ -47,6 +63,7 @@ class DB:
     def assign(self, values):
         self.ensure_connected()
         print "assign assigned_at: " + str(values['assigned_at'])
+        
         add_row = (
             "INSERT INTO " + self.table_name + ""
             "(username, exercise, reps, assigned_at)"

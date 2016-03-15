@@ -626,7 +626,7 @@ def main(argv):
                 remindTheSleepies(bot)
 
                 # remind slackers to do their workouts at the EoD
-                endOfDay =  datetime.datetime.now().replace(hour=bot.office_hours_end)
+                endOfDay =  datetime.datetime.now().replace(hour=bot.office_hours_end, minute=0, second=0)
                 if not alreadyRemindedAtEoD and (datetime.datetime.now() + timedelta(minutes=bot.max_countdown) > endOfDay):
                     if bot.debug:
                         print "People need a reminder"

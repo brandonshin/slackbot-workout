@@ -512,7 +512,7 @@ def isReminderInReminderList(userid, exercise):
 def remindPeopleForIncompleteExercisesAtEoD(bot):
     for exercise in EXERCISES_FOR_DAY:
         for user in exercise.users:
-            if user.id not in exercise.completed_users and user.id not in exercise.refused_users:
+            if user not in exercise.completed_users and user not in exercise.refused_users:
                 reminderMessage = user.getUserHandle() + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
                 if bot.debug:
                     print reminderMessage

@@ -512,7 +512,7 @@ def isReminderInReminderList(userid, exercise):
 def remindPeopleForIncompleteExercisesAtEoD(bot):
     for exercise in EXERCISES_FOR_DAY:
         for user in exercise.users:
-            if user.id not in exercise.completed_users and user.id not in exercise.refused_users:
+            if user not in exercise.completed_users and user not in exercise.refused_users:
                 reminderMessage = user.getUserHandle() + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
                 if bot.debug:
                     print reminderMessage
@@ -626,7 +626,7 @@ def main(argv):
                 remindTheSleepies(bot)
 
                 # remind slackers to do their workouts at the EoD
-                endOfDay =  datetime.datetime.now().replace(hour=bot.office_hours_end)
+                endOfDay =  datetime.datetime.now().replace(hour=bot.office_hours_end, minute=0, second=0)
                 if not alreadyRemindedAtEoD and (datetime.datetime.now() + timedelta(minutes=bot.max_countdown) > endOfDay):
                     if bot.debug:
                         print "People need a reminder"

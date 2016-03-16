@@ -471,7 +471,6 @@ def listenForReactions(bot):
 
             timestamp = exercise.timestamp
             response = requests.get("https://slack.com/api/reactions.get?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&full=1&timestamp=" + timestamp)
-            print "listenForReactions response: " + response.text
             reactions = json.loads(response.text, encoding='utf-8')["message"]["reactions"]
             for reaction in reactions:
                 if reaction["name"] == "yes":
@@ -536,7 +535,6 @@ def remindTheSleepies(bot):
 
 def listenForCommands(bot, all_employees):
     response = requests.get("https://slack.com/api/channels.history?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&oldest=" + bot.last_listen_ts)
-    print "listenForCommands response: " + response.text
     response_json = json.loads(response.text, encoding='utf-8')
     messages = response_json["messages"]
     if not messages:

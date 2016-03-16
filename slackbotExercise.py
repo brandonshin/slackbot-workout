@@ -471,36 +471,37 @@ def listenForReactions(bot):
 
             timestamp = exercise.timestamp
             response = requests.get("https://slack.com/api/reactions.get?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&full=1&timestamp=" + timestamp)
-            reactions = json.loads(response.text, encoding='utf-8')["message"]["reactions"]
-            for reaction in reactions:
-                if reaction["name"] == "yes":
-                    users_who_have_reacted_with_yes = reaction["users"]
-                elif reaction["name"] == "no":
-                    users_who_have_reacted_with_no = reaction["users"]
-                elif reaction["name"] == "sleeping":
-                    users_who_have_reacted_with_sleeping = reaction["users"]
+            if json.loads(response.text, encoding='utf-8')["ok"] == True:
+                reactions = json.loads(response.text, encoding='utf-8')["message"]["reactions"]
+                for reaction in reactions:
+                    if reaction["name"] == "yes":
+                        users_who_have_reacted_with_yes = reaction["users"]
+                    elif reaction["name"] == "no":
+                        users_who_have_reacted_with_no = reaction["users"]
+                    elif reaction["name"] == "sleeping":
+                        users_who_have_reacted_with_sleeping = reaction["users"]
 
-            for user in exercise.users:
-                if user.id in users_who_have_reacted_with_yes and user not in exercise.completed_users:
-                    exercise_name = exercise.exercise["name"]
-                    print user.real_name + " has completed their " + exercise_name + " after " + str((time.time() - exercise.time_assigned)) + " seconds"
-                    exercise.count_of_acknowledged += 1
-                    exercise.completed_users.append(user)
-                    if bot.database:
-                        query = dict(username='@'+user.username, exercise=exercise_name, assigned_at=exercise.time_assigned, completed_at=time.time())
-                        bot.db.complete(query)
-                elif user.id in users_who_have_reacted_with_no and user not in exercise.refused_users and user not in exercise.completed_users:
-                    exercise_name = exercise.exercise["name"]
-                    print user.real_name + " refuses to complete their " + exercise_name
-                    exercise.refused_users.append(user)
-                    exercise.count_of_acknowledged += 1
-                elif not isReminderInReminderList(user.id, exercise) and user.id in users_who_have_reacted_with_sleeping:
-                    exercise.snoozed_users.append(Reminder(timestamp, datetime.datetime.now(), user.id, exercise))
+                for user in exercise.users:
+                    if user.id in users_who_have_reacted_with_yes and user not in exercise.completed_users:
+                        exercise_name = exercise.exercise["name"]
+                        print user.real_name + " has completed their " + exercise_name + " after " + str((time.time() - exercise.time_assigned)) + " seconds"
+                        exercise.count_of_acknowledged += 1
+                        exercise.completed_users.append(user)
+                        if bot.database:
+                            query = dict(username='@'+user.username, exercise=exercise_name, assigned_at=exercise.time_assigned, completed_at=time.time())
+                            bot.db.complete(query)
+                    elif user.id in users_who_have_reacted_with_no and user not in exercise.refused_users and user not in exercise.completed_users:
+                        exercise_name = exercise.exercise["name"]
+                        print user.real_name + " refuses to complete their " + exercise_name
+                        exercise.refused_users.append(user)
+                        exercise.count_of_acknowledged += 1
+                    elif not isReminderInReminderList(user.id, exercise) and user.id in users_who_have_reacted_with_sleeping:
+                        exercise.snoozed_users.append(Reminder(timestamp, datetime.datetime.now(), user.id, exercise))
 
 
-            if exercise.count_of_acknowledged == len(exercise.users):
-                EXERCISES_FOR_DAY.remove(exercise)
-                print "Removing Exercise"
+                if exercise.count_of_acknowledged == len(exercise.users):
+                    EXERCISES_FOR_DAY.remove(exercise)
+                    print "Removing Exercise"
 
 def isReminderInReminderList(userid, exercise):
     for reminder in exercise.snoozed_users:

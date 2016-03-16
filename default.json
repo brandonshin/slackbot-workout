@@ -6,7 +6,7 @@
   "defaultSnoozeLength": 30,
 
   "officeHours": {
-    "on": false,
+    "on": true,
     "begin": 9,
     "end": 17
    },

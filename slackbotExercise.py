@@ -471,8 +471,14 @@ def listenForReactions(bot):
 
             timestamp = exercise.timestamp
             response = requests.get("https://slack.com/api/reactions.get?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&full=1&timestamp=" + timestamp)
-            if json.loads(response.text, encoding='utf-8')["ok"] == True:
-                reactions = json.loads(response.text, encoding='utf-8')["message"]["reactions"]
+            try:
+                parsed_message = json.loads(response.text, encoding='utf-8')
+            except:
+                print "Caught exception parsing reaction response status: " + str(response.status_code) + ", text: " + response.text
+                continue
+
+            if parsed_message["ok"] == True:
+                reactions = parsed_message["message"]["reactions"]
                 for reaction in reactions:
                     if reaction["name"] == "yes":
                         users_who_have_reacted_with_yes = reaction["users"]

@@ -107,10 +107,10 @@ class Exercises:
         return 'Exercises("%s", "%s", "%s")' % (self.exercise, self.users, self.timestamp)
 
 class Reminder:
-    def __init__(self, exercise_timestamp_string, reminder_timestamp, userid, exercise):
+    def __init__(self, exercise_timestamp_string, reminder_timestamp, user, exercise):
         self.exercise_timestamp_string = exercise_timestamp_string
         self.reminder_timestamp = reminder_timestamp
-        self.userid = userid
+        self.user = user
         self.has_been_processed = False
         self.exercise = exercise
 
@@ -502,7 +502,7 @@ def listenForReactions(bot):
                         exercise.refused_users.append(user)
                         exercise.count_of_acknowledged += 1
                     elif not isReminderInReminderList(user.id, exercise) and user.id in users_who_have_reacted_with_sleeping:
-                        exercise.snoozed_users.append(Reminder(timestamp, datetime.datetime.now(), user.id, exercise))
+                        exercise.snoozed_users.append(Reminder(timestamp, datetime.datetime.now(), user, exercise))
 
 
                 if exercise.count_of_acknowledged == len(exercise.users):
@@ -511,7 +511,7 @@ def listenForReactions(bot):
 
 def isReminderInReminderList(userid, exercise):
     for reminder in exercise.snoozed_users:
-        if userid == reminder.userid and exercise.timestamp == reminder.exercise_timestamp_string:
+        if userid == reminder.user.id and exercise.timestamp == reminder.exercise_timestamp_string:
             return True
     return False
 
@@ -532,8 +532,8 @@ def remindTheSleepies(bot):
             if not reminder.has_been_processed:
                 # if now is beyond the reminder timestamp plus the snooze length, then we should remind them
                 # also, don't remind them if they completed/rejected the exercise after they were added to the reminders
-                if datetime.datetime.now() >= reminder.reminder_timestamp + timedelta(minutes=bot.default_snooze_length) and reminder.userid not in exercise.completed_users and reminder.userid not in exercise.refused_users:
-                    reminderMessage = bot.user_cache[reminder.userid].getUserHandle() + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
+                if datetime.datetime.now() >= reminder.reminder_timestamp + timedelta(minutes=bot.default_snooze_length) and reminder.user not in exercise.completed_users and reminder.user not in exercise.refused_users:
+                    reminderMessage = bot.user_cache[reminder.user.userid].getUserHandle() + " still needs to do " + str(exercise.exercise_reps) + " " + str(exercise.exercise["units"]) + " " + exercise.exercise["name"]
                     if bot.debug:
                         print reminderMessage
                     else:
@@ -573,7 +573,7 @@ def listenForCommands(bot, all_employees):
                 break
 
             else:
-                prompt_actual_command = "I'm sorry, I can't understand you"
+                prompt_actual_command = "I can't understand you! You must have too much crap in your mouth!"
                 requests.post(bot.post_message_URL + "&text=" + prompt_actual_command)
 
 

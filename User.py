@@ -50,8 +50,8 @@ class User:
         params = {"token": USER_TOKEN_STRING, "user": self.id}
         response = requests.get("https://slack.com/api/users.info", params=params)
 
-        parsed_message = parseJSON(response)
-        if parsed_message["ok"] == True:
+        parsed_message, isMessageOkay = parseSlackJSON(response)
+        if isMessageOkay:
             user_obj = parsed_message["user"]
 
             username = user_obj["name"]
@@ -77,8 +77,8 @@ class User:
     def isActive(self):
         params = {"token": USER_TOKEN_STRING, "user": self.id}
         response = requests.get("https://slack.com/api/users.getPresence",params=params)
-        parsed_message = parseJSON(response)
-        if parsed_message["ok"] == True:
+        parsed_message, isMessageOkay = parseSlackJSON(response)
+        if isMessageOkay:
             status = parsed_message["presence"]
             return status == "active"
         else:
@@ -97,8 +97,12 @@ class User:
 
 
 def parseSlackJSON(response):
+    isMessageOkay = False
     try:
-        parsed_message = json.loads(response.text, encoding='utf-8')
+        if response.ok:
+            parsed_message = json.loads(response.text, encoding='utf-8')
     except:
-        print "Caught exception parsing reaction response status: " + str(response.status_code) + ", text: " + response.text
-    return parsed_message
+        print "Caught exception parsing response status: " + str(response.status_code) + ", text: " + response.text
+
+    isMessageOkay = response.ok & parsed_message["ok"]
+    return parsed_message, isMessageOkay

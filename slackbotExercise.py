@@ -267,8 +267,7 @@ def assignExercise(bot, exercise, all_employees):
         active_users = fetchActiveUsers(bot, all_employees)
 
         # only add active users to the exercise list. This will mean if someone is active later and marks :yes: they won't get credit.
-        for user_id in active_users:
-            user = bot.user_cache[user_id]
+        for user in active_users:
             user.addExercise(exercise, exercise_reps)
             winners.append(user)
     else:

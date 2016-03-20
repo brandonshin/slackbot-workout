@@ -77,6 +77,7 @@ class Bot:
             self.office_hours_on = settings["officeHours"]["on"]
             self.office_hours_begin = settings["officeHours"]["begin"]
             self.office_hours_end = settings["officeHours"]["end"]
+            self.office_hours_enable_weekends = settings["officeHours"]["enableWeekends"]
             self.user_id = settings["botUserId"]
             self.default_snooze_length = settings["defaultSnoozeLength"]
 
@@ -368,10 +369,17 @@ def countExercisesUnitsForDay(bot, exerciseID, dayOfExerciseString, user):
 def isOfficeHours(bot):
     if not bot.office_hours_on:
         if bot.debug:
-            print "not office hours"
+            print "office hours turned off"
         return True
     now = datetime.datetime.now()
     now_time = now.time()
+
+    # check if it's the weekend
+    if not bot.office_hours_enable_weekends and (now.weekday() == 5 or now.weekday() == 6):
+        if bot.debug:
+            print "not in office hours - it's the weekend"
+        return False
+
     if now_time >= datetime.time(bot.office_hours_begin) and now_time <= datetime.time(bot.office_hours_end):
         if bot.debug:
             print "in office hours"

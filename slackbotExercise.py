@@ -264,8 +264,10 @@ def assignExercise(bot, exercise, all_employees):
     # EVERYBODY
     if random.random() < bot.group_callout_chance:
         winner_announcement += "@channel!"
+        active_users = fetchActiveUsers(bot, all_employees)
 
-        for user_id in bot.user_cache:
+        # only add active users to the exercise list. This will mean if someone is active later and marks :yes: they won't get credit.
+        for user_id in active_users:
             user = bot.user_cache[user_id]
             user.addExercise(exercise, exercise_reps)
             winners.append(user)

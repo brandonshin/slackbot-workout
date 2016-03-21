@@ -77,6 +77,7 @@ class Bot:
             self.office_hours_on = settings["officeHours"]["on"]
             self.office_hours_begin = settings["officeHours"]["begin"]
             self.office_hours_end = settings["officeHours"]["end"]
+            self.office_hours_enable_weekends = settings["officeHours"]["enableWeekends"]
             self.user_id = settings["botUserId"]
             self.default_snooze_length = settings["defaultSnoozeLength"]
 
@@ -264,9 +265,10 @@ def assignExercise(bot, exercise, all_employees):
     # EVERYBODY
     if random.random() < bot.group_callout_chance:
         winner_announcement += "@channel!"
+        active_users = fetchActiveUsers(bot, all_employees)
 
-        for user_id in bot.user_cache:
-            user = bot.user_cache[user_id]
+        # only add active users to the exercise list. This will mean if someone is active later and marks :yes: they won't get credit.
+        for user in active_users:
             user.addExercise(exercise, exercise_reps)
             winners.append(user)
     else:
@@ -367,10 +369,17 @@ def countExercisesUnitsForDay(bot, exerciseID, dayOfExerciseString, user):
 def isOfficeHours(bot):
     if not bot.office_hours_on:
         if bot.debug:
-            print "not office hours"
+            print "office hours turned off"
         return True
     now = datetime.datetime.now()
     now_time = now.time()
+
+    # check if it's the weekend
+    if not bot.office_hours_enable_weekends and (now.weekday() == 5 or now.weekday() == 6):
+        if bot.debug:
+            print "not in office hours - it's the weekend"
+        return False
+
     if now_time >= datetime.time(bot.office_hours_begin) and now_time <= datetime.time(bot.office_hours_end):
         if bot.debug:
             print "in office hours"

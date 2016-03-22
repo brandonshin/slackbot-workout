@@ -4,7 +4,7 @@ import requests
 import subprocess
 
 def postMessage(message):
-    postMessageURL = "https://slack.com/api/chat.postMessage?token=" + os.environ['SLACK_USER_TOKEN_STRING'] + "&channel=G0PT4RSL9&as_user=true&link_names=1&text=" + message
+    postMessageURL = "https://slack.com/api/chat.postMessage?token=" + os.environ['SLACK_USER_TOKEN_STRING'] + "&channel=" + os.environ['SLACK_ADMIN_CHANNEL_ID'] + "&as_user=true&link_names=1&text=" + message
     requests.post(postMessageURL)
 
 def findProcess( city ):

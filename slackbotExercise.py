@@ -15,6 +15,7 @@ import pprint
 from User import User
 from multiprocessing import Process
 from Database import DB
+import Http
 
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
@@ -177,8 +178,8 @@ def fetchAllEmployeesFromBamboo(bot):
         if bot.debug:
             print "called bamboo successfully"
 
-        parsed_message = json.loads(response.text, encoding='utf-8')
         try:
+            parsed_message = json.loads(response.text, encoding='utf-8')
             all_employees = parsed_message["employees"]
         except:
             print "Caught exception parsing bamboo response status: " + str(response.status_code) + ", text: " + response.text
@@ -197,7 +198,7 @@ def fetchActiveUsers(bot, all_employees):
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
     response = requests.get("https://slack.com/api/channels.info", params=params)
     print "fetchActiveUsers response: " + response.text
-    parsed_message, isMessageOkay = parseSlackJSON(response)
+    parsed_message, isMessageOkay = Http.parseSlackJSON(response)
 
     if isMessageOkay:
         user_ids = parsed_message["channel"]["members"]
@@ -241,7 +242,7 @@ def announceExercise(bot, minute_interval):
         response = requests.post(bot.post_message_URL + "&text=" + lottery_announcement)
         print "announceExercise response: " + response.text
         if bot.last_listen_ts == '0':
-            parsed_message, isMessageOkay = parseSlackJSON(response)
+            parsed_message, isMessageOkay = Http.parseSlackJSON(response)
             if isMessageOkay:
                 bot.last_listen_ts = parsed_message["ts"]
     print lottery_announcement
@@ -301,7 +302,7 @@ def assignExercise(bot, exercise, all_employees):
     if not bot.debug:
         response = requests.post(bot.post_message_URL + "&text=" + winner_announcement)
         print "assignExercise response: " + response.text
-        parsed_message, isMessageOkay = parseSlackJSON(response)
+        parsed_message, isMessageOkay = Http.parseSlackJSON(response)
         if isMessageOkay:
             last_message_timestamp = parsed_message["ts"]
             requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
@@ -438,7 +439,7 @@ def initiateThrowdown(bot, all_employees, message):
             response = requests.post(bot.post_message_URL + "&text=" + challenge_text)
             print "initiateThrowdown response: " + response.text
 
-            parsed_message, isMessageOkay = parseSlackJSON(response)
+            parsed_message, isMessageOkay = Http.parseSlackJSON(response)
             if isMessageOkay:
                 last_message_timestamp = parsed_message["ts"]
                 requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
@@ -479,17 +480,6 @@ def resetChallenges(bot):
 
     print "Reset users' challenges"
 
-def parseSlackJSON(response):
-    isMessageOkay = False
-    try:
-        if response.ok:
-            parsed_message = json.loads(response.text, encoding='utf-8')
-    except:
-        print "Caught exception parsing response status: " + str(response.status_code) + ", text: " + response.text
-
-    isMessageOkay = response.ok & parsed_message["ok"]
-    return parsed_message, isMessageOkay
-
 def listenForReactions(bot):
 
     if not bot.debug:
@@ -497,7 +487,7 @@ def listenForReactions(bot):
 
             timestamp = exercise.timestamp
             response = requests.get("https://slack.com/api/reactions.get?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&full=1&timestamp=" + timestamp)
-            parsed_message, isMessageOkay = parseSlackJSON(response)
+            parsed_message, isMessageOkay = Http.parseSlackJSON(response)
 
             if isMessageOkay:
                 reactions = parsed_message["message"]["reactions"]
@@ -564,7 +554,7 @@ def remindTheSleepies(bot):
 
 def listenForCommands(bot, all_employees):
     response = requests.get("https://slack.com/api/channels.history?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&oldest=" + bot.last_listen_ts)
-    parsed_message, isMessageOkay = parseSlackJSON(response)
+    parsed_message, isMessageOkay = Http.parseSlackJSON(response)
 
     if isMessageOkay:
         messages = parsed_message["messages"]

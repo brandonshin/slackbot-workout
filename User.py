@@ -2,6 +2,7 @@ import os
 import requests
 import json
 import datetime
+import Http
 
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
@@ -50,7 +51,7 @@ class User:
         params = {"token": USER_TOKEN_STRING, "user": self.id}
         response = requests.get("https://slack.com/api/users.info", params=params)
 
-        parsed_message, isMessageOkay = parseSlackJSON(response)
+        parsed_message, isMessageOkay = Http.parseSlackJSON(response)
         if isMessageOkay:
             user_obj = parsed_message["user"]
 
@@ -58,6 +59,7 @@ class User:
             real_name = user_obj["profile"]["real_name"]
 
             return username, real_name
+
 
 
     def getUserHandle(self):
@@ -77,7 +79,7 @@ class User:
     def isActive(self):
         params = {"token": USER_TOKEN_STRING, "user": self.id}
         response = requests.get("https://slack.com/api/users.getPresence",params=params)
-        parsed_message, isMessageOkay = parseSlackJSON(response)
+        parsed_message, isMessageOkay = Http.parseSlackJSON(response)
         if isMessageOkay:
             status = parsed_message["presence"]
             return status == "active"
@@ -94,15 +96,3 @@ class User:
 
     def hasDoneExercise(self, exercise):
         return exercise["id"] in self.exercise_counts
-
-
-def parseSlackJSON(response):
-    isMessageOkay = False
-    try:
-        if response.ok:
-            parsed_message = json.loads(response.text, encoding='utf-8')
-    except:
-        print "Caught exception parsing response status: " + str(response.status_code) + ", text: " + response.text
-
-    isMessageOkay = response.ok & parsed_message["ok"]
-    return parsed_message, isMessageOkay

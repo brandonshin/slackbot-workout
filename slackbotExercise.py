@@ -517,6 +517,10 @@ def listenForReactions(bot):
                     EXERCISES_FOR_DAY.remove(exercise)
                     print "Removing Exercise"
 
+def removeExercises(bot):
+    for exercise in EXERCISES_FOR_DAY:
+        EXERCISES_FOR_DAY.remove(exercise)
+
 def isReminderInReminderList(userid, exercise):
     for reminder in exercise.snoozed_users:
         if userid == reminder.user.id and exercise.timestamp == reminder.exercise_timestamp_string:
@@ -601,8 +605,8 @@ def main(argv):
 
                 # set new day based on the first time we entered office hours
                 if not isNewDay:
-                    EXERCISES_FOR_DAY.clear()
                     resetChallenges(bot)
+                    removeExercises(bot)
                     isNewDay = True
                     alreadyRemindedAtEoD = False
                     # load all employees at the beginning of the day. Only once a day so we don't bombard bamboo

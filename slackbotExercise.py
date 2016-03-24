@@ -204,7 +204,6 @@ def fetchActiveUsers(bot, all_employees):
                 if not bot.first_run:
                     # Push our new users near the front of the queue!
                     bot.user_queue.insert(2,bot.user_cache[user_id])
-
             if bot.user_cache[user_id].isActive():
                 active_users.append(bot.user_cache[user_id])
 
@@ -602,7 +601,7 @@ def main(argv):
 
                 # set new day based on the first time we entered office hours
                 if not isNewDay:
-                    EXERCISES_FOR_DAY = []
+                    EXERCISES_FOR_DAY.clear()
                     resetChallenges(bot)
                     isNewDay = True
                     alreadyRemindedAtEoD = False

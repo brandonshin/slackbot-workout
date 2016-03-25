@@ -124,7 +124,8 @@ def selectUser(bot, exercise, all_employees, previous_winners, active_users):
 
     if len(previous_winners) > 0:
         for previous_winner in previous_winners:
-            active_users.remove(previous_winner)
+            if previous_winner in active_users:
+                active_users.remove(previous_winner)
 
     # Add all active users not already in the user queue
     # Shuffles to randomly add new active users

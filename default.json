@@ -77,7 +77,7 @@
       "name": "jumping jacks",
       "minReps": 30,
       "maxReps": 40,
-      "units": "second",
+      "units": "rep",
       "tutorial": "https://www.youtube.com/watch?v=c4DAnQ6DtF8",
       "listenNames": "jumping jacks;jumpingjacks"
     },
@@ -112,7 +112,7 @@
       "id": 9,
       "name": "burpees",
       "minReps": 5,
-      "maxReps": 20,
+      "maxReps": 10,
       "units": "rep",
       "tutorial": "https://www.youtube.com/watch?v=qnjYyfkcaNI",
       "listenNames": "burpees;burpee"

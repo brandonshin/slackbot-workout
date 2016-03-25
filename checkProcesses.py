@@ -8,7 +8,7 @@ def postMessage(message):
     requests.post(postMessageURL)
 
 def findProcess( city ):
-    ps= subprocess.Popen("ps -ef | grep " + city + " | grep -v grep |grep -v screen", shell=True, stdout=subprocess.PIPE)
+    ps= subprocess.Popen("ps -ef | grep " + city + " | grep -v grep |grep -vi screen", shell=True, stdout=subprocess.PIPE)
     output = ps.stdout.read()
     ps.stdout.close()
     ps.wait()

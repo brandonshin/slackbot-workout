@@ -15,6 +15,7 @@ import pprint
 from User import User
 from multiprocessing import Process
 from Database import DB
+import Http
 
 # Environment variables must be set with your tokens
 USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
@@ -170,17 +171,24 @@ Fetches all of the employees from Bamboohr
 def fetchAllEmployeesFromBamboo(bot):
     headers = {'Authorization': 'Basic %s' % BAMBOO_API_KEY, 'Accept':'application/json'}
     response = requests.get("https://api.bamboohr.com/api/gateway.php/hudl/v1/employees/directory", headers=headers)
-    print "fetchAllEmployees response: " + response.text
+    if bot.debug:
+        print "fetchAllEmployees response: " + response.text
+
     all_employees = []
     if response.ok:
         if bot.debug:
             print "called bamboo successfully"
-        all_employees = json.loads(response.text)["employees"]
+
+        try:
+            parsed_message = json.loads(response.text, encoding='utf-8')
+            all_employees = parsed_message["employees"]
+        except:
+            print "Caught exception parsing bamboo response status: " + str(response.status_code) + ", text: " + response.text
 
         if bot.debug:
             print "number of users " + str(len(all_employees))
     else:
-        response.raise_for_status()
+        print "Error calling bamboo"
     return all_employees
 
 '''
@@ -191,7 +199,10 @@ def fetchActiveUsers(bot, all_employees):
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
     response = requests.get("https://slack.com/api/channels.info", params=params)
     print "fetchActiveUsers response: " + response.text
-    user_ids = json.loads(response.text, encoding='utf-8')["channel"]["members"]
+    parsed_message, isMessageOkay = Http.parseSlackJSON(response)
+
+    if isMessageOkay:
+        user_ids = parsed_message["channel"]["members"]
 
     active_users = []
 
@@ -232,7 +243,9 @@ def announceExercise(bot, minute_interval):
         response = requests.post(bot.post_message_URL + "&text=" + lottery_announcement)
         print "announceExercise response: " + response.text
         if bot.last_listen_ts == '0':
-            bot.last_listen_ts = json.loads(response.text, encoding='utf-8')["ts"]
+            parsed_message, isMessageOkay = Http.parseSlackJSON(response)
+            if isMessageOkay:
+                bot.last_listen_ts = parsed_message["ts"]
     print lottery_announcement
     return exercise
 
@@ -291,10 +304,12 @@ def assignExercise(bot, exercise, all_employees):
     if not bot.debug:
         response = requests.post(bot.post_message_URL + "&text=" + winner_announcement)
         print "assignExercise response: " + response.text
-        last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
-        requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
-        requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
-        requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=sleeping&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+        parsed_message, isMessageOkay = Http.parseSlackJSON(response)
+        if isMessageOkay:
+            last_message_timestamp = parsed_message["ts"]
+            requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+            requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+            requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=sleeping&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
 
 
     exercise_obj = Exercises(exercise, exercise_reps, winners, last_message_timestamp)
@@ -433,10 +448,12 @@ def initiateThrowdown(bot, all_employees, message):
             response = requests.post(bot.post_message_URL + "&text=" + challenge_text)
             print "initiateThrowdown response: " + response.text
 
-            last_message_timestamp = json.loads(response.text, encoding='utf-8')["ts"]
-            requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
-            requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
-            requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=sleeping&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+            parsed_message, isMessageOkay = Http.parseSlackJSON(response)
+            if isMessageOkay:
+                last_message_timestamp = parsed_message["ts"]
+                requests.post("https://slack.com/api/reactions.add?token=" + USER_TOKEN_STRING + "&name=yes&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+                requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=no&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
+                requests.post("https://slack.com/api/reactions.add?token="+ USER_TOKEN_STRING + "&name=sleeping&channel=" + bot.channel_id + "&timestamp=" + last_message_timestamp +  "&as_user=true")
 
             exercise_obj = Exercises(exercise, exercise_reps, challengees, last_message_timestamp)
             EXERCISES_FOR_DAY.append(exercise_obj)
@@ -472,7 +489,6 @@ def resetChallenges(bot):
 
     print "Reset users' challenges"
 
-
 def listenForReactions(bot):
 
     if not bot.debug:
@@ -480,13 +496,9 @@ def listenForReactions(bot):
 
             timestamp = exercise.timestamp
             response = requests.get("https://slack.com/api/reactions.get?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&full=1&timestamp=" + timestamp)
-            try:
-                parsed_message = json.loads(response.text, encoding='utf-8')
-            except:
-                print "Caught exception parsing reaction response status: " + str(response.status_code) + ", text: " + response.text
-                continue
+            parsed_message, isMessageOkay = Http.parseSlackJSON(response)
 
-            if parsed_message["ok"] == True:
+            if isMessageOkay:
                 reactions = parsed_message["message"]["reactions"]
                 for reaction in reactions:
                     if reaction["name"] == "yes":
@@ -551,36 +563,41 @@ def remindTheSleepies(bot):
 
 def listenForCommands(bot, all_employees):
     response = requests.get("https://slack.com/api/channels.history?token=" + USER_TOKEN_STRING + "&channel=" + bot.channel_id + "&oldest=" + bot.last_listen_ts)
-    response_json = json.loads(response.text, encoding='utf-8')
-    messages = response_json["messages"]
-    if not messages:
-        return
+    parsed_message, isMessageOkay = Http.parseSlackJSON(response)
 
-    last_time = messages[-1]['ts']
-    bot.last_listen_ts = last_time
-    command_start = '<@'+bot.user_id.lower()+'>'
-    for message in messages:
-        text = message['text'].lower()
-        if text.startswith(command_start):
+    if isMessageOkay:
+        messages = parsed_message["messages"]
+        if not messages:
+            return
 
-            if 'challenge' in text:
-                initiateThrowdown(bot, all_employees, message)
-                break
+        last_time = messages[-1]['ts']
+        bot.last_listen_ts = last_time
+        command_start = '<@'+bot.user_id.lower()+'>'
+        for message in messages:
+            text = message['text'].lower()
+            if text.startswith(command_start):
 
-            exercise = findExerciseInText(bot, text)
-            if exercise != False:
-                requests.post(bot.post_message_URL + "&text=" + exercise['tutorial'])
-                break
+                if 'challenge' in text:
+                    initiateThrowdown(bot, all_employees, message)
+                    break
 
-            # Check for help command
-            if 'help' in text:
-                help_message = 'Just send me a name of an exercise, and I will teach you how to do it.'
-                for exercise in bot.exercises:
-                    help_message += '\n ' + exercise['name']
-                help_message += '\n If you want to issue a challenge say `@hudl_workout I challenge @PERSON to 15 EXERCISE`'
-                requests.post(bot.post_message_URL + "&text=" + help_message)
-                break
+                exercise = findExerciseInText(bot, text)
+                if exercise != False:
+                    requests.post(bot.post_message_URL + "&text=" + exercise['tutorial'])
+                    break
 
+                # Check for help command
+                if 'help' in text:
+                    help_message = 'Just send me a name of an exercise, and I will teach you how to do it.'
+                    for exercise in bot.exercises:
+                        help_message += '\n ' + exercise['name']
+                    help_message += '\n If you want to issue a challenge say `@hudl_workout I challenge @PERSON to 15 EXERCISE`'
+                    requests.post(bot.post_message_URL + "&text=" + help_message)
+                    break
+
+                else:
+                    prompt_actual_command = "I'm sorry, I can't understand you"
+                    requests.post(bot.post_message_URL + "&text=" + prompt_actual_command)
             else:
                 prompt_actual_command = "I can't understand you! You must have too much crap in your mouth!"
                 requests.post(bot.post_message_URL + "&text=" + prompt_actual_command)

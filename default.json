@@ -42,7 +42,7 @@
       "minReps": 40,
       "maxReps": 60,
       "units": "second",
-      "tutorial": "Tutorial for planks here",
+      "tutorial": "http://30dayfitnesschallenges.com/how-to-do-a-plank/",
       "listenNames": "planks;plank"
     },
     {
@@ -51,7 +51,7 @@
       "minReps": 40,
       "maxReps": 50,
       "units": "second",
-      "tutorial": "Tutorial for wall sits here",
+      "tutorial": "https://www.youtube.com/watch?v=XULOKw4E4P4",
       "listenNames": "wall sits;wall sit;wallsit;wallsits"
     },
     {
@@ -60,7 +60,7 @@
       "minReps": 15,
       "maxReps": 30,
       "units": "rep",
-      "tutorial": "Tutorial for chair dips here",
+      "tutorial": "http://www.dummies.com/how-to/content/how-to-do-chair-dips.html",
       "listenNames": "chair dips;chair dip;chairdip;chairdips"
     },
     {
@@ -69,7 +69,7 @@
       "minReps": 20,
       "maxReps": 30,
       "units": "rep",
-      "tutorial": "Tutorial for calf raises here",
+      "tutorial": "http://www.dummies.com/how-to/content/how-to-do-the-standing-calf-raise.html",
       "listenNames": "calf raises;calf raise"
     },
     {
@@ -78,7 +78,7 @@
       "minReps": 30,
       "maxReps": 40,
       "units": "second",
-      "tutorial": "Tutorial for jumping jacks here",
+      "tutorial": "https://www.youtube.com/watch?v=c4DAnQ6DtF8",
       "listenNames": "jumping jacks;jumpingjacks"
     },
     {
@@ -87,7 +87,7 @@
       "minReps": 20,
       "maxReps": 30,
       "units": "second",
-      "tutorial": "Tutorial for jog in place here",
+      "tutorial": "https://www.youtube.com/watch?v=B6nFhcI4tgI",
       "listenNames": "jog in place"
     },
     {
@@ -96,7 +96,7 @@
       "minReps": 20,
       "maxReps": 30,
       "units": "rep",
-      "tutorial": "Tutorial for sit ups here",
+      "tutorial": "http://30dayfitnesschallenges.com/how-to-do-sit-ups/",
       "listenNames": "situps;sit ups;situp;sit up"
     },
     {
@@ -105,7 +105,7 @@
       "minReps": 10,
       "maxReps": 30,
       "units": "rep",
-      "tutorial": "Tutorial for lunges here",
+      "tutorial": "http://30dayfitnesschallenges.com/how-to-do-lunges/",
       "listenNames": "lunges;lunge"
     },
     {
@@ -114,7 +114,7 @@
       "minReps": 5,
       "maxReps": 20,
       "units": "rep",
-      "tutorial": "Tutorial for burpees here",
+      "tutorial": "https://www.youtube.com/watch?v=qnjYyfkcaNI",
       "listenNames": "burpees;burpee"
     }
   ]

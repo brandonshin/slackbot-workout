@@ -1,20 +1,24 @@
 {
-  "teamDomain": "yourDomainHere",
-  "channelName": "general",
-  "channelId": "channelIdHere",
+  "teamDomain": "hudl",
+  "channelName": "",
+  "channelId": "",
+  "botUserId": "",
+  "defaultSnoozeLength": 30,
 
   "officeHours": {
-    "on": false,
+    "on": true,
     "begin": 9,
-    "end": 17
+    "end": 17,
+    "enableWeekends": false
    },
 
   "debug": false,
+  "database": false,
 
   "callouts": {
     "timeBetween": {
-      "minTime": 17,
-      "maxTime": 23,
+      "minTime": 1,
+      "maxTime": 2,
       "units": "minutes"
     },
     "numPeople": 3,
@@ -28,35 +32,90 @@
       "name": "pushups",
       "minReps": 15,
       "maxReps": 20,
-      "units": "rep"
+      "units": "rep",
+      "tutorial": "https://www.youtube.com/watch?v=4dF1DOWzf20",
+      "listenNames": "pushups;pushup;push ups;push up"
     },
     {
       "id": 1,
       "name": "planks",
       "minReps": 40,
       "maxReps": 60,
-      "units": "second"
+      "units": "second",
+      "tutorial": "http://30dayfitnesschallenges.com/how-to-do-a-plank/",
+      "listenNames": "planks;plank"
     },
     {
       "id": 2,
       "name": "wall sit",
       "minReps": 40,
       "maxReps": 50,
-      "units": "second"
+      "units": "second",
+      "tutorial": "https://www.youtube.com/watch?v=XULOKw4E4P4",
+      "listenNames": "wall sits;wall sit;wallsit;wallsits"
     },
     {
       "id": 3,
       "name": "chair dips",
       "minReps": 15,
       "maxReps": 30,
-      "units": "rep"
+      "units": "rep",
+      "tutorial": "http://www.dummies.com/how-to/content/how-to-do-chair-dips.html",
+      "listenNames": "chair dips;chair dip;chairdip;chairdips"
     },
     {
       "id": 4,
       "name": "calf raises",
       "minReps": 20,
       "maxReps": 30,
-      "units": "rep"
+      "units": "rep",
+      "tutorial": "http://www.dummies.com/how-to/content/how-to-do-the-standing-calf-raise.html",
+      "listenNames": "calf raises;calf raise"
+    },
+    {
+      "id": 5,
+      "name": "jumping jacks",
+      "minReps": 30,
+      "maxReps": 40,
+      "units": "rep",
+      "tutorial": "https://www.youtube.com/watch?v=c4DAnQ6DtF8",
+      "listenNames": "jumping jacks;jumpingjacks"
+    },
+    {
+      "id": 6,
+      "name": "jog in place",
+      "minReps": 20,
+      "maxReps": 30,
+      "units": "second",
+      "tutorial": "https://www.youtube.com/watch?v=B6nFhcI4tgI",
+      "listenNames": "jog in place"
+    },
+    {
+      "id": 7,
+      "name": "sit ups",
+      "minReps": 20,
+      "maxReps": 30,
+      "units": "rep",
+      "tutorial": "http://30dayfitnesschallenges.com/how-to-do-sit-ups/",
+      "listenNames": "situps;sit ups;situp;sit up"
+    },
+    {
+      "id": 8,
+      "name": "lunges",
+      "minReps": 10,
+      "maxReps": 30,
+      "units": "rep",
+      "tutorial": "http://30dayfitnesschallenges.com/how-to-do-lunges/",
+      "listenNames": "lunges;lunge"
+    },
+    {
+      "id": 9,
+      "name": "burpees",
+      "minReps": 5,
+      "maxReps": 10,
+      "units": "rep",
+      "tutorial": "https://www.youtube.com/watch?v=qnjYyfkcaNI",
+      "listenNames": "burpees;burpee"
     }
   ]
 }

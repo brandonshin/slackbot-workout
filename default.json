@@ -1,7 +1,7 @@
 {
-  "teamDomain": "yourDomainHere",
-  "channelName": "general",
-  "channelId": "channelIdHere",
+  "teamDomain": "hudl",
+  "channelName": "",
+  "channelId": "",
 
   "officeHours": {
     "on": false,
@@ -13,8 +13,8 @@
 
   "callouts": {
     "timeBetween": {
-      "minTime": 17,
-      "maxTime": 23,
+      "minTime": 1,
+      "maxTime": 2,
       "units": "minutes"
     },
     "numPeople": 3,
@@ -57,6 +57,41 @@
       "minReps": 20,
       "maxReps": 30,
       "units": "rep"
-    }
+    },
+    {
+      "id": 5,
+      "name": "jumping jacks",
+      "minReps": 30,
+      "maxReps": 40,
+      "units": "second"
+    },
+    {
+      "id": 6,
+      "name": "jog in place",
+      "minReps": 20,
+      "maxReps": 30,
+      "units": "second"
+    },
+    {
+      "id": 7,
+      "name": "sit ups",
+      "minReps": 20,
+      "maxReps": 30,
+      "units": "rep"
+    },
+    {
+      "id": 8,
+      "name": "lunges",
+      "minReps": 10,
+      "maxReps": 30,
+      "units": "rep"
+    },
+    {
+      "id": 9,
+      "name": "burpees",
+      "minReps": 5,
+      "maxReps": 20,
+      "units": "rep"
+    },
   ]
 }

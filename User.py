@@ -26,6 +26,9 @@ class User:
 
         # A record of past runs
         self.past_workouts = {}
+        
+        # Last exercise time
+        self.last_workout = datetime.datetime.now() - datetime.timedelta(days = 1)
 
         print "New user: " + self.real_name + " (" + self.username + ")"
 
@@ -72,13 +75,17 @@ class User:
             print "Error fetching online status for " + self.getUserHandle()
             return False
 
-    def addExercise(self, exercise, reps):
+    def addExercise(self, exercise, reps, channel):
         # Add to total counts
         self.exercises[exercise["id"]] = self.exercises.get(exercise["id"], 0) + reps
         self.exercise_counts[exercise["id"]] = self.exercise_counts.get(exercise["id"], 0) + 1
 
         # Add to exercise history record
         self.exercise_history.append([datetime.datetime.now().isoformat(),exercise["id"],exercise["name"],reps,exercise["units"]])
+        
+        # Update last workout time only if not @channel
+        if not channel:
+            self.last_workout = datetime.datetime.now()
 
     def hasDoneExercise(self, exercise):
         return exercise["id"] in self.exercise_counts

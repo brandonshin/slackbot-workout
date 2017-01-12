@@ -1,11 +1,11 @@
 {
-  "teamDomain": "yourDomainHere",
-  "channelName": "general",
-  "channelId": "channelIdHere",
+  "teamDomain": "imgur",
+  "channelName": "fitness",
+  "channelId": "C0K3W0SQL",
 
   "officeHours": {
-    "on": false,
-    "begin": 9,
+    "on": true,
+    "begin": 10,
     "end": 17
    },
 
@@ -13,11 +13,19 @@
 
   "callouts": {
     "timeBetween": {
-      "minTime": 17,
-      "maxTime": 23,
+      "minTime": 10,
+      "maxTime": 22,
       "units": "minutes"
     },
-    "numPeople": 3,
+    "restTime": {
+      "minTime": 60,
+      "maxTime": 240,
+    },
+    "pickOdds": {
+      "minOdds": 0.05,
+      "maxOdds": 0.8,
+    },
+    "numPeople": 8,
     "slidingWindowSize": 8,
     "groupCalloutChance": 0.05
   },
@@ -26,36 +34,43 @@
     {
       "id": 0,
       "name": "pushups",
-      "minReps": 15,
-      "maxReps": 20,
+      "minReps": 10,
+      "maxReps": 25,
       "units": "rep"
     },
     {
       "id": 1,
       "name": "planks",
-      "minReps": 40,
-      "maxReps": 60,
+      "minReps": 30,
+      "maxReps": 75,
       "units": "second"
     },
     {
       "id": 2,
       "name": "wall sit",
-      "minReps": 40,
-      "maxReps": 50,
+      "minReps": 30,
+      "maxReps": 60,
       "units": "second"
     },
     {
       "id": 3,
       "name": "chair dips",
-      "minReps": 15,
+      "minReps": 10,
       "maxReps": 30,
       "units": "rep"
     },
     {
       "id": 4,
       "name": "calf raises",
-      "minReps": 20,
+      "minReps": 15,
       "maxReps": 30,
+      "units": "rep"
+    },
+    {
+      "id": 5,
+      "name": "lunges (each side)",
+      "minReps": 8,
+      "maxReps": 15,
       "units": "rep"
     }
   ]

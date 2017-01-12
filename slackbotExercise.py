@@ -65,11 +65,11 @@ class Bot:
             self.office_hours_on = settings["officeHours"]["on"]
             self.office_hours_begin = settings["officeHours"]["begin"]
             self.office_hours_end = settings["officeHours"]["end"]
+            self.user_id = settings["userId"]
 
             self.debug = settings["debug"]
 
-        self.post_URL = "https://" + self.team_domain + ".slack.com/services/hooks/slackbot?token=" + URL_TOKEN_STRING + "&channel=" + HASH + self.channel_name
-
+        self.post_message_URL = "https://slack.com/api/chat.postMessage?token=" + USER_TOKEN_STRING + "&channel=" + self.channel_id + "&as_user=true"
 
 ################################################################################
 '''
@@ -128,15 +128,17 @@ def fetchActiveUsers(bot):
     active_users = []
 
     for user_id in user_ids:
-        # Add user to the cache if not already
-        if user_id not in bot.user_cache:
-            bot.user_cache[user_id] = User(user_id)
-            if not bot.first_run:
-                # Push our new users near the front of the queue!
-                bot.user_queue.insert(2,bot.user_cache[user_id])
+        # Don't add hudl_workout
+        if user_id != bot.user_id:
+            # Add user to the cache if not already
+            if user_id not in bot.user_cache:
+                bot.user_cache[user_id] = User(user_id)
+                if not bot.first_run:
+                    # Push our new users near the front of the queue!
+                    bot.user_queue.insert(2,bot.user_cache[user_id])
 
-        if bot.user_cache[user_id].isActive():
-            active_users.append(bot.user_cache[user_id])
+            if bot.user_cache[user_id].isActive():
+                active_users.append(bot.user_cache[user_id])
 
     if bot.first_run:
         bot.first_run = False
@@ -157,7 +159,7 @@ def selectExerciseAndStartTime(bot):
 
     # Announce the exercise to the thread
     if not bot.debug:
-        requests.post(bot.post_URL, data=lottery_announcement)
+        response = requests.post(bot.post_message_URL + "&text=" + lottery_announcement)
     print lottery_announcement
 
     # Sleep the script until time is up
@@ -221,7 +223,7 @@ def assignExercise(bot, exercise):
 
     # Announce the user
     if not bot.debug:
-        requests.post(bot.post_URL, data=winner_announcement)
+        requests.post(bot.post_message_URL + "&text=" + winner_announcement)
     print winner_announcement
 
 
@@ -256,7 +258,7 @@ def saveUsers(bot):
     s += "```"
 
     if not bot.debug:
-        requests.post(bot.post_URL, data=s)
+        requests.post(bot.post_message_URL + "&text=" + s)
     print s
 
 

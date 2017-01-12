@@ -47,8 +47,8 @@ class User:
                 params=params)
         user_obj = json.loads(response.text, encoding='utf-8')["user"]
 
-        username = user_obj["name"]
-        real_name = user_obj["profile"]["real_name"]
+        username = user_obj["name"].encode('utf-8')
+        real_name = user_obj["profile"]["real_name"].encode('utf-8')
 
         return username, real_name
 
@@ -82,4 +82,3 @@ class User:
 
     def hasDoneExercise(self, exercise):
         return exercise["id"] in self.exercise_counts
-

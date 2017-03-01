@@ -124,10 +124,10 @@ def fetchActiveUsers(bot):
     # Check for new members
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
     if bot.is_private:
-        urlSegment = "channel";
+        urlSegment = "groups";
     else:
-        urlSegment = "group";
-    response = requests.get("https://slack.com/api/" + urlSegment + "s.info", params=params)
+        urlSegment = "channels";
+    response = requests.get("https://slack.com/api/" + urlSegment + ".info", params=params)
     user_ids = json.loads(response.text, encoding='utf-8')[urlSegment]["members"]
 
     active_users = []

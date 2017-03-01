@@ -27,3 +27,12 @@ for channel in channels:
     if channel["name"] == channelName:
         print channel["id"]
         break
+
+#if it's private channel
+response = requests.get("https://slack.com/api/groups.list", params=params)
+channels = json.loads(response.text, encoding='utf-8')["groups"]
+
+for channel in channels:
+    if channel["name"] == channelName:
+        print channel["id"]
+        break

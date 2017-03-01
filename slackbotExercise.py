@@ -55,6 +55,7 @@ class Bot:
 
             self.team_domain = settings["teamDomain"]
             self.channel_name = settings["channelName"]
+            self.is_private = settings["isPrivate"]
             self.min_countdown = settings["callouts"]["timeBetween"]["minTime"]
             self.max_countdown = settings["callouts"]["timeBetween"]["maxTime"]
             self.num_people_per_callout = settings["callouts"]["numPeople"]
@@ -122,8 +123,12 @@ Fetches a list of all active users in the channel
 def fetchActiveUsers(bot):
     # Check for new members
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
-    response = requests.get("https://slack.com/api/channels.info", params=params)
-    user_ids = json.loads(response.text, encoding='utf-8')["channel"]["members"]
+    if self.is_private:
+        urlSegment = "channel";
+    else:
+        urlSegment = "group";
+    response = requests.get("https://slack.com/api/" + urlSegment + "s.info", params=params)
+    user_ids = json.loads(response.text, encoding='utf-8')[urlSegment]["members"]
 
     active_users = []
 

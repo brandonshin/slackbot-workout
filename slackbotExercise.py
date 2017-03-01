@@ -123,7 +123,7 @@ Fetches a list of all active users in the channel
 def fetchActiveUsers(bot):
     # Check for new members
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
-    if self.is_private:
+    if bot.is_private:
         urlSegment = "channel";
     else:
         urlSegment = "group";

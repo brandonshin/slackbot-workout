@@ -2,7 +2,7 @@
   "teamDomain": "yourDomainHere",
   "channelName": "general",
   "channelId": "channelIdHere",
-  "isPrivate": "false",
+  "isPrivate": false,
 
   "officeHours": {
     "on": false,

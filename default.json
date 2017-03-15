@@ -2,6 +2,7 @@
   "teamDomain": "yourDomainHere",
   "channelName": "general",
   "channelId": "channelIdHere",
+  "isPrivate": false,
 
   "officeHours": {
     "on": false,
@@ -26,6 +27,7 @@
     {
       "id": 0,
       "name": "pushups",
+      "instruction": "",
       "minReps": 15,
       "maxReps": 20,
       "units": "rep"
@@ -33,6 +35,7 @@
     {
       "id": 1,
       "name": "planks",
+      "instruction": "",
       "minReps": 40,
       "maxReps": 60,
       "units": "second"
@@ -40,6 +43,7 @@
     {
       "id": 2,
       "name": "wall sit",
+      "instruction": "",
       "minReps": 40,
       "maxReps": 50,
       "units": "second"
@@ -47,6 +51,7 @@
     {
       "id": 3,
       "name": "chair dips",
+      "instruction": "",
       "minReps": 15,
       "maxReps": 30,
       "units": "rep"
@@ -54,6 +59,7 @@
     {
       "id": 4,
       "name": "calf raises",
+      "instruction": "",
       "minReps": 20,
       "maxReps": 30,
       "units": "rep"

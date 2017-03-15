@@ -55,6 +55,7 @@ class Bot:
 
             self.team_domain = settings["teamDomain"]
             self.channel_name = settings["channelName"]
+            self.is_private = settings["isPrivate"]
             self.min_countdown = settings["callouts"]["timeBetween"]["minTime"]
             self.max_countdown = settings["callouts"]["timeBetween"]["maxTime"]
             self.num_people_per_callout = settings["callouts"]["numPeople"]
@@ -78,6 +79,7 @@ Selects an active user from a list of users
 def selectUser(bot, exercise):
     active_users = fetchActiveUsers(bot)
 
+    #print len(active_users)
     # Add all active users not already in the user queue
     # Shuffles to randomly add new active users
     shuffle(active_users)
@@ -122,8 +124,12 @@ Fetches a list of all active users in the channel
 def fetchActiveUsers(bot):
     # Check for new members
     params = {"token": USER_TOKEN_STRING, "channel": bot.channel_id}
-    response = requests.get("https://slack.com/api/channels.info", params=params)
-    user_ids = json.loads(response.text, encoding='utf-8')["channel"]["members"]
+    if bot.is_private:
+        urlSegment = "group";
+    else:
+        urlSegment = "channel";
+    response = requests.get("https://slack.com/api/" + urlSegment + "s.info", params=params)
+    user_ids = json.loads(response.text, encoding='utf-8')[urlSegment]["members"]
 
     active_users = []
 
@@ -192,7 +198,7 @@ def assignExercise(bot, exercise):
     # Select number of reps
     exercise_reps = random.randrange(exercise["minReps"], exercise["maxReps"]+1)
 
-    winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " RIGHT NOW "
+    winner_announcement = str(exercise_reps) + " " + str(exercise["units"]) + " " + exercise["name"] + " (" + exercise["instruction"] + ") RIGHT NOW "
 
     # EVERYBODY
     if random.random() < bot.group_callout_chance:
@@ -205,6 +211,10 @@ def assignExercise(bot, exercise):
         logExercise(bot,"@channel",exercise["name"],exercise_reps,exercise["units"])
 
     else:
+        amount_active_users = len(fetchActiveUsers(bot))
+        if bot.num_people_per_callout > amount_active_users:
+                bot.num_people_per_callout = amount_active_users
+
         winners = [selectUser(bot, exercise) for i in range(bot.num_people_per_callout)]
 
         for i in range(bot.num_people_per_callout):

@@ -9,6 +9,10 @@ import pickle
 import os.path
 import datetime
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 from User import User
 
 # Environment variables must be set with your tokens

@@ -50,7 +50,7 @@ class Bot:
     '''
     def setConfiguration(self):
         # Read variables fromt the configuration file
-        with open('config.json') as f:
+        with open('default.json') as f:
             settings = json.load(f)
 
             self.team_domain = settings["teamDomain"]

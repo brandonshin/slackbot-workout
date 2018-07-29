@@ -113,7 +113,10 @@ def selectUser(bot, exercise):
 
     # If we weren't able to select one, just pick a random
     print "Selecting user at random (queue length was " + str(len(bot.user_queue)) + ")"
-    return active_users[random.randrange(0, len(active_users))]
+    if len(active_users) > 0:
+        return active_users[random.randrange(0, len(active_users))]
+    else:
+        return None
 
 
 '''
@@ -206,9 +209,9 @@ def assignExercise(bot, exercise):
 
     else:
         winners = [selectUser(bot, exercise) for i in range(bot.num_people_per_callout)]
-
-        for i in range(bot.num_people_per_callout):
-            winner_announcement += str(winners[i].getUserHandle())
+        winners_clean = list(set(filter(None, winners)))
+        for i in range(len(winners_clean)):
+            winner_announcement += str(winners_clean[i].getUserHandle())
             if i == bot.num_people_per_callout - 2:
                 winner_announcement += ", and "
             elif i == bot.num_people_per_callout - 1:
@@ -216,8 +219,8 @@ def assignExercise(bot, exercise):
             else:
                 winner_announcement += ", "
 
-            winners[i].addExercise(exercise, exercise_reps)
-            logExercise(bot,winners[i].getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
+            winners_clean[i].addExercise(exercise, exercise_reps)
+            logExercise(bot,winners_clean[i].getUserHandle(),exercise["name"],exercise_reps,exercise["units"])
 
     # Announce the user
     if not bot.debug:
@@ -271,7 +274,8 @@ def isOfficeHours(bot):
         return True
     now = datetime.datetime.now()
     now_time = now.time()
-    if now_time >= datetime.time(bot.office_hours_begin) and now_time <= datetime.time(bot.office_hours_end):
+    weekday = now.weekday()
+    if now_time >= datetime.time(bot.office_hours_begin) and now_time <= datetime.time(bot.office_hours_end) and (weekday != 5) and (weekday != 6):
         if bot.debug:
             print "in office hours"
         return True

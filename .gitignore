@@ -4,3 +4,7 @@ config.json
 log*.csv
 log*.csv_DEBUG
 user_cache.save
+
+\.idea/
+
+\.venv/

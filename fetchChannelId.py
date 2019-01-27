@@ -25,5 +25,5 @@ channels = json.loads(response.text, encoding='utf-8')["channels"]
 
 for channel in channels:
     if channel["name"] == channelName:
-        print channel["id"]
+        print(channel["id"])
         break

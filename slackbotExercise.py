@@ -149,11 +149,10 @@ period has past.
 '''
 def selectExerciseAndStartTime(bot):
     next_time_interval = selectNextTimeInterval(bot)
-    minute_interval = next_time_interval/60
     exercise = selectExercise(bot)
 
     # Announcement String of next lottery time
-    lottery_announcement = "NEXT LOTTERY FOR " + exercise["name"].upper() + " IS IN " + str(minute_interval) + (" MINUTES" if minute_interval != 1 else " MINUTE")
+    lottery_announcement = "NEXT LOTTERY FOR " + exercise["name"].upper() + " IS IN " + str(next_time_interval) + (" MINUTES" if next_time_interval != 1 else " MINUTE")
 
     # Announce the exercise to the thread
     if not bot.debug:
@@ -162,7 +161,7 @@ def selectExerciseAndStartTime(bot):
 
     # Sleep the script until time is up
     if not bot.debug:
-        time.sleep(next_time_interval)
+        time.sleep(next_time_interval*60)
     else:
         # If debugging, once every 5 seconds
         time.sleep(5)
@@ -182,7 +181,7 @@ def selectExercise(bot):
 Selects the next time interval
 '''
 def selectNextTimeInterval(bot):
-    return random.randrange(bot.min_countdown * 60, bot.max_countdown * 60)
+    return random.randrange(bot.min_countdown, bot.max_countdown)
 
 
 '''
@@ -208,7 +207,7 @@ def assignExercise(bot, exercise):
         winners = [selectUser(bot, exercise) for i in range(bot.num_people_per_callout)]
 
         for i in range(bot.num_people_per_callout):
-            winner_announcement += str(winners[i].getUserHandle())
+            winner_announcement += winners[i].getUserHandle().decode("utf-8")
             if i == bot.num_people_per_callout - 2:
                 winner_announcement += ", and "
             elif i == bot.num_people_per_callout - 1:

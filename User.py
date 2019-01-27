@@ -69,7 +69,7 @@ class User:
 
             return status == "active"
         except requests.exceptions.ConnectionError:
-            print("Error fetching online status for " + str(self.getUserHandle()))
+            print("Error fetching online status for " + self.getUserHandle().decode("utf-8"))
             return False
 
     def addExercise(self, exercise, reps):

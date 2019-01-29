@@ -57,6 +57,27 @@
       "minReps": 20,
       "maxReps": 30,
       "units": "rep"
+    },
+    {
+      "id": 5,
+      "name": "chin ups (palms facing you)",
+      "minReps": 2,
+      "maxReps": 4,
+      "units": "rep"
+    },
+    {
+      "id": 6,
+      "name": "pull ups (palms facing away)",
+      "minReps": 2,
+      "maxReps": 4,
+      "units": "rep"
+    },
+    {
+      "id": 7,
+      "name": "bodyweight squat",
+      "minReps": 10,
+      "maxReps": 15,
+      "units": "rep"
     }
   ]
 }

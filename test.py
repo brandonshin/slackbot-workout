@@ -20,7 +20,7 @@ def test_add_exercise(user):
         "units": "reps"
     }
     user.addExercise(exercise, 10)
-#     assert user.exercises == {1: 10}
+    assert user.exercises == {1: 10}
 #     assert user.exercise_counts == {1: 1}
 #     assert user.exercise_history == [[datetime.datetime.now().isoformat(), 1, "Push-ups", 10, "reps"]]
 

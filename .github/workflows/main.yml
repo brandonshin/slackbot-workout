@@ -1,0 +1,38 @@
+name: Python CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run pytest
+      run: pytest --junitxml=pytest-results.xml $(find . -type f -name "*.py")
+      continue-on-error: true
+
+    - name: Lint with pylint
+      run: pylint --disable=R,C $(find . -type f -name "*.py")
+      continue-on-error: true
+
+    - name: Format with black
+      run: black --check $(find . -type f -name "*.py")
+      continue-on-error: true
+
+    - name: Upload pytest results
+      uses: actions/upload-artifact@v2
+      with:
+        name: pytest-results
+        path: pytest-results.xml

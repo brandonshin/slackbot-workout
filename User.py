@@ -8,7 +8,7 @@ USER_TOKEN_STRING =  'SLACK_USER_TOKEN_STRING'
 
 class User:
 
-    def __init__(self, user_id, user_name=None, real_name=None):
+    def __init__(self, user_id, user_name='New user', real_name='New user'):
         # The Slack ID of the user
         self.id = user_id
 

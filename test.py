@@ -20,10 +20,10 @@ def test_user_print_statement():
 
 def test_user_initialization():
     user_id = "U12345678"
-    user = User(user_id,'johndoe','John Doe')
+    user = User(user_id,'johndoe1','John Doe')
     
     assert user.id == user_id
-    assert user.username == "johndoe"
+    assert user.username == "johndoe1"
     assert user.real_name == "John Doe"
     assert user.exercise_history == []
     assert user.exercises == {}

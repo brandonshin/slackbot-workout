@@ -1,0 +1,31 @@
+name: Python Testing
+
+on: push
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest --verbose --junitxml=test-results.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test results
+          path: test-results.xml

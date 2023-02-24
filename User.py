@@ -4,16 +4,16 @@ import json
 import datetime
 
 # Environment variables must be set with your tokens
-USER_TOKEN_STRING =  os.environ['SLACK_USER_TOKEN_STRING']
+USER_TOKEN_STRING =  'SLACK_USER_TOKEN_STRING'
 
 class User:
 
-    def __init__(self, user_id):
+    def __init__(self, user_id, user_name='Newuser', real_name='New user'):
         # The Slack ID of the user
         self.id = user_id
 
         # The username (@username) and real name
-        self.username, self.real_name = self.fetchNames()
+        self.username, self.real_name = user_name, real_name
 
         # A list of all exercises done by user
         self.exercise_history = []
@@ -27,7 +27,7 @@ class User:
         # A record of past runs
         self.past_workouts = {}
 
-        print "New user: " + self.real_name + " (" + self.username + ")"
+        print ("New user: " + self.real_name + " (" + self.username + ")")
 
 
     def storeSession(self, run_name):
@@ -69,7 +69,7 @@ class User:
 
             return status == "active"
         except requests.exceptions.ConnectionError:
-            print "Error fetching online status for " + self.getUserHandle()
+            print ("Error fetching online status for " + self.getUserHandle())
             return False
 
     def addExercise(self, exercise, reps):

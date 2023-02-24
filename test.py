@@ -20,7 +20,7 @@ def test_user_print_statement():
 
 def test_user_initialization():
     user_id = "U12345678"
-    user = User(user_id)
+    user = User(user_id,'johndoe','John Doe')
     
     assert user.id == user_id
     assert user.username == "johndoe"

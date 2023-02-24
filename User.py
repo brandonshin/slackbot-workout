@@ -8,12 +8,12 @@ USER_TOKEN_STRING =  'SLACK_USER_TOKEN_STRING'
 
 class User:
 
-    def __init__(self, user_id):
+    def __init__(self, user_id, user_name=None, real_name=None):
         # The Slack ID of the user
         self.id = user_id
 
         # The username (@username) and real name
-        self.username, self.real_name = self.fetchNames()
+        self.username, self.real_name = user_name, real_name
 
         # A list of all exercises done by user
         self.exercise_history = []

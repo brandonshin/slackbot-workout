@@ -17,3 +17,15 @@ def test_user_print_statement():
     assert user.past_workouts == {}
     # assert user.username in str(user)
     # assert 'New user:' in str(user)
+
+def test_user_initialization():
+    user_id = "U12345678"
+    user = User(user_id)
+    
+    assert user.id == user_id
+    assert user.username == "johndoe"
+    assert user.real_name == "John Doe"
+    assert user.exercise_history == []
+    assert user.exercises == {}
+    assert user.exercise_counts == {}
+    assert user.past_workouts == {}

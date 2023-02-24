@@ -1,5 +1,7 @@
 from User import User
 import datetime
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 def user():
     return User("1234567890") # replace with a valid user ID

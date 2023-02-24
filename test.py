@@ -6,8 +6,8 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 def test_always_passes():
     assert True
 
-def user():
-    return User("1234567890") # replace with a valid user ID
+# def user():
+#     return User("1234567890") # replace with a valid user ID
 
 # def test_fetch_names(user):
 #     assert user.username == "test_user"
@@ -19,6 +19,7 @@ def test_add_exercise(user):
         "name": "Push-ups",
         "units": "reps"
     }
+    user = User("1234567890")
     user.addExercise(exercise, 10)
     assert user.exercises == {1: 10}
 #     assert user.exercise_counts == {1: 1}

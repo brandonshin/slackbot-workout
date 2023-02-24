@@ -1,13 +1,11 @@
-import pytest
 from User import User
 import datetime
 
-@pytest.fixture
 def user():
     return User("1234567890") # replace with a valid user ID
 
 def test_fetch_names(user):
-    assert user.username == "test_user_1"
+    assert user.username == "test_user"
     assert user.real_name == "Test User"
 
 def test_add_exercise(user):

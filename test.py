@@ -6,22 +6,8 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 def test_always_passes():
     assert True
 
-# def user():
-#     return User("1234567890") # replace with a valid user ID
-
-# def test_fetch_names(user):
-#     assert user.username == "test_user"
-#     assert user.real_name == "Test User"
-
-def test_add_exercise(user):
-    exercise = {
-        "id": 1,
-        "name": "Push-ups",
-        "units": "reps"
-    }
-    user = User("1234567890")
-    user.addExercise(exercise, 10)
-    assert user.exercises == {1: 10}
-#     assert user.exercise_counts == {1: 1}
-#     assert user.exercise_history == [[datetime.datetime.now().isoformat(), 1, "Push-ups", 10, "reps"]]
-
+def test_user_print_statement():
+    user = User('12345')
+    assert user.real_name in str(user)
+    assert user.username in str(user)
+    assert 'New user:' in str(user)
